@@ -9,33 +9,51 @@ Not affiliated with Letterboxd or the Morphe open source project.
 
 ## ✨ What the patches do
 
-### 🎨 Material You theme  ·  _opt-in_
+Every patch is opt-in and independent. The theming patches (🎨 / 🖤 / 📍) all
+restyle the app's chrome — **pick one**.
 
-Repaints Letterboxd's dark chrome with **your phone's wallpaper colours** on
-Android 12 and newer.
+### 🎨 Material You theme  ·  _opt-in, has options_
 
-- The window background, cards, the top bar, the tab strip and the bottom
-  navigation bar all take on a dark, wallpaper-tinted neutral — one flat, unified
-  surface instead of Letterboxd's fixed slate-and-black.
-- Bottom sheets and dialogs (the log / rate / film-actions popups) sit one gentle
-  step above that, so they read as raised surfaces rather than a different colour
-  scheme.
-- Separators and hairlines are nudged so they stay visible on both.
-- **Kept exactly as-is:** the Letterboxd green (star ratings, rating graphs,
-  primary buttons, the logo), white, black, and every grey used for text and
-  icons — so contrast and the brand accent are never harmed.
-- **No effect** on Android 11 and below, or on the few screens Letterboxd builds
-  with Jetpack Compose (their colours are baked in and can't be reached from a
-  resource patch).
+Repaints Letterboxd's dark chrome — window background, cards, the top bar, the
+tab strip and the bottom nav — as one flat, unified surface instead of
+Letterboxd's fixed slate-and-black. Bottom sheets and dialogs sit one gentle
+step above; separators are nudged so they stay visible.
+
+**Option — Surface style:**
+- **Wallpaper tint (Android 12+)** — follows your device's Material You palette.
+  No effect on Android 11 and below.
+- **Pure black (OLED)** — forces near-black on any Android version, for AMOLED
+  screens.
+
+**Kept exactly as-is:** the Letterboxd green (star ratings, rating graphs,
+primary buttons, the logo), white, and every grey used for text and icons — so
+contrast and the brand accent are never harmed. No effect on the few Jetpack
+Compose screens (their colours are baked into code).
 
 ### 📍 Match bottom nav to top bar colour  ·  _on by default_
 
-Makes the **bottom navigation bar black**, the same as Letterboxd's top bar, so
-it blends into the app's chrome instead of showing the lighter slate colour.
+Makes just the **bottom navigation bar black**, matching Letterboxd's top bar.
+A tiny alternative to the theming patch above.
 
-A small, self-contained alternative to the Material You patch. If you run
-**Material You theme**, leave this one **off** — they both restyle the bottom
-bar and the last one applied wins.
+### 🖼️ Poster corner shape  ·  _opt-in, has options_
+
+Sets the corner radius of every film poster — grids, lists, film pages.
+
+**Option — Poster corner radius:** Sharp (0dp, default) · Slight (4dp) ·
+Rounded (8dp) · Very rounded (16dp).
+
+### 🔲 Denser poster grid  ·  _opt-in, has options_
+
+Tightens the spacing around posters in grids so they render larger and closer
+together. Does **not** change the number of columns.
+
+**Option — Grid density:** Cozy (near default) · Compact (default) · Dense.
+
+### 🚫 Hide Video Store on home  ·  _opt-in_
+
+Removes the "Letterboxd Video Store" promo row from the Films tab. The Video
+Store itself and every other entry point (settings, film pages, search) are
+left alone.
 
 ## 📲 How to use
 
