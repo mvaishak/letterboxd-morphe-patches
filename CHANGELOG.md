@@ -1,3 +1,9 @@
+## [1.1.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-09-02)
+
+### 🐛 Bug Fixes
+
+* Flatten Material You chrome and fix sheet/divider tones ([719d6f7](https://github.com/mvaishak/letterboxd-morphe-patches/commit/719d6f7e73c0fee7789f7946e6c0d30d83c4ecd3))
+
 ## [1.1.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.0.0...v1.1.0-dev.1) (2026-09-02)
 
 ### ✨ New Features
