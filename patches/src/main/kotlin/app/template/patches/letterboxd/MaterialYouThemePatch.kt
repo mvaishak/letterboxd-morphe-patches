@@ -8,13 +8,17 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 
 /**
- * A colour value in each of the patch's modes.
+ * A surface colour in each of the patch's modes.
  *
  * - [fallback] — plain ARGB used on Android 11 and below (no dynamic palette there).
  * - [dynamic]  — wallpaper-palette reference, only valid under `-v31`.
- * - [oled]     — near-black used by the "Pure black (OLED)" mode on every API level.
+ * - [oled]     — used by the "Pure black (OLED)" mode on every API level: true black
+ *   backgrounds, with elevated surfaces kept just visible against them.
  */
 private data class Tone(val fallback: String, val dynamic: String, val oled: String)
+
+/** A 3-stop accent ramp (darkest → brightest), tuned to read on dark / black backgrounds. */
+private data class Accent(val dim: String, val primary: String, val bright: String)
 
 /**
  * Letterboxd hard-codes its dark palette as named colours (e.g. `@color/gray181C20`)
@@ -22,23 +26,24 @@ private data class Tone(val fallback: String, val dynamic: String, val oled: Str
  * colour would recolour almost nothing. This patch redefines the dark background /
  * surface greys instead.
  *
- * Text, icon and hint greys, the Letterboxd green, white and pure black are left
- * alone so contrast and the brand accent are preserved. Higher `system_neutralN_M`
- * numbers are darker tones.
+ * Text, icon and hint greys and white are left alone so contrast is preserved.
+ * Higher `system_neutralN_M` numbers are darker tones.
  */
 private val PALETTE = mapOf(
     "gray0D1012" to Tone("#FF0D1012", "@android:color/system_neutral1_1000", "#FF000000"),
     "gray14181C" to Tone("#FF14181C", "@android:color/system_neutral1_900", "#FF000000"),
     "gray181C20" to Tone("#FF181C20", "@android:color/system_neutral1_900", "#FF000000"), // colorBackground
     "windowBackground" to Tone("#FF181C20", "@android:color/system_neutral1_900", "#FF000000"),
-    "gray1C242C" to Tone("#FF1C242C", "@android:color/system_neutral2_900", "#FF0A0A0A"),
-    "gray202830" to Tone("#FF202830", "@android:color/system_neutral1_800", "#FF0A0A0A"),
-    "gray283038" to Tone("#FF283038", "@android:color/system_neutral1_800", "#FF0A0A0A"),
-    "gray223344" to Tone("#FF223344", "@android:color/system_neutral2_800", "#FF101010"),
-    "gray2C3440" to Tone("#FF2C3440", "@android:color/system_neutral2_800", "#FF101010"),
-    "gray303840" to Tone("#FF303840", "@android:color/system_neutral1_700", "#FF101010"),
-    "gray334455" to Tone("#FF334455", "@android:color/system_neutral2_700", "#FF161616"), // colorPrimaryDark
-    "gray445566" to Tone("#FF445566", "@android:color/system_neutral2_700", "#FF161616"), // colorPrimary
+    "gray1C242C" to Tone("#FF1C242C", "@android:color/system_neutral2_900", "#FF121212"),
+    "gray202830" to Tone("#FF202830", "@android:color/system_neutral1_800", "#FF121212"),
+    "gray283038" to Tone("#FF283038", "@android:color/system_neutral1_800", "#FF121212"),
+    "gray223344" to Tone("#FF223344", "@android:color/system_neutral2_800", "#FF1C1C1C"),
+    "gray2C3440" to Tone("#FF2C3440", "@android:color/system_neutral2_800", "#FF1C1C1C"),
+    "gray303840" to Tone("#FF303840", "@android:color/system_neutral1_700", "#FF1C1C1C"),
+    // colorPrimaryDark / colorPrimary — also the ratings-histogram bar colour, so the
+    // OLED value is a visible dark grey rather than near-black.
+    "gray334455" to Tone("#FF334455", "@android:color/system_neutral2_700", "#FF2E2E2E"),
+    "gray445566" to Tone("#FF445566", "@android:color/system_neutral2_700", "#FF2E2E2E"),
 )
 
 /**
@@ -48,8 +53,24 @@ private val PALETTE = mapOf(
  */
 private val CHROME = mapOf(
     "morphe_my_surface" to Tone("#FF181C20", "@android:color/system_neutral1_900", "#FF000000"),
-    "morphe_my_surface_elevated" to Tone("#FF202830", "@android:color/system_neutral1_800", "#FF0A0A0A"),
-    "morphe_my_divider" to Tone("#FF334455", "@android:color/system_neutral2_600", "#FF2A2A2A"),
+    "morphe_my_surface_elevated" to Tone("#FF202830", "@android:color/system_neutral1_800", "#FF161616"),
+    "morphe_my_divider" to Tone("#FF334455", "@android:color/system_neutral2_600", "#FF333333"),
+)
+
+/**
+ * Applied to Letterboxd's green family: `green00A010/00B020/00C030` → [Accent.dim],
+ * `colorAccent` + `green00E054` → [Accent.primary], `green0ADE53` → [Accent.bright].
+ */
+private val ACCENTS = mapOf(
+    "green" to Accent("#FF0BA83E", "#FF1FE86A", "#FF4DF287"),
+    "amber" to Accent("#FFB87400", "#FFFFC24B", "#FFFFD37A"),
+    "orange" to Accent("#FFC24E12", "#FFFF8A3D", "#FFFFA968"),
+    "coral" to Accent("#FFC23B3B", "#FFFF6B6B", "#FFFF9090"),
+    "pink" to Accent("#FFC24C8E", "#FFFF7DC4", "#FFFFA6D6"),
+    "violet" to Accent("#FF6B54C2", "#FFB69CFF", "#FFCFC0FF"),
+    "blue" to Accent("#FF2E6FC2", "#FF5AA9FF", "#FF8AC4FF"),
+    "teal" to Accent("#FF1F9E8F", "#FF3DD9C8", "#FF77E7DB"),
+    "mono" to Accent("#FF9A9A9A", "#FFE6E6E6", "#FFFFFFFF"),
 )
 
 @Suppress("unused")
@@ -57,9 +78,10 @@ val materialYouThemePatch = resourcePatch(
     name = "Material You theme",
     description = "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top " +
         "bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on " +
-        "Android 12+ (no effect below). 'Pure black (OLED)' forces near-black on any version. The " +
-        "Letterboxd green, white and text greys are kept. No effect on Jetpack Compose screens. " +
-        "Overlaps \"Match bottom nav to top bar color\" — enable one, not both.",
+        "Android 12+ (no effect below). 'Pure black (OLED)' forces true black on any version. An " +
+        "optional accent colour recolours Letterboxd's green (stars, indicators, primary buttons). " +
+        "No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — " +
+        "enable one, not both.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
@@ -75,8 +97,30 @@ val materialYouThemePatch = resourcePatch(
         description = "How the dark chrome is recoloured.",
     )
 
+    val accent by stringOption(
+        key = "accent",
+        default = "green",
+        values = mapOf(
+            "Green (brighter on black)" to "green",
+            "Amber" to "amber",
+            "Orange" to "orange",
+            "Coral" to "coral",
+            "Pink" to "pink",
+            "Violet" to "violet",
+            "Blue" to "blue",
+            "Teal" to "teal",
+            "Mono (near-white)" to "mono",
+        ),
+        title = "Accent colour",
+        description = "Recolours Letterboxd's green (stars, rating indicators, primary buttons). " +
+            "'Green' is left untouched, except in OLED mode where it is brightened for contrast.",
+    )
+
     execute {
         val oled = surfaceStyle == "black"
+        val accentKey = accent ?: "green"
+        // "green" in wallpaper mode = leave Letterboxd's green exactly as-is.
+        val accentRamp = if (accentKey != "green" || oled) ACCENTS.getValue(accentKey) else null
 
         // res/values/colors.xml — base values that must resolve on every API level.
         document("res/values/colors.xml").use { document ->
@@ -89,6 +133,16 @@ val materialYouThemePatch = resourcePatch(
             }
             // In OLED mode also flatten the raw palette here so it works below Android 12.
             if (oled) PALETTE.forEach { (name, tone) -> upsertColor(document, resources, name, tone.oled) }
+
+            // Accent recolour.
+            accentRamp?.let { ramp ->
+                listOf("green00A010", "green00B020", "green00C030").forEach {
+                    upsertColor(document, resources, it, ramp.dim)
+                }
+                upsertColor(document, resources, "colorAccent", ramp.primary)
+                upsertColor(document, resources, "green00E054", ramp.primary)
+                upsertColor(document, resources, "green0ADE53", ramp.bright)
+            }
         }
 
         // res/values-v31/colors.xml — Android 12+ overrides.

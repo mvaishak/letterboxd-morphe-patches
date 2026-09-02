@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.2.0",
+  "version": "1.2.0-dev.2",
   "patches": [
     {
       "name": "Denser poster grid",
@@ -96,7 +96,7 @@
     },
     {
       "name": "Material You theme",
-      "description": "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on Android 12+ (no effect below). 'Pure black (OLED)' forces near-black on any version. The Letterboxd green, white and text greys are kept. No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — enable one, not both.",
+      "description": "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on Android 12+ (no effect below). 'Pure black (OLED)' forces true black on any version. An optional accent colour recolours Letterboxd's green (stars, indicators, primary buttons). No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — enable one, not both.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -129,6 +129,25 @@
           "values": {
             "Wallpaper tint (Android 12+)": "wallpaper",
             "Pure black (OLED)": "black"
+          }
+        },
+        {
+          "key": "accent",
+          "title": "Accent colour",
+          "description": "Recolours Letterboxd's green (stars, rating indicators, primary buttons). 'Green' is left untouched, except in OLED mode where it is brightened for contrast.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "green",
+          "values": {
+            "Green (brighter on black)": "green",
+            "Amber": "amber",
+            "Orange": "orange",
+            "Coral": "coral",
+            "Pink": "pink",
+            "Violet": "violet",
+            "Blue": "blue",
+            "Teal": "teal",
+            "Mono (near-white)": "mono"
           }
         }
       ]
