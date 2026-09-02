@@ -1,3 +1,9 @@
+## [1.4.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-02)
+
+### ✨ New Features
+
+* Accent option becomes a colour picker (any hex) ([177e151](https://github.com/mvaishak/letterboxd-morphe-patches/commit/177e151208c5332a24e7087819edd6444dcacd57)), closes [#1FE86A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/1FE86A)
+
 ## [1.4.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.3.0...v1.4.0-dev.1) (2026-09-02)
 
 ### ✨ New Features

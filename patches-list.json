@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.4.0-dev.1",
+  "version": "1.4.0-dev.2",
   "patches": [
     {
       "name": "Brighter Watched-by stars",
@@ -160,20 +160,20 @@
         {
           "key": "accent",
           "title": "Accent colour",
-          "description": "Recolours Letterboxd's green (stars, rating indicators, primary buttons). 'Green' is left untouched, except in OLED mode where it is brightened for contrast.",
+          "description": "Recolours Letterboxd's green (stars, rating indicators, primary buttons). Pick a preset swatch or any custom colour. Letterboxd green is left untouched, except in OLED mode where it is brightened for contrast; lighter and darker shades for gradients and pressed states are derived automatically.",
           "required": false,
           "type": "kotlin.String",
-          "default": "green",
+          "default": "#FF00E054",
           "values": {
-            "Green (brighter on black)": "green",
-            "Amber": "amber",
-            "Orange": "orange",
-            "Coral": "coral",
-            "Pink": "pink",
-            "Violet": "violet",
-            "Blue": "blue",
-            "Teal": "teal",
-            "Mono (near-white)": "mono"
+            "Letterboxd green": "#FF00E054",
+            "Amber": "#FFC24B",
+            "Orange": "#FF8A3D",
+            "Coral": "#FF6B6B",
+            "Pink": "#FF7DC4",
+            "Violet": "#B69CFF",
+            "Blue": "#5AA9FF",
+            "Teal": "#3DD9C8",
+            "Mono (near-white)": "#E6E6E6"
           }
         },
         {

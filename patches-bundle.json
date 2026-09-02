@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-02T18:11:40",
-  "description": "## [1.4.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.3.0...v1.4.0-dev.1) (2026-09-02)\n\n### ✨ New Features\n\n* Add Brighter Watched-by stars patch and bottom-nav selected-style option ([06a2773](https://github.com/mvaishak/letterboxd-morphe-patches/commit/06a27735185bb1132d7fc331872ec2dda20f6689))",
-  "download_url": "https://github.com/mvaishak/letterboxd-morphe-patches/releases/download/v1.4.0-dev.1/patches-1.4.0-dev.1.mpp",
+  "created_at": "2026-09-02T18:15:20",
+  "description": "## [1.4.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-02)\n\n### ✨ New Features\n\n* Accent option becomes a colour picker (any hex) ([177e151](https://github.com/mvaishak/letterboxd-morphe-patches/commit/177e151208c5332a24e7087819edd6444dcacd57)), closes [#1FE86A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/1FE86A)",
+  "download_url": "https://github.com/mvaishak/letterboxd-morphe-patches/releases/download/v1.4.0-dev.2/patches-1.4.0-dev.2.mpp",
   "signature_download_url": "",
-  "version": "1.4.0-dev.1"
+  "version": "1.4.0-dev.2"
 }
