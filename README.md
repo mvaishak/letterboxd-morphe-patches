@@ -1,27 +1,56 @@
 # 🎬 Letterboxd Morphe Patches
 
-Personal [Morphe](https://morphe.software) patches for the **Letterboxd** Android app
-(`com.letterboxd.letterboxd`). Small cosmetic tweaks to the app's dark theme.
+Personal [Morphe](https://morphe.software) patches for the **Letterboxd** Android
+app (`com.letterboxd.letterboxd`) — small, cosmetic tweaks to the app's dark
+theme. Nothing else is touched: no behaviour changes, no unlocking, no ads/tracking
+work, no network changes.
 
 Not affiliated with Letterboxd or the Morphe open source project.
 
-## ❓ About
+## ✨ What the patches do
 
-Each patch is an independent, opt-in modification you enable per app in Morphe
-Manager. Patches here only touch resources (colors, styles) — no behaviour,
-tracking, or network changes.
+### 🎨 Material You theme  ·  _opt-in_
 
-Current target: **Letterboxd 3.5.4 (496)**. Other versions may work but are
-untested; Morphe will warn if the APK doesn't match.
+Repaints Letterboxd's dark chrome with **your phone's wallpaper colours** on
+Android 12 and newer.
 
-### How to use these patches
+- The window background, cards, the top bar, the tab strip and the bottom
+  navigation bar all take on a dark, wallpaper-tinted neutral — one flat, unified
+  surface instead of Letterboxd's fixed slate-and-black.
+- Bottom sheets and dialogs (the log / rate / film-actions popups) sit one gentle
+  step above that, so they read as raised surfaces rather than a different colour
+  scheme.
+- Separators and hairlines are nudged so they stay visible on both.
+- **Kept exactly as-is:** the Letterboxd green (star ratings, rating graphs,
+  primary buttons, the logo), white, black, and every grey used for text and
+  icons — so contrast and the brand accent are never harmed.
+- **No effect** on Android 11 and below, or on the few screens Letterboxd builds
+  with Jetpack Compose (their colours are baked in and can't be reached from a
+  resource patch).
 
-1. Open this link on your phone to add the source to Morphe Manager:
+### 📍 Match bottom nav to top bar colour  ·  _on by default_
+
+Makes the **bottom navigation bar black**, the same as Letterboxd's top bar, so
+it blends into the app's chrome instead of showing the lighter slate colour.
+
+A small, self-contained alternative to the Material You patch. If you run
+**Material You theme**, leave this one **off** — they both restyle the bottom
+bar and the last one applied wins.
+
+## 📲 How to use
+
+1. On your phone, open this link to add the source to Morphe Manager:
    <https://morphe.software/add-source?github=mvaishak/letterboxd-morphe-patches>
-2. In the source settings, enable **pre-releases** if you want builds from the
-   `dev` branch (newest, less tested). Leave it off for stable `main` releases.
-3. Load a clean, unpatched Letterboxd APK (from APKMirror / Uptodown — not an
-   already-patched or re-zipped file), pick the patches you want, and patch.
+2. In the source's settings, turn on **pre-releases** to get `dev`-branch builds
+   (newest, less tested). Leave it off for stable releases only.
+3. Feed Morphe a **clean, unpatched** Letterboxd APK from
+   [APKMirror](https://www.apkmirror.com/apk/letterboxd/) or
+   [Uptodown](https://letterboxd.en.uptodown.com/android) — not a file that's
+   already been patched or re-zipped by another tool.
+4. Pick the patches you want and patch.
+
+Current target: **Letterboxd 3.5.4 (496)**. Other versions may work; Morphe warns
+if the APK doesn't match.
 
 ## 🩹 Patches list
 
@@ -60,73 +89,32 @@ untested; Morphe will warn if the APK doesn't match.
 
 <!-- PATCHES_END -->
 
-> The table above between the `PATCHES_START` / `PATCHES_END` markers is
-> regenerated automatically on every release — don't edit it by hand.
-> "XYZ app / Example Patch" is the leftover template sample and can be deleted
-> from `patches/src/main/kotlin/app/template/patches/example/` whenever.
-
-## 📖 Patch details
-
-### Match bottom nav to top bar color
-
-Rewrites the `android:background` item of the
-`Widget.Letterboxd.BottomNavigationView` style in `res/values/styles.xml` from
-`@color/gray445566` (#445566) to `@color/black100` — the color Letterboxd uses
-for the top app bar. The bottom navigation bar then blends into the app's dark
-chrome instead of showing the default slate bar.
-
-- Enabled by default.
-- `@color/gray445566` is also `colorPrimary`, so it can't be swapped in
-  `colors.xml` without recolouring the whole app; the patch targets the style
-  item directly.
-
-### Material You theme
-
-Tints Letterboxd's dark chrome — window background, surfaces, cards, and the top
-and bottom bars — with the device's wallpaper palette on Android 12+.
-
-Letterboxd hard-codes its palette as named colours (`@color/gray181C20`, …) that
-the theme and component styles reference directly, so runtime dynamic colour
-would recolour almost nothing. Instead the patch redefines the dark surface
-greys under `res/values-v31` as references to `@android:color/system_neutral*`,
-and points the app-bar / bottom-nav backgrounds at the same tone. Android 11 and
-below are untouched.
-
-Left alone on purpose: the Letterboxd green (ratings, stars, primary buttons),
-white, black, and every grey used for text, icons, dividers or hints — so
-contrast and the brand accent survive.
-
-- Opt-in (off by default).
-- No effect on the handful of Jetpack Compose screens (their colours are set in
-  Kotlin, not resources).
-- Overlaps "Match bottom nav to top bar color" on one style item — enable one or
-  the other, not both.
+> The table between the `PATCHES_START` / `PATCHES_END` markers is regenerated on
+> every release — don't edit it by hand. It refreshes on the next release.
 
 ## 🛠️ Building locally
 
-Requires a JDK 21 and the Android SDK (platform 36, build-tools 36).
+Needs a JDK 21 and the Android SDK (platform 36, build-tools 36).
 
 ```sh
 ./gradlew buildAndroid
 ```
 
-The bundle is written to `patches/build/libs/patches-*.mpp`. Apply it with
-[Morphe Desktop](https://github.com/MorpheApp/morphe-desktop) like any other
-patch bundle. See the [Morphe documentation](https://github.com/MorpheApp/morphe-documentation)
-for more.
+The bundle lands at `patches/build/libs/patches-*.mpp`; apply it with
+[Morphe Desktop](https://github.com/MorpheApp/morphe-desktop). See the
+[Morphe documentation](https://github.com/MorpheApp/morphe-documentation) for more.
 
 ## 🚢 Releasing
 
-Releases are handled entirely by `release.yml` + semantic-release. Don't tag or
-upload releases by hand, and don't hand-edit the generated files
-(`patches-list.json`, `patches-bundle.json`, `CHANGELOG.md`, the patch table
-above).
+`release.yml` + semantic-release handle everything. Don't tag or upload releases
+by hand, and don't edit the generated files (`patches-list.json`,
+`patches-bundle.json`, `CHANGELOG.md`, the patch table above).
 
-- Work on the **`dev`** branch. Use [conventional commits](https://www.conventionalcommits.org):
-  `feat:` and `fix:` cut a new pre-release; `chore:` / `docs:` don't.
+- Work on **`dev`** with [conventional commits](https://www.conventionalcommits.org):
+  `feat:` / `fix:` cut a pre-release, `chore:` / `docs:` don't.
 - Pushing to `dev` builds a pre-release `.mpp` and opens a `dev → main` PR.
-- Merge that PR **with a merge commit (not squash)** to cut a stable release.
+- Merge that PR **with a merge commit (not squash)** for a stable release.
 
 ## 📜 License
 
-Licensed under the [GNU General Public License v3.0](LICENSE).
+[GNU General Public License v3.0](LICENSE).
