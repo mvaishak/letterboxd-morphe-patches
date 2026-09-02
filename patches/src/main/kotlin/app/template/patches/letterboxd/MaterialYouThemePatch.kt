@@ -1,11 +1,15 @@
 package app.template.patches.letterboxd
 
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.colorOption
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
 import app.template.patches.shared.Constants.COMPATIBILITY_LETTERBOXD
 import org.w3c.dom.Document
 import org.w3c.dom.Element
+
+/** Letterboxd's stock accent green, as a full-alpha ARGB string. */
+private const val STOCK_GREEN = "#FF00E054"
 
 /**
  * A surface colour in each of the patch's modes.
@@ -16,9 +20,6 @@ import org.w3c.dom.Element
  *   backgrounds, with elevated surfaces kept just visible against them.
  */
 private data class Tone(val fallback: String, val dynamic: String, val oled: String)
-
-/** A 3-stop accent ramp (darkest → brightest), tuned to read on dark / black backgrounds. */
-private data class Accent(val dim: String, val primary: String, val bright: String)
 
 /**
  * Letterboxd hard-codes its dark palette as named colours (e.g. `@color/gray181C20`)
@@ -57,20 +58,17 @@ private val CHROME = mapOf(
     "morphe_my_divider" to Tone("#FF334455", "@android:color/system_neutral2_600", "#FF333333"),
 )
 
-/**
- * Applied to Letterboxd's green family: `green00A010/00B020/00C030` → [Accent.dim],
- * `colorAccent` + `green00E054` → [Accent.primary], `green0ADE53` → [Accent.bright].
- */
-private val ACCENTS = mapOf(
-    "green" to Accent("#FF0BA83E", "#FF1FE86A", "#FF4DF287"),
-    "amber" to Accent("#FFB87400", "#FFFFC24B", "#FFFFD37A"),
-    "orange" to Accent("#FFC24E12", "#FFFF8A3D", "#FFFFA968"),
-    "coral" to Accent("#FFC23B3B", "#FFFF6B6B", "#FFFF9090"),
-    "pink" to Accent("#FFC24C8E", "#FFFF7DC4", "#FFFFA6D6"),
-    "violet" to Accent("#FF6B54C2", "#FFB69CFF", "#FFCFC0FF"),
-    "blue" to Accent("#FF2E6FC2", "#FF5AA9FF", "#FF8AC4FF"),
-    "teal" to Accent("#FF1F9E8F", "#FF3DD9C8", "#FF77E7DB"),
-    "mono" to Accent("#FF9A9A9A", "#FFE6E6E6", "#FFFFFFFF"),
+/** Named presets shown as swatches on the accent colour picker (label → hex). */
+private val ACCENT_PRESETS = mapOf(
+    "Letterboxd green" to STOCK_GREEN,
+    "Amber" to "#FFC24B",
+    "Orange" to "#FF8A3D",
+    "Coral" to "#FF6B6B",
+    "Pink" to "#FF7DC4",
+    "Violet" to "#B69CFF",
+    "Blue" to "#5AA9FF",
+    "Teal" to "#3DD9C8",
+    "Mono (near-white)" to "#E6E6E6",
 )
 
 @Suppress("unused")
@@ -97,23 +95,15 @@ val materialYouThemePatch = resourcePatch(
         description = "How the dark chrome is recoloured.",
     )
 
-    val accent by stringOption(
+    val accent by colorOption(
         key = "accent",
-        default = "green",
-        values = mapOf(
-            "Green (brighter on black)" to "green",
-            "Amber" to "amber",
-            "Orange" to "orange",
-            "Coral" to "coral",
-            "Pink" to "pink",
-            "Violet" to "violet",
-            "Blue" to "blue",
-            "Teal" to "teal",
-            "Mono (near-white)" to "mono",
-        ),
+        default = STOCK_GREEN,
+        values = ACCENT_PRESETS,
         title = "Accent colour",
         description = "Recolours Letterboxd's green (stars, rating indicators, primary buttons). " +
-            "'Green' is left untouched, except in OLED mode where it is brightened for contrast.",
+            "Pick a preset swatch or any custom colour. Letterboxd green is left untouched, except " +
+            "in OLED mode where it is brightened for contrast; lighter and darker shades for " +
+            "gradients and pressed states are derived automatically.",
     )
 
     val bottomNavIndicator by stringOption(
@@ -133,18 +123,23 @@ val materialYouThemePatch = resourcePatch(
 
     execute {
         val oled = surfaceStyle == "black"
-        val accentKey = accent ?: "green"
-        // "green" in wallpaper mode = leave Letterboxd's green exactly as-is.
-        val accentRamp = if (accentKey != "green" || oled) ACCENTS.getValue(accentKey) else null
+
+        // Accent: any hex (or a preset). Stock green is left alone unless OLED, where it is
+        // brightened. dim / bright shades are derived from the chosen colour.
+        val chosen = normaliseArgb(accent)
+        val isStockGreen = chosen.equals(STOCK_GREEN, ignoreCase = true)
+        val applyAccent = !isStockGreen || oled
+        val accentPrimary = if (isStockGreen && oled) "#FF1FE86A" else chosen
+        val accentBright = blend(accentPrimary, 0xFFFFFFFF.toInt(), 0.30f)
+        val accentDim = blend(accentPrimary, 0xFF000000.toInt(), 0.42f)
 
         // Bottom-nav selected-tab treatment.
         val navMode = bottomNavIndicator ?: "stock"
-        val accentPrimary = ACCENTS.getValue(accentKey).primary
         // Selected icon fill; null = leave Letterboxd's blue. Falls back to white when the accent
-        // is green so the selected tab stays distinct from the always-green + button.
+        // is stock green so the selected tab stays distinct from the always-green + button.
         val navIconColor = when (navMode) {
             "white" -> "#FFF2F2F2"
-            "accent" -> if (accentKey == "green") "#FFF2F2F2" else accentPrimary
+            "accent" -> if (isStockGreen) "#FFF2F2F2" else accentPrimary
             "accentPill" -> accentPrimary
             else -> null
         }
@@ -168,13 +163,13 @@ val materialYouThemePatch = resourcePatch(
             if (oled) PALETTE.forEach { (name, tone) -> upsertColor(document, resources, name, tone.oled) }
 
             // Accent recolour.
-            accentRamp?.let { ramp ->
+            if (applyAccent) {
                 listOf("green00A010", "green00B020", "green00C030").forEach {
-                    upsertColor(document, resources, it, ramp.dim)
+                    upsertColor(document, resources, it, accentDim)
                 }
-                upsertColor(document, resources, "colorAccent", ramp.primary)
-                upsertColor(document, resources, "green00E054", ramp.primary)
-                upsertColor(document, resources, "green0ADE53", ramp.bright)
+                upsertColor(document, resources, "colorAccent", accentPrimary)
+                upsertColor(document, resources, "green00E054", accentPrimary)
+                upsertColor(document, resources, "green0ADE53", accentBright)
             }
         }
 
@@ -226,6 +221,29 @@ val materialYouThemePatch = resourcePatch(
             }
         }
     }
+}
+
+/** Normalise a colour picker value to `#FFRRGGBB`. Falls back to [STOCK_GREEN] on anything unparseable. */
+private fun normaliseArgb(raw: String?): String {
+    val h = raw?.trim()?.removePrefix("#")?.uppercase() ?: return STOCK_GREEN
+    val hex = when (h.length) {
+        6 -> "FF$h"
+        8 -> h
+        else -> return STOCK_GREEN
+    }
+    if (!hex.all { it in "0123456789ABCDEF" }) return STOCK_GREEN
+    return "#$hex"
+}
+
+/** Per-channel linear blend of RGB [from] (a `#..RRGGBB` string) toward ARGB [to] by [t] (0..1). */
+private fun blend(from: String, to: Int, t: Float): String {
+    val f = from.removePrefix("#").let { if (it.length == 6) "FF$it" else it }.toLong(16).toInt()
+    fun channel(shift: Int): Int {
+        val a = (f ushr shift) and 0xFF
+        val b = (to ushr shift) and 0xFF
+        return (a + (b - a) * t).toInt().coerceIn(0, 255)
+    }
+    return "#FF%02X%02X%02X".format(channel(16), channel(8), channel(0))
 }
 
 /** Replace the value of `<color name="[name]">` in [resources], or add it if absent. */

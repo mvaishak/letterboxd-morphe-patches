@@ -26,9 +26,10 @@ step above; separators are nudged so they stay visible.
   Elevated bits (cards, sheets, the ratings-histogram bars) stay a faint grey so
   they don't vanish into the black.
 
-**Option — Accent colour:** recolours Letterboxd's green (stars, rating
-indicators, primary buttons). **Green** / **Amber** / **Orange** / **Coral** /
-**Pink** / **Violet** / **Blue** / **Teal** / **Mono**. "Green" is left
+**Option — Accent colour:** a colour picker (with named preset swatches — Amber,
+Coral, Violet, Teal, … — or **any hex you like**) that recolours Letterboxd's
+green: stars, rating indicators, primary buttons. Lighter/darker shades for
+gradients and pressed states are derived from your pick. Letterboxd green is left
 untouched, except in OLED mode where it's brightened so it reads on black.
 
 **Option — Bottom nav selected style:** how the selected tab in the bottom bar
