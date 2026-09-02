@@ -1,3 +1,13 @@
+## [1.4.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.4.0-dev.2...v1.4.0-dev.3) (2026-09-02)
+
+### 🐛 Bug Fixes
+
+* Set Brighter Watched-by stars to default; drop Poster corner shape from README ([0bee2b6](https://github.com/mvaishak/letterboxd-morphe-patches/commit/0bee2b68dbed5725ab95b2c0e86e973b93d4d404))
+
+### ✨ New Features
+
+* Remove Poster corner shape patch; Brighter Watched-by stars on by default ([3e55637](https://github.com/mvaishak/letterboxd-morphe-patches/commit/3e55637f9c336b79f1730fc0a164452776e6c751))
+
 ## [1.4.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-02)
 
 ### ✨ New Features

@@ -1,11 +1,11 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.4.0-dev.2",
+  "version": "1.4.0-dev.3",
   "patches": [
     {
       "name": "Brighter Watched-by stars",
-      "description": "Other people's star ratings in a film's \"Watched by\" row use a very dark grey (#445566) that is hard to read, especially on a black theme. This switches them to the lighter grey (#99AABB) the rest of the app already uses for other people's ratings.",
-      "default": false,
+      "description": "Other people's star ratings in a film's \"Watched by\" row use a very dark grey (#445566) that is hard to read, especially on a black theme. This switches them to the lighter grey (#99AABB) the rest of the app already uses for other people's ratings. A small legibility fix, on by default.",
+      "default": true,
       "dependencies": [],
       "compatiblePackages": [
         {
@@ -189,47 +189,6 @@
             "No pill, white selected icon": "white",
             "No pill, accent selected icon": "accent",
             "Accent pill + accent icon": "accentPill"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Poster corner shape",
-      "description": "Changes the corner radius of film posters across the app. 'Sharp' matches Letterboxd's classic look; the rounded options soften every poster in grids, lists and on film pages.",
-      "default": false,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.letterboxd.letterboxd",
-          "name": "Letterboxd",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#FF8000",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "3.5.4",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": [
-        {
-          "key": "cornerRadius",
-          "title": "Poster corner radius",
-          "description": "Corner radius applied to poster shapes, in dp.",
-          "required": false,
-          "type": "kotlin.Int",
-          "default": 0,
-          "values": {
-            "Sharp": 0,
-            "Slight (4dp)": 4,
-            "Rounded (8dp)": 8,
-            "Very rounded (16dp)": 16
           }
         }
       ]
