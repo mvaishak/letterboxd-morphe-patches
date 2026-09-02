@@ -31,6 +31,12 @@ indicators, primary buttons). **Green** / **Amber** / **Orange** / **Coral** /
 **Pink** / **Violet** / **Blue** / **Teal** / **Mono**. "Green" is left
 untouched, except in OLED mode where it's brightened so it reads on black.
 
+**Option — Bottom nav selected style:** how the selected tab in the bottom bar
+is shown. **Stock** (grey pill + blue icon) / **No pill** / **No pill, white
+icon** / **No pill, accent icon** / **Accent pill**. The green **+** button is
+never touched (accent modes fall back to white if you also picked a green accent,
+so the selected tab stays distinct from **+**).
+
 **Kept as-is:** white and every grey used for body text and icons, so contrast
 is never harmed. No effect on the few Jetpack Compose screens (their colours are
 baked into code).
@@ -59,6 +65,13 @@ together. Does **not** change the number of columns.
 Removes the "Letterboxd Video Store" promo row from the Films tab. The Video
 Store itself and every other entry point (settings, film pages, search) are
 left alone.
+
+### ⭐ Brighter Watched-by stars  ·  _opt-in_
+
+Other people's star ratings in a film's "Watched by" row use a very dark grey
+(`#445566`) that's hard to read, especially on a black theme. This switches them
+to the lighter grey (`#99AABB`) the rest of the app uses for other people's
+ratings.
 
 ## 📲 How to use
 

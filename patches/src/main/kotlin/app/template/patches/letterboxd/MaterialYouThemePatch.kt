@@ -78,10 +78,10 @@ val materialYouThemePatch = resourcePatch(
     name = "Material You theme",
     description = "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top " +
         "bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on " +
-        "Android 12+ (no effect below). 'Pure black (OLED)' forces true black on any version. An " +
-        "optional accent colour recolours Letterboxd's green (stars, indicators, primary buttons). " +
-        "No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — " +
-        "enable one, not both.",
+        "Android 12+ (no effect below). 'Pure black (OLED)' forces true black on any version. " +
+        "Optional accent colour recolours Letterboxd's green; optional bottom-nav selected style " +
+        "replaces the grey pill. No effect on Jetpack Compose screens. Overlaps \"Match bottom nav " +
+        "to top bar color\" — enable one, not both.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
@@ -116,11 +116,44 @@ val materialYouThemePatch = resourcePatch(
             "'Green' is left untouched, except in OLED mode where it is brightened for contrast.",
     )
 
+    val bottomNavIndicator by stringOption(
+        key = "bottomNavIndicator",
+        default = "stock",
+        values = mapOf(
+            "Stock (grey pill + blue icon)" to "stock",
+            "No pill (keep blue icon)" to "nopill",
+            "No pill, white selected icon" to "white",
+            "No pill, accent selected icon" to "accent",
+            "Accent pill + accent icon" to "accentPill",
+        ),
+        title = "Bottom nav selected style",
+        description = "How the selected tab in the bottom navigation bar is shown. The green + " +
+            "button is never affected.",
+    )
+
     execute {
         val oled = surfaceStyle == "black"
         val accentKey = accent ?: "green"
         // "green" in wallpaper mode = leave Letterboxd's green exactly as-is.
         val accentRamp = if (accentKey != "green" || oled) ACCENTS.getValue(accentKey) else null
+
+        // Bottom-nav selected-tab treatment.
+        val navMode = bottomNavIndicator ?: "stock"
+        val accentPrimary = ACCENTS.getValue(accentKey).primary
+        // Selected icon fill; null = leave Letterboxd's blue. Falls back to white when the accent
+        // is green so the selected tab stays distinct from the always-green + button.
+        val navIconColor = when (navMode) {
+            "white" -> "#FFF2F2F2"
+            "accent" -> if (accentKey == "green") "#FFF2F2F2" else accentPrimary
+            "accentPill" -> accentPrimary
+            else -> null
+        }
+        // Active-indicator pill colour.
+        val navPillColor = when (navMode) {
+            "stock" -> null
+            "accentPill" -> "#38" + accentPrimary.substring(3) // ~22% alpha
+            else -> "@android:color/transparent"
+        }
 
         // res/values/colors.xml — base values that must resolve on every API level.
         document("res/values/colors.xml").use { document ->
@@ -166,6 +199,31 @@ val materialYouThemePatch = resourcePatch(
             setStyleItem(document, "Widget.Letterboxd.BottomNavigationView", "android:background", "@color/morphe_my_surface")
             setStyleItem(document, "Widget.Letterboxd.BottomSheet.Modal", "backgroundTint", "@color/morphe_my_surface_elevated")
             setStyleItem(document, "Widget.Letterboxd.Divider", "dividerColor", "@color/morphe_my_divider")
+
+            navPillColor?.let {
+                setStyleItem(document, "Widget.Letterboxd.BottomNavigationView.ActiveIndicator", "android:color", it)
+            }
+        }
+
+        // Selected bottom-nav icon fill — the *_filled vectors, never ic_log_filled (the +).
+        navIconColor?.let { color ->
+            listOf(
+                "res/drawable/ic_popular_filled.xml",
+                "res/drawable/ic_search_filled.xml",
+                "res/drawable/ic_activity_filled.xml",
+                "res/drawable/ic_profile_filled.xml",
+            ).forEach { path ->
+                document(path).use { doc ->
+                    val paths = doc.getElementsByTagName("path")
+                    if (paths.length == 0) throw PatchException("No <path> in $path")
+                    for (i in 0 until paths.length) {
+                        val el = paths.item(i) as Element
+                        if (el.getAttribute("android:fillColor").isNotEmpty()) {
+                            el.setAttribute("android:fillColor", color)
+                        }
+                    }
+                }
+            }
         }
     }
 }
