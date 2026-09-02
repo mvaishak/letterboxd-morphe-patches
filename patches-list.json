@@ -1,7 +1,33 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.3.0",
+  "version": "1.4.0-dev.3",
   "patches": [
+    {
+      "name": "Brighter Watched-by stars",
+      "description": "Other people's star ratings in a film's \"Watched by\" row use a very dark grey (#445566) that is hard to read, especially on a black theme. This switches them to the lighter grey (#99AABB) the rest of the app already uses for other people's ratings. A small legibility fix, on by default.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.letterboxd.letterboxd",
+          "name": "Letterboxd",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF8000",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.5.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
     {
       "name": "Denser poster grid",
       "description": "Tightens the spacing around posters in grids so they render larger and closer together. Does not change the number of columns.",
@@ -96,7 +122,7 @@
     },
     {
       "name": "Material You theme",
-      "description": "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on Android 12+ (no effect below). 'Pure black (OLED)' forces true black on any version. An optional accent colour recolours Letterboxd's green (stars, indicators, primary buttons). No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — enable one, not both.",
+      "description": "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on Android 12+ (no effect below). 'Pure black (OLED)' forces true black on any version. Optional accent colour recolours Letterboxd's green; optional bottom-nav selected style replaces the grey pill. No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — enable one, not both.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -134,61 +160,35 @@
         {
           "key": "accent",
           "title": "Accent colour",
-          "description": "Recolours Letterboxd's green (stars, rating indicators, primary buttons). 'Green' is left untouched, except in OLED mode where it is brightened for contrast.",
+          "description": "Recolours Letterboxd's green (stars, rating indicators, primary buttons). Pick a preset swatch or any custom colour. Letterboxd green is left untouched, except in OLED mode where it is brightened for contrast; lighter and darker shades for gradients and pressed states are derived automatically.",
           "required": false,
           "type": "kotlin.String",
-          "default": "green",
+          "default": "#FF00E054",
           "values": {
-            "Green (brighter on black)": "green",
-            "Amber": "amber",
-            "Orange": "orange",
-            "Coral": "coral",
-            "Pink": "pink",
-            "Violet": "violet",
-            "Blue": "blue",
-            "Teal": "teal",
-            "Mono (near-white)": "mono"
+            "Letterboxd green": "#FF00E054",
+            "Amber": "#FFC24B",
+            "Orange": "#FF8A3D",
+            "Coral": "#FF6B6B",
+            "Pink": "#FF7DC4",
+            "Violet": "#B69CFF",
+            "Blue": "#5AA9FF",
+            "Teal": "#3DD9C8",
+            "Mono (near-white)": "#E6E6E6"
           }
-        }
-      ]
-    },
-    {
-      "name": "Poster corner shape",
-      "description": "Changes the corner radius of film posters across the app. 'Sharp' matches Letterboxd's classic look; the rounded options soften every poster in grids, lists and on film pages.",
-      "default": false,
-      "dependencies": [],
-      "compatiblePackages": [
+        },
         {
-          "packageName": "com.letterboxd.letterboxd",
-          "name": "Letterboxd",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#FF8000",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "3.5.4",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": [
-        {
-          "key": "cornerRadius",
-          "title": "Poster corner radius",
-          "description": "Corner radius applied to poster shapes, in dp.",
+          "key": "bottomNavIndicator",
+          "title": "Bottom nav selected style",
+          "description": "How the selected tab in the bottom navigation bar is shown. The green + button is never affected.",
           "required": false,
-          "type": "kotlin.Int",
-          "default": 0,
+          "type": "kotlin.String",
+          "default": "stock",
           "values": {
-            "Sharp": 0,
-            "Slight (4dp)": 4,
-            "Rounded (8dp)": 8,
-            "Very rounded (16dp)": 16
+            "Stock (grey pill + blue icon)": "stock",
+            "No pill (keep blue icon)": "nopill",
+            "No pill, white selected icon": "white",
+            "No pill, accent selected icon": "accent",
+            "Accent pill + accent icon": "accentPill"
           }
         }
       ]
