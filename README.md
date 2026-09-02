@@ -26,7 +26,7 @@ untested; Morphe will warn if the APK doesn't match.
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
+> **[v1.1.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v1.1.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;3 patches total
 <details open>
 <summary>📦 XYZ app&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -43,7 +43,7 @@ untested; Morphe will warn if the APK doesn't match.
 </details>
 
 <details open>
-<summary>📦 Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<summary>📦 Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -54,6 +54,7 @@ untested; Morphe will warn if the APK doesn't match.
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [Match bottom nav to top bar color](#match-bottom-nav-to-top-bar-color) | Sets Letterboxd's bottom navigation bar background to the same color as the top bar (@color/black100), so it blends into the app's dark chrome instead of showing the default slate bar. |  |
+| [Material You theme](#material-you-theme) | Tints Letterboxd's dark chrome (backgrounds, surfaces, top and bottom bars) with the device's wallpaper palette on Android 12+. Letterboxd's green (ratings, stars, primary actions) is kept. No effect on Android 11 and below or on Jetpack Compose screens. Overlaps "Match bottom nav to top bar color" on one style item — enable one, not both. |  |
 
 </details>
 

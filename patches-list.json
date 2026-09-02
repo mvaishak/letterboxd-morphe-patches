@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.0.0",
+  "version": "1.1.0-dev.1",
   "patches": [
     {
       "name": "Example Patch",
@@ -41,6 +41,32 @@
       "name": "Match bottom nav to top bar color",
       "description": "Sets Letterboxd's bottom navigation bar background to the same color as the top bar (@color/black100), so it blends into the app's dark chrome instead of showing the default slate bar.",
       "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.letterboxd.letterboxd",
+          "name": "Letterboxd",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF8000",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.5.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Material You theme",
+      "description": "Tints Letterboxd's dark chrome (backgrounds, surfaces, top and bottom bars) with the device's wallpaper palette on Android 12+. Letterboxd's green (ratings, stars, primary actions) is kept. No effect on Android 11 and below or on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" on one style item — enable one, not both.",
+      "default": false,
       "dependencies": [],
       "compatiblePackages": [
         {
