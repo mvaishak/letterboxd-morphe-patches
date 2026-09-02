@@ -28,6 +28,52 @@ Not affiliated with Letterboxd or the Morphe project.
 
 ---
 
+## Screenshots
+
+Every shot is the same film page / home screen, changing only the setting.
+
+### Material You — surface style
+
+| | Wallpaper tint (Android 12+) | Pure black (OLED) |
+| :--- | :---: | :---: |
+| **Film page** | <img src="docs/screenshots/materialyou-wallpaper-film.jpg" width="220"> | <img src="docs/screenshots/materialyou-oled-film.jpg" width="220"> |
+| **Home** | <img src="docs/screenshots/materialyou-wallpaper-home.jpg" width="220"> | <img src="docs/screenshots/materialyou-oled-home.jpg" width="220"> |
+
+### Accent colour
+
+Same film page, OLED surface — a preset swatch or any hex. Visible on the ratings
+histogram and the selected bottom-nav tab.
+
+| Letterboxd green | Amber | Blue |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/accent-green.jpg" width="220"> | <img src="docs/screenshots/accent-amber.jpg" width="220"> | <img src="docs/screenshots/accent-blue.jpg" width="220"> |
+
+### Bottom nav selected style
+
+The green **+** button is untouched in every mode.
+
+| Stock — grey pill, blue icon | No pill, white icon |
+| :---: | :---: |
+| <img src="docs/screenshots/bottomnav-stock.png" width="320"> | <img src="docs/screenshots/bottomnav-nopill-white.png" width="320"> |
+
+| No pill, accent icon | Accent pill |
+| :---: | :---: |
+| <img src="docs/screenshots/bottomnav-nopill-accent.png" width="320"> | <img src="docs/screenshots/bottomnav-accent-pill.png" width="320"> |
+
+### Denser poster grid
+
+| Cozy | Dense |
+| :---: | :---: |
+| <img src="docs/screenshots/grid-default.jpg" width="220"> | <img src="docs/screenshots/grid-dense.jpg" width="220"> |
+
+### Hide Video Store on home
+
+| Before | After |
+| :---: | :---: |
+| <img src="docs/screenshots/videostore-before.jpg" width="220"> | <img src="docs/screenshots/videostore-after.jpg" width="220"> |
+
+---
+
 ## Install
 
 1. On the device, open this link to add the source in Morphe Manager:
@@ -117,8 +163,6 @@ Switches other people's star ratings in a film's "Watched by" row from a
 near-unreadable dark grey (`#445566`) to the lighter grey (`#99AABB`) the rest of
 the app uses for other people's ratings. A small legibility fix, applied
 regardless of which theme patch (if any) you use.
-
----
 
 ## Building
 
