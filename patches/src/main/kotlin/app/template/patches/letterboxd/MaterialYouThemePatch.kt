@@ -35,8 +35,14 @@ private val DYNAMIC_NEUTRAL_MAP = mapOf(
     "windowBackground" to "@android:color/system_neutral1_900",
 )
 
-/** Top app bar and bottom nav share the tinted window background. */
+/** Window background, app bar, tab strip and bottom nav all share this tone (flat chrome). */
 private const val BAR_BACKGROUND = "@android:color/system_neutral1_900"
+
+/** Sheets and dialogs sit one gentle step above the background. */
+private const val SURFACE_ELEVATED = "@android:color/system_neutral1_800"
+
+/** Hairline dividers, kept a touch lighter so they stay visible on both tones. */
+private const val DIVIDER = "@android:color/system_neutral2_600"
 
 @Suppress("unused")
 val materialYouThemePatch = resourcePatch(
@@ -60,12 +66,21 @@ val materialYouThemePatch = resourcePatch(
             }
         }
 
-        // 2. Point the app bar and bottom nav backgrounds at the same dynamic
-        //    neutral so the top and bottom chrome match the tinted background.
+        // 2. Flatten the chrome onto the tinted background and give sheets /
+        //    dividers a coherent Material You surface hierarchy.
         document("res/values/styles.xml").use { document ->
+            // App bar + tab strip + bottom nav = same tone as the page (no black band).
             setStyleItem(document, "Widget.Letterboxd.AppBarLayout", "android:background", BAR_BACKGROUND)
             setStyleItem(document, "Widget.Letterboxd.AppBarLayout", "liftOnScrollColor", BAR_BACKGROUND)
+            setStyleItem(document, "Widget.Letterboxd.TabLayout", "android:background", BAR_BACKGROUND)
             setStyleItem(document, "Widget.Letterboxd.BottomNavigationView", "android:background", BAR_BACKGROUND)
+
+            // Bottom sheets (log / rate / film actions) as an elevated surface, not
+            // the mid-neutral that colorPrimary now resolves to.
+            setStyleItem(document, "Widget.Letterboxd.BottomSheet.Modal", "backgroundTint", SURFACE_ELEVATED)
+
+            // Keep hairline separators visible against both the page and the sheet.
+            setStyleItem(document, "Widget.Letterboxd.Divider", "dividerColor", DIVIDER)
         }
     }
 }
