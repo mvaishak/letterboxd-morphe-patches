@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-02T10:39:25",
-  "description": "## [1.2.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.1.0...v1.2.0-dev.1) (2026-09-02)\n\n### ✨ New Features\n\n* Add OLED surface option to Material You theme ([e85843c](https://github.com/mvaishak/letterboxd-morphe-patches/commit/e85843c4725118ccd9e65073c8a96dfc2e0e2f89))\n* Add poster shape, denser grid, and hide-Video-Store-on-home patches ([49fa23a](https://github.com/mvaishak/letterboxd-morphe-patches/commit/49fa23abd274440f63ec769ace35807a16f88fcb))",
-  "download_url": "https://github.com/mvaishak/letterboxd-morphe-patches/releases/download/v1.2.0-dev.1/patches-1.2.0-dev.1.mpp",
+  "created_at": "2026-09-02T11:30:05",
+  "description": "## [1.2.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.2.0-dev.1...v1.2.0-dev.2) (2026-09-02)\n\n### ✨ New Features\n\n* Add accent-colour option and brighter OLED elevation to Material You ([24eda9b](https://github.com/mvaishak/letterboxd-morphe-patches/commit/24eda9b16f5b71f4bfdf01122498c083e4fbca9f)), closes [#00E054](https://github.com/mvaishak/letterboxd-morphe-patches/issues/00E054) [#1FE86A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/1FE86A) [#161616](https://github.com/mvaishak/letterboxd-morphe-patches/issues/161616) [#2E2E2E](https://github.com/mvaishak/letterboxd-morphe-patches/issues/2E2E2E) [#0A0A0A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/0A0A0A) [#161616](https://github.com/mvaishak/letterboxd-morphe-patches/issues/161616) [#2A2A2A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/2A2A2A)",
+  "download_url": "https://github.com/mvaishak/letterboxd-morphe-patches/releases/download/v1.2.0-dev.2/patches-1.2.0-dev.2.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.1"
+  "version": "1.2.0-dev.2"
 }

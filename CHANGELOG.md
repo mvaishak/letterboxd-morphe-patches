@@ -1,3 +1,9 @@
+## [1.2.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.2.0-dev.1...v1.2.0-dev.2) (2026-09-02)
+
+### ✨ New Features
+
+* Add accent-colour option and brighter OLED elevation to Material You ([24eda9b](https://github.com/mvaishak/letterboxd-morphe-patches/commit/24eda9b16f5b71f4bfdf01122498c083e4fbca9f)), closes [#00E054](https://github.com/mvaishak/letterboxd-morphe-patches/issues/00E054) [#1FE86A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/1FE86A) [#161616](https://github.com/mvaishak/letterboxd-morphe-patches/issues/161616) [#2E2E2E](https://github.com/mvaishak/letterboxd-morphe-patches/issues/2E2E2E) [#0A0A0A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/0A0A0A) [#161616](https://github.com/mvaishak/letterboxd-morphe-patches/issues/161616) [#2A2A2A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/2A2A2A)
+
 ## [1.2.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.1.0...v1.2.0-dev.1) (2026-09-02)
 
 ### ✨ New Features
