@@ -34,10 +34,13 @@ Every shot is the same film page / home screen, changing only the setting.
 
 ### Material You — surface style
 
-| | Wallpaper tint (Android 12+) | Pure black (OLED) |
-| :--- | :---: | :---: |
-| **Film page** | <img src="docs/screenshots/materialyou-wallpaper-film.jpg" width="220"> | <img src="docs/screenshots/materialyou-oled-film.jpg" width="220"> |
-| **Home** | <img src="docs/screenshots/materialyou-wallpaper-home.jpg" width="220"> | <img src="docs/screenshots/materialyou-oled-home.jpg" width="220"> |
+The two "Wallpaper tint" columns are two different device wallpapers — the dark
+chrome tracks whatever palette Android hands it.
+
+| | Wallpaper tint A | Wallpaper tint B | Pure black (OLED) |
+| :--- | :---: | :---: | :---: |
+| **Film page** | <img src="docs/screenshots/materialyou-wallpaper-film.jpg" width="200"> | <img src="docs/screenshots/materialyou-wallpaper2-film.jpg" width="200"> | <img src="docs/screenshots/materialyou-oled-film.jpg" width="200"> |
+| **Home** | <img src="docs/screenshots/materialyou-wallpaper-home.jpg" width="200"> | <img src="docs/screenshots/materialyou-wallpaper2-home.jpg" width="200"> | <img src="docs/screenshots/materialyou-oled-home.jpg" width="200"> |
 
 ### Accent colour
 

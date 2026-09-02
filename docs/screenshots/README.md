@@ -6,7 +6,8 @@ the bottom-nav strips to cropped PNG.
 
 | File | Shows |
 | :--- | :--- |
-| `materialyou-wallpaper-film.jpg` / `-home.jpg` | Material You, Surface = Wallpaper tint |
+| `materialyou-wallpaper-film.jpg` / `-home.jpg` | Material You, Wallpaper tint (wallpaper A) |
+| `materialyou-wallpaper2-film.jpg` / `-home.jpg` | Material You, Wallpaper tint (wallpaper B) |
 | `materialyou-oled-film.jpg` / `-home.jpg` | Material You, Surface = Pure black (OLED) |
 | `accent-green.jpg` / `accent-amber.jpg` / `accent-blue.jpg` | Accent colour on a film page (OLED) |
 | `bottomnav-stock.png` | Bottom nav = Stock (grey pill, blue icon) |
