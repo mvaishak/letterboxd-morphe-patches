@@ -1,3 +1,10 @@
+## [1.2.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.1.0...v1.2.0) (2026-09-02)
+
+### ✨ New Features
+
+* Add OLED surface option to Material You theme ([e85843c](https://github.com/mvaishak/letterboxd-morphe-patches/commit/e85843c4725118ccd9e65073c8a96dfc2e0e2f89))
+* Add poster shape, denser grid, and hide-Video-Store-on-home patches ([49fa23a](https://github.com/mvaishak/letterboxd-morphe-patches/commit/49fa23abd274440f63ec769ace35807a16f88fcb))
+
 ## [1.1.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.0.0...v1.1.0) (2026-09-02)
 
 ### 🐛 Bug Fixes

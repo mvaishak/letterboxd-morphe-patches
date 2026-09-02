@@ -1,7 +1,73 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "patches": [
+    {
+      "name": "Denser poster grid",
+      "description": "Tightens the spacing around posters in grids so they render larger and closer together. Does not change the number of columns.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.letterboxd.letterboxd",
+          "name": "Letterboxd",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF8000",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.5.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "density",
+          "title": "Grid density",
+          "description": "How tightly posters are packed.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "compact",
+          "values": {
+            "Cozy (near default)": "cozy",
+            "Compact": "compact",
+            "Dense": "dense"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hide Video Store on home",
+      "description": "Removes the \"Letterboxd Video Store\" promo row from the Films tab. The Video Store itself, its settings and every other entry point are left untouched.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.letterboxd.letterboxd",
+          "name": "Letterboxd",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF8000",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.5.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
     {
       "name": "Match bottom nav to top bar color",
       "description": "Sets Letterboxd's bottom navigation bar background to the same color as the top bar (@color/black100), so it blends into the app's dark chrome instead of showing the default slate bar.",
@@ -30,7 +96,7 @@
     },
     {
       "name": "Material You theme",
-      "description": "Tints Letterboxd's dark chrome (backgrounds, surfaces, top and bottom bars) with the device's wallpaper palette on Android 12+. Letterboxd's green (ratings, stars, primary actions) is kept. No effect on Android 11 and below or on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" on one style item — enable one, not both.",
+      "description": "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on Android 12+ (no effect below). 'Pure black (OLED)' forces near-black on any version. The Letterboxd green, white and text greys are kept. No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — enable one, not both.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -52,7 +118,61 @@
           ]
         }
       ],
-      "options": []
+      "options": [
+        {
+          "key": "surfaceStyle",
+          "title": "Surface style",
+          "description": "How the dark chrome is recoloured.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "wallpaper",
+          "values": {
+            "Wallpaper tint (Android 12+)": "wallpaper",
+            "Pure black (OLED)": "black"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Poster corner shape",
+      "description": "Changes the corner radius of film posters across the app. 'Sharp' matches Letterboxd's classic look; the rounded options soften every poster in grids, lists and on film pages.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.letterboxd.letterboxd",
+          "name": "Letterboxd",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF8000",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.5.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "cornerRadius",
+          "title": "Poster corner radius",
+          "description": "Corner radius applied to poster shapes, in dp.",
+          "required": false,
+          "type": "kotlin.Int",
+          "default": 0,
+          "values": {
+            "Sharp": 0,
+            "Slight (4dp)": 4,
+            "Rounded (8dp)": 8,
+            "Very rounded (16dp)": 16
+          }
+        }
+      ]
     }
   ]
 }
