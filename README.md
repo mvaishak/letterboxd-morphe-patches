@@ -22,13 +22,18 @@ step above; separators are nudged so they stay visible.
 **Option — Surface style:**
 - **Wallpaper tint (Android 12+)** — follows your device's Material You palette.
   No effect on Android 11 and below.
-- **Pure black (OLED)** — forces near-black on any Android version, for AMOLED
-  screens.
+- **Pure black (OLED)** — true black on any Android version, for AMOLED screens.
+  Elevated bits (cards, sheets, the ratings-histogram bars) stay a faint grey so
+  they don't vanish into the black.
 
-**Kept exactly as-is:** the Letterboxd green (star ratings, rating graphs,
-primary buttons, the logo), white, and every grey used for text and icons — so
-contrast and the brand accent are never harmed. No effect on the few Jetpack
-Compose screens (their colours are baked into code).
+**Option — Accent colour:** recolours Letterboxd's green (stars, rating
+indicators, primary buttons). **Green** / **Amber** / **Orange** / **Coral** /
+**Pink** / **Violet** / **Blue** / **Teal** / **Mono**. "Green" is left
+untouched, except in OLED mode where it's brightened so it reads on black.
+
+**Kept as-is:** white and every grey used for body text and icons, so contrast
+is never harmed. No effect on the few Jetpack Compose screens (their colours are
+baked into code).
 
 ### 📍 Match bottom nav to top bar colour  ·  _on by default_
 
