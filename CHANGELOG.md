@@ -1,3 +1,15 @@
+## [1.4.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.3.0...v1.4.0) (2026-09-02)
+
+### 🐛 Bug Fixes
+
+* Set Brighter Watched-by stars to default; drop Poster corner shape from README ([0bee2b6](https://github.com/mvaishak/letterboxd-morphe-patches/commit/0bee2b68dbed5725ab95b2c0e86e973b93d4d404))
+
+### ✨ New Features
+
+* Accent option becomes a colour picker (any hex) ([177e151](https://github.com/mvaishak/letterboxd-morphe-patches/commit/177e151208c5332a24e7087819edd6444dcacd57)), closes [#1FE86A](https://github.com/mvaishak/letterboxd-morphe-patches/issues/1FE86A)
+* Add Brighter Watched-by stars patch and bottom-nav selected-style option ([06a2773](https://github.com/mvaishak/letterboxd-morphe-patches/commit/06a27735185bb1132d7fc331872ec2dda20f6689))
+* Remove Poster corner shape patch; Brighter Watched-by stars on by default ([3e55637](https://github.com/mvaishak/letterboxd-morphe-patches/commit/3e55637f9c336b79f1730fc0a164452776e6c751))
+
 ## [1.4.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.4.0-dev.2...v1.4.0-dev.3) (2026-09-02)
 
 ### 🐛 Bug Fixes
