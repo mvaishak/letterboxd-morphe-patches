@@ -79,14 +79,27 @@ chrome instead of showing the default slate bar.
   `colors.xml` without recolouring the whole app; the patch targets the style
   item directly.
 
-### Material You theme _(planned, not yet released)_
+### Material You theme
 
-Tints Letterboxd's dark chrome — backgrounds, surfaces, top/bottom bars — with
-the device's Android 12+ wallpaper palette, via `res/values-v31` colour
-overrides. Letterboxd's green (ratings, stars, primary actions) is left alone.
-No effect on Android 11 and below, or on the handful of Jetpack Compose screens.
-Opt-in. Overlaps "Match bottom nav to top bar color" on one style item — enable
-one or the other, not both.
+Tints Letterboxd's dark chrome — window background, surfaces, cards, and the top
+and bottom bars — with the device's wallpaper palette on Android 12+.
+
+Letterboxd hard-codes its palette as named colours (`@color/gray181C20`, …) that
+the theme and component styles reference directly, so runtime dynamic colour
+would recolour almost nothing. Instead the patch redefines the dark surface
+greys under `res/values-v31` as references to `@android:color/system_neutral*`,
+and points the app-bar / bottom-nav backgrounds at the same tone. Android 11 and
+below are untouched.
+
+Left alone on purpose: the Letterboxd green (ratings, stars, primary buttons),
+white, black, and every grey used for text, icons, dividers or hints — so
+contrast and the brand accent survive.
+
+- Opt-in (off by default).
+- No effect on the handful of Jetpack Compose screens (their colours are set in
+  Kotlin, not resources).
+- Overlaps "Match bottom nav to top bar color" on one style item — enable one or
+  the other, not both.
 
 ## 🛠️ Building locally
 
