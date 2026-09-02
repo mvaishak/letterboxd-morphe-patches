@@ -1,3 +1,9 @@
+## [1.1.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-09-02)
+
+### 🐛 Bug Fixes
+
+* Remove the template example patch ([3f965e5](https://github.com/mvaishak/letterboxd-morphe-patches/commit/3f965e55a306ce20162030bdd2f0ecfad3de8a26))
+
 ## [1.1.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-09-02)
 
 ### 🐛 Bug Fixes
