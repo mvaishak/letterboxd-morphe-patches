@@ -10,8 +10,9 @@ val brighterWatchedByStarsPatch = resourcePatch(
     name = "Brighter Watched-by stars",
     description = "Other people's star ratings in a film's \"Watched by\" row use a very dark grey " +
         "(#445566) that is hard to read, especially on a black theme. This switches them to the " +
-        "lighter grey (#99AABB) the rest of the app already uses for other people's ratings.",
-    default = false,
+        "lighter grey (#99AABB) the rest of the app already uses for other people's ratings. " +
+        "A small legibility fix, on by default.",
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
 
