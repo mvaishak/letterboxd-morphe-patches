@@ -1,3 +1,9 @@
+## [1.4.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.3.0...v1.4.0-dev.1) (2026-09-02)
+
+### ✨ New Features
+
+* Add Brighter Watched-by stars patch and bottom-nav selected-style option ([06a2773](https://github.com/mvaishak/letterboxd-morphe-patches/commit/06a27735185bb1132d7fc331872ec2dda20f6689))
+
 ## [1.3.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.2.0...v1.3.0) (2026-09-02)
 
 ### ✨ New Features

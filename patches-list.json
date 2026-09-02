@@ -1,7 +1,33 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.3.0",
+  "version": "1.4.0-dev.1",
   "patches": [
+    {
+      "name": "Brighter Watched-by stars",
+      "description": "Other people's star ratings in a film's \"Watched by\" row use a very dark grey (#445566) that is hard to read, especially on a black theme. This switches them to the lighter grey (#99AABB) the rest of the app already uses for other people's ratings.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.letterboxd.letterboxd",
+          "name": "Letterboxd",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF8000",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.5.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
     {
       "name": "Denser poster grid",
       "description": "Tightens the spacing around posters in grids so they render larger and closer together. Does not change the number of columns.",
@@ -96,7 +122,7 @@
     },
     {
       "name": "Material You theme",
-      "description": "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on Android 12+ (no effect below). 'Pure black (OLED)' forces true black on any version. An optional accent colour recolours Letterboxd's green (stars, indicators, primary buttons). No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — enable one, not both.",
+      "description": "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top bar, tab strip and bottom nav. 'Wallpaper tint' follows the device's Material You palette on Android 12+ (no effect below). 'Pure black (OLED)' forces true black on any version. Optional accent colour recolours Letterboxd's green; optional bottom-nav selected style replaces the grey pill. No effect on Jetpack Compose screens. Overlaps \"Match bottom nav to top bar color\" — enable one, not both.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -148,6 +174,21 @@
             "Blue": "blue",
             "Teal": "teal",
             "Mono (near-white)": "mono"
+          }
+        },
+        {
+          "key": "bottomNavIndicator",
+          "title": "Bottom nav selected style",
+          "description": "How the selected tab in the bottom navigation bar is shown. The green + button is never affected.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "stock",
+          "values": {
+            "Stock (grey pill + blue icon)": "stock",
+            "No pill (keep blue icon)": "nopill",
+            "No pill, white selected icon": "white",
+            "No pill, accent selected icon": "accent",
+            "Accent pill + accent icon": "accentPill"
           }
         }
       ]
