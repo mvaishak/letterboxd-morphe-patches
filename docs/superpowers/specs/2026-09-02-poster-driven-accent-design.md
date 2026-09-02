@@ -117,14 +117,13 @@ invoke-static {p1}, Lapp/template/extension/PosterAccent;->bindHistogram(Landroi
 ```
 `bindHistogram(root)` calls `observe(root, c -> tintStars(root, c))`.
 
-**d. Lifecycle — clear on leave**
-Fingerprint `FilmActivity.onDestroy()` (or `FilmFragment.onDestroyView()` —
-whichever hosts the page) and inject
-`invoke-static {}, Lapp/template/extension/PosterAccent;->clear()V`.
-This prevents a stale accent bleeding onto the next film opened before its
-poster resolves. Between `clear()` and the next `captureFrom`, listeners get
-`null` and views show their original colour — the intended "no accent yet"
-state.
+**d. Lifecycle — clear on new film**
+No separate fingerprint. `captureFrom` begins with `clear()` (`current = null`,
+notify listeners with `null` so views restore), then loads asynchronously. This
+covers the common flow — opening film B runs its `configurePoster`, which clears
+A's accent before B's resolves. Views that outlive their film page are cleaned
+up by `bindView`'s attach-state listener, which unregisters on detach.
+(There is no `FilmActivity` class to hook; the page is a `FilmFragment`.)
 
 ## Colour choice
 
