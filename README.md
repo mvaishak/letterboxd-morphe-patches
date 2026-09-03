@@ -160,6 +160,13 @@ Does not change the column count.
 Removes the "Letterboxd Video Store" promo row from the Films tab. The Video Store
 and every other entry point (settings, film pages, search) are left alone.
 
+**Hide ratings until watched** — *opt-in*
+
+Hides the community rating (average + histogram) on a film's page until you've
+marked that film as watched. Only the film page is affected — ratings in lists,
+search and "similar films" are unchanged. If the watched state can't be read for
+any reason it fails open (ratings stay visible).
+
 **Brighter Watched-by stars** — *on by default*
 
 Switches other people's star ratings in a film's "Watched by" row from a
