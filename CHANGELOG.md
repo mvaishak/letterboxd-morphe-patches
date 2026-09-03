@@ -1,3 +1,9 @@
+## [1.5.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.4.0...v1.5.0-dev.1) (2026-09-03)
+
+### ✨ New Features
+
+* Add 'Hide ratings until watched' patch ([76e4984](https://github.com/mvaishak/letterboxd-morphe-patches/commit/76e49844bc02b413530092313077f6e062426ff2))
+
 ## [1.4.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.3.0...v1.4.0) (2026-09-02)
 
 ### 🐛 Bug Fixes
