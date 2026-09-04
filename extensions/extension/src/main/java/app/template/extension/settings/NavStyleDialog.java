@@ -63,33 +63,14 @@ final class NavStyleDialog extends Dialog {
             final String value = VALUES[i];
             boolean sel = value.equals(current);
 
-            LinearLayout row = new LinearLayout(getContext());
-            row.setOrientation(LinearLayout.VERTICAL);
-            row.setPadding(0, dp(10), 0, dp(10));
-            row.setClickable(true);
-            row.setOnClickListener(new View.OnClickListener() {
-                @Override public void onClick(View v) {
-                    onPick.onPick(value);
-                    dismiss();
-                }
-            });
-
             NavPreview preview = new NavPreview(getContext(), value);
-            LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, dp(44));
-            row.addView(preview, plp);
-
-            TextView label = new TextView(getContext());
-            label.setText(LABELS[i] + (sel ? "   ✓" : ""));
-            label.setTextColor(sel ? accent : 0xFFCDCDCD);
-            label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-            LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            llp.topMargin = dp(6);
-            label.setLayoutParams(llp);
-            row.addView(label);
-
-            root.addView(row);
+            root.addView(OptionCard.build(getContext(), density, preview, 44f, LABELS[i], sel, accent,
+                    new Runnable() {
+                        @Override public void run() {
+                            onPick.onPick(value);
+                            dismiss();
+                        }
+                    }));
         }
 
         setContentView(root);
