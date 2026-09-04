@@ -144,8 +144,7 @@ on a mismatch.
 Adds a **Letterboxd Mods** screen that collects the other patches' options so you
 can change them in the app instead of re-patching.
 
-> **HOW TO OPEN IT:** long-press the **Letterboxd app icon** on your home screen,
-> **or** long-press the **settings gear on your profile tab**. (A one-time note
+> **HOW TO OPEN IT:** Long-press the **settings gear on your profile tab**. (A one-time note
 > also appears on first launch after patching.)
 
 Some changes apply immediately (e.g. hide-ratings reveal style); others need a
