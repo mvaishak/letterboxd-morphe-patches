@@ -3,8 +3,9 @@ package app.template.extension.settings;
 import android.app.Activity;
 
 /**
- * One-time "what's new / how to open Mod settings" dialog, shown the first time the app is opened
- * after a patch. Injected into {@code MainActivity.onCreate} by the "Mod settings" patch.
+ * One-time "what's new / how to open Mod settings" dialog, shown once after a patch. Injected into
+ * {@code MainActivity.onResume} (not {@code onCreate}) so it fires after the splash / login flow,
+ * and it is only marked seen once the user actually dismisses it.
  */
 public final class ModWelcome {
 
@@ -27,28 +28,41 @@ public final class ModWelcome {
           + "  •  Hide the Video Store row from the Films tab\n"
           + "  •  Brighter \"watched by\" stars";
 
-    /** Injected after {@code super.onCreate} in {@code MainActivity}. */
+    private static volatile boolean shown = false;
+    private static volatile boolean scheduled = false;
+
+    /** Injected at the top of {@code MainActivity.onResume} (fires repeatedly — guarded). */
     public static void maybeShow(final Activity activity) {
         try {
-            if (activity == null) return;
+            if (shown || scheduled || activity == null) return;
             Prefs.load(activity);
-            if (String.valueOf(BUILD).equals(Prefs.getString(KEY, ""))) return;
+            if (String.valueOf(BUILD).equals(Prefs.getString(KEY, ""))) {
+                shown = true;
+                return;
+            }
 
-            activity.getWindow().getDecorView().post(new Runnable() {
-                @Override public void run() {
-                    show(activity);
+            scheduled = true;
+            activity.getWindow().getDecorView().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (shown) return;
+                        if (activity.isFinishing() || activity.isDestroyed()) {
+                            scheduled = false; // a later onResume (real MainActivity) retries
+                            return;
+                        }
+                        shown = true;
+                        ModDialog.show(activity, TITLE, BODY, "Got it", null, null, null,
+                                new Runnable() {
+                                    @Override public void run() {
+                                        Prefs.putString(KEY, String.valueOf(BUILD));
+                                    }
+                                });
+                    } catch (Throwable t) {
+                        scheduled = false;
+                    }
                 }
-            });
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private static void show(Activity activity) {
-        try {
-            if (activity.isFinishing() || activity.isDestroyed()) return;
-            // Mark seen up front — if the dialog itself fails we don't want to nag every launch.
-            Prefs.putString(KEY, String.valueOf(BUILD));
-            ModDialog.show(activity, TITLE, BODY, "Got it", null, null, null);
+            }, 2200L);
         } catch (Throwable ignored) {
         }
     }

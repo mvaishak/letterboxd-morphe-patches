@@ -93,13 +93,16 @@ internal object MeFragmentConfigureFingerprint : Fingerprint(
     ),
 )
 
-/** For the one-time welcome dialog. `MainActivity.onCreate` is `protected`. */
-internal object MainActivityOnCreateFingerprint : Fingerprint(
+/**
+ * For the one-time welcome dialog. Hooked at `onResume` (protected, no args) rather than
+ * `onCreate` so it fires after Letterboxd's splash / login flow.
+ */
+internal object MainActivityOnResumeFingerprint : Fingerprint(
     definingClass = "Lcom/letterboxd/letterboxd/MainActivity;",
-    name = "onCreate",
+    name = "onResume",
     accessFlags = listOf(AccessFlags.PROTECTED),
     returnType = "V",
-    parameters = listOf("Landroid/os/Bundle;"),
+    parameters = emptyList(),
 )
 
 @Suppress("unused")
@@ -134,7 +137,7 @@ val modSettingsPatch = bytecodePatch(
 
         // One-time welcome / changelog dialog. Optional.
         runCatching {
-            MainActivityOnCreateFingerprint.method.addInstruction(
+            MainActivityOnResumeFingerprint.method.addInstruction(
                 0,
                 "invoke-static { p0 }, Lapp/template/extension/settings/ModWelcome;->maybeShow(Landroid/app/Activity;)V",
             )

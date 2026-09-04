@@ -24,6 +24,13 @@ final class ModDialog {
     static void show(Context ctx, String title, String message,
                      String positiveText, final Runnable onPositive,
                      String negativeText, final Runnable onNegative) {
+        show(ctx, title, message, positiveText, onPositive, negativeText, onNegative, null);
+    }
+
+    static void show(Context ctx, String title, String message,
+                     String positiveText, final Runnable onPositive,
+                     String negativeText, final Runnable onNegative,
+                     final Runnable onDismiss) {
         try {
             Prefs.load(ctx);
             final float d = ctx.getResources().getDisplayMetrics().density;
@@ -100,6 +107,13 @@ final class ModDialog {
             if (window != null) {
                 window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+            if (onDismiss != null) {
+                dialog.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
+                    @Override public void onDismiss(android.content.DialogInterface d) {
+                        onDismiss.run();
+                    }
+                });
             }
             dialog.show();
         } catch (Throwable ignored) {
