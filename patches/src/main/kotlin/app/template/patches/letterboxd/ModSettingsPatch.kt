@@ -93,11 +93,11 @@ internal object MeFragmentConfigureFingerprint : Fingerprint(
     ),
 )
 
-/** For the one-time welcome dialog. */
+/** For the one-time welcome dialog. `MainActivity.onCreate` is `protected`. */
 internal object MainActivityOnCreateFingerprint : Fingerprint(
     definingClass = "Lcom/letterboxd/letterboxd/MainActivity;",
     name = "onCreate",
-    accessFlags = listOf(AccessFlags.PUBLIC),
+    accessFlags = listOf(AccessFlags.PROTECTED),
     returnType = "V",
     parameters = listOf("Landroid/os/Bundle;"),
 )

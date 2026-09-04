@@ -77,9 +77,14 @@ final class ModSettingsView extends ScrollView {
             column.addView(oledRow);
         }
 
-        column.addView(toggleRow("Match bottom nav to top bar",
-                "Paint the bottom navigation bar black to match the top bar",
-                Prefs.KEY_MATCH_BOTTOM_NAV, true, true));
+        if (materialYouActive) {
+            column.addView(disabledRow("Match bottom nav to top bar",
+                    "Disabled — the Material You theme patch styles the navigation bar"));
+        } else {
+            column.addView(toggleRow("Match bottom nav to top bar",
+                    "Paint the bottom navigation bar black to match the top bar",
+                    Prefs.KEY_MATCH_BOTTOM_NAV, true, true));
+        }
 
         if (themeAvailable) {
             column.addView(accentRow());
@@ -112,9 +117,9 @@ final class ModSettingsView extends ScrollView {
                 labelFor(REVEAL_LABELS, REVEAL_VALUES, Prefs.getString(Prefs.KEY_HIDE_RATINGS_STYLE, "panel")),
                 new Runnable() {
                     @Override public void run() {
-                        new ChoiceDialog(ctx, "Reveal style", REVEAL_LABELS, REVEAL_VALUES,
+                        new RevealStyleDialog(ctx,
                                 Prefs.getString(Prefs.KEY_HIDE_RATINGS_STYLE, "panel"), accent,
-                                new ChoiceDialog.OnPick() {
+                                new RevealStyleDialog.OnPick() {
                                     @Override public void onPick(String value) {
                                         Prefs.putString(Prefs.KEY_HIDE_RATINGS_STYLE, value);
                                         if (revealValue != null) {

@@ -48,7 +48,9 @@ public final class ModWelcome {
     private static void show(Activity activity) {
         try {
             if (activity.isFinishing() || activity.isDestroyed()) return;
-            new AlertDialog.Builder(activity)
+            // Explicit platform dialog theme — MainActivity's own theme is Material3 and its
+            // alertDialogTheme may not resolve for a framework AlertDialog.
+            new AlertDialog.Builder(activity, android.R.style.Theme_Material_Dialog_Alert)
                     .setTitle(TITLE)
                     .setMessage(BODY)
                     .setPositiveButton("Got it", null)

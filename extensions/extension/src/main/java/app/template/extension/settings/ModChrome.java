@@ -20,7 +20,11 @@ public final class ModChrome {
             if (bottomNav == null) return;
             Prefs.load(bottomNav.getContext());
 
-            if (Prefs.getBoolean(Prefs.KEY_MATCH_BOTTOM_NAV, true)) {
+            // The Material You theme patch styles the nav bar itself — don't paint over it.
+            boolean materialYou = bottomNav.getContext().getResources().getIdentifier(
+                    "morphe_my_surface", "color", bottomNav.getContext().getPackageName()) != 0;
+
+            if (!materialYou && Prefs.getBoolean(Prefs.KEY_MATCH_BOTTOM_NAV, true)) {
                 bottomNav.setBackgroundColor(0xFF000000); // @color/black100, the top bar colour
             }
 
