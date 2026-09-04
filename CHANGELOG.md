@@ -1,3 +1,9 @@
+## [1.5.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-09-04)
+
+### ✨ New Features
+
+* Add tap-to-reveal to 'Hide ratings until watched' ([50e9bc3](https://github.com/mvaishak/letterboxd-morphe-patches/commit/50e9bc3e1aadcdb45feb488c444213dd8ae9b275))
+
 ## [1.5.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.4.0...v1.5.0-dev.1) (2026-09-03)
 
 ### ✨ New Features

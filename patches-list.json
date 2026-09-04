@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.5.0-dev.1",
+  "version": "1.5.0-dev.2",
   "patches": [
     {
       "name": "Brighter Watched-by stars",
@@ -96,7 +96,7 @@
     },
     {
       "name": "Hide ratings until watched",
-      "description": "Hides the community rating (average + histogram) on a film's page until you have marked that film as watched. Only the film page is affected — ratings shown in lists, search and elsewhere are unchanged.",
+      "description": "Hides the community rating (average + histogram) on a film's page until you have marked that film as watched. While hidden, the section shows a 'Tap to show ratings' control that reveals them for the current visit. Only the film page is affected — ratings shown in lists, search and elsewhere are unchanged.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
