@@ -164,11 +164,17 @@ and every other entry point (settings, film pages, search) are left alone.
 **Hide ratings until watched** — *opt-in*
 
 Hides the community rating (average + histogram) on a film's page until you've
-marked that film as watched. While hidden, the section keeps its title and shows
-a **Tap to show ratings** control that reveals them for the current visit —
-leave the film and come back and they're hidden again. Only the film page is
+marked that film as watched. The section keeps its title and a tap-to-reveal
+control takes the place of the rating; the reveal lasts for the current visit,
+so leaving the film and coming back hides it again. Only the film page is
 affected — ratings in lists, search and "similar films" are unchanged. If the
 watched state can't be read for any reason it fails open (ratings stay visible).
+
+- **Reveal style** — *Frosted panel* (default; an opaque panel with an eye glyph
+  and a "Tap to reveal" label), *Tap-to-show link* (a plain text link under the
+  section title), *Shimmer* (a Telegram-style particle field that animates until
+  tapped) or *Tap to burst* (a static particle field that scatters on tap). Every
+  style fully covers the rating — nothing shows through until you tap.
 
 **Brighter Watched-by stars** — *on by default*
 

@@ -16,16 +16,23 @@ import java.util.WeakHashMap;
 /**
  * Merged into Letterboxd by the "Hide ratings until watched" patch.
  *
- * <p>{@code FilmRatingsHistogramFragment}'s root view is {@code @id/ratingsViewWrapper} — the whole
- * community-ratings section. Inside it, the endpoint stars, histogram, average and {@code RatingView}
- * all live in one unnamed horizontal row (the parent of {@code @id/ratingsView}). While the film is
- * unwatched, that row and the friends/global toggle are hidden and a "Tap to show ratings" control
- * is added below the section title. Tapping it reveals the ratings for the current visit; leaving
- * and returning to the film hides them again.
+ * <p>{@code FilmRatingsHistogramFragment}'s root view is {@code @id/ratingsViewWrapper}. Inside it,
+ * the endpoint stars, histogram, average and {@code RatingView} all live in one unnamed horizontal
+ * row (the parent of {@code @id/ratingsView}). While the film is unwatched that row is covered with
+ * the chosen reveal style; tapping it reveals the ratings for the current visit, and leaving and
+ * returning to the film hides them again.
+ *
+ * <p>Reveal styles ({@code style} baked in by the patch):
+ * <ul>
+ *   <li>{@code link} — the row is hidden and a plain "Tap to show ratings" text sits below the
+ *       section title.</li>
+ *   <li>{@code panel} / {@code shimmer} / {@code burst} — the row stays laid out and a
+ *       {@link SpoilerOverlayView} is placed over it.</li>
+ * </ul>
  *
  * <p>The relationship and the rating data load asynchronously in unpredictable order, and a
  * coroutine re-shows the row when rating data arrives, so enforcement is reactive: a global layout
- * listener re-checks every pass and re-hides while the film is unwatched.
+ * listener re-checks every pass and re-covers while the film is unwatched.
  *
  * <p>Everything is reflection-based and exception-safe. Any failure ({@code ERROR}) restores the
  * ratings and detaches — it fails open, never hiding ratings for a watched film.
@@ -37,7 +44,8 @@ public final class HideRatingUntilWatched {
     private static final int UNKNOWN = -1;
     private static final int ERROR = -2;
 
-    private static final String PLACEHOLDER_TAG = "morphe_reveal_ratings";
+    private static final String LINK_TAG = "morphe_reveal_ratings";
+    private static final String OVERLAY_TAG = "morphe_spoiler_overlay";
 
     private static final WeakHashMap<View, Boolean> ATTACHED = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> REVEALED = new WeakHashMap<>();
@@ -49,12 +57,19 @@ public final class HideRatingUntilWatched {
 
     private HideRatingUntilWatched() {}
 
-    /** Injected at the top of {@code FilmRatingsHistogramFragment.onViewCreated}. */
+    /** Back-compat shim for a call site without a style argument. */
     public static void enforce(final Fragment fragment) {
+        enforce(fragment, "panel");
+    }
+
+    /** Injected at the top of {@code FilmRatingsHistogramFragment.onViewCreated}. */
+    public static void enforce(final Fragment fragment, final String style) {
         try {
             final View wrapper = fragment.getView();
             if (wrapper == null || Boolean.TRUE.equals(ATTACHED.get(wrapper))) return;
             ATTACHED.put(wrapper, Boolean.TRUE);
+
+            final String reveal = (style == null || style.isEmpty()) ? "panel" : style;
 
             final ViewTreeObserver.OnGlobalLayoutListener[] self =
                     new ViewTreeObserver.OnGlobalLayoutListener[1];
@@ -75,7 +90,7 @@ public final class HideRatingUntilWatched {
                         restore(wrapper);
                         detach(wrapper, self[0]);
                     } else {
-                        mask(wrapper);
+                        cover(wrapper, reveal);
                     }
                 }
             };
@@ -94,16 +109,23 @@ public final class HideRatingUntilWatched {
         ATTACHED.remove(v);
     }
 
-    // --- masking -------------------------------------------------------------
+    // --- covering ----------------------------------------------------------
 
-    private static void mask(View wrapper) {
-        View row = ratingRow(wrapper);
-        if (row != null && row.getVisibility() != View.GONE) row.setVisibility(View.GONE);
-
+    private static void cover(View wrapper, String style) {
         View toggle = byId(wrapper, "ratingsToggleIcon");
         if (toggle != null && toggle.getVisibility() != View.GONE) toggle.setVisibility(View.GONE);
 
-        ensurePlaceholder(wrapper);
+        View row = ratingRow(wrapper);
+
+        if ("link".equals(style)) {
+            if (row != null && row.getVisibility() != View.GONE) row.setVisibility(View.GONE);
+            ensureLink(wrapper);
+            return;
+        }
+
+        // Overlay styles keep the row laid out so the overlay can align to it.
+        if (row != null && row.getVisibility() != View.VISIBLE) row.setVisibility(View.VISIBLE);
+        ensureOverlay(wrapper, style);
     }
 
     private static void restore(final View wrapper) {
@@ -115,19 +137,22 @@ public final class HideRatingUntilWatched {
 
         View section = sectionOf(wrapper);
         if (section instanceof ViewGroup) {
-            View ph = ((ViewGroup) section).findViewWithTag(PLACEHOLDER_TAG);
-            if (ph != null) ((ViewGroup) section).removeView(ph);
+            ViewGroup vg = (ViewGroup) section;
+            View link = vg.findViewWithTag(LINK_TAG);
+            if (link != null) vg.removeView(link);
+            View overlay = vg.findViewWithTag(OVERLAY_TAG);
+            if (overlay != null) vg.removeView(overlay);
         }
     }
 
-    private static void ensurePlaceholder(final View wrapper) {
+    private static void ensureLink(final View wrapper) {
         View section = sectionOf(wrapper);
         if (!(section instanceof RelativeLayout)) return;
         RelativeLayout parent = (RelativeLayout) section;
-        if (parent.findViewWithTag(PLACEHOLDER_TAG) != null) return;
+        if (parent.findViewWithTag(LINK_TAG) != null) return;
 
         final TextView tv = new TextView(parent.getContext());
-        tv.setTag(PLACEHOLDER_TAG);
+        tv.setTag(LINK_TAG);
         tv.setText("Tap to show ratings");
         tv.setAllCaps(false);
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
@@ -151,6 +176,37 @@ public final class HideRatingUntilWatched {
             }
         });
         parent.addView(tv);
+    }
+
+    private static void ensureOverlay(final View wrapper, String style) {
+        View row = ratingRow(wrapper);
+        if (row == null || !(row.getParent() instanceof RelativeLayout)) return;
+        RelativeLayout section = (RelativeLayout) row.getParent();
+        if (section.findViewWithTag(OVERLAY_TAG) != null) return;
+        if (row.getId() == View.NO_ID) row.setId(View.generateViewId());
+
+        int mode;
+        if ("shimmer".equals(style)) mode = SpoilerOverlayView.SHIMMER;
+        else if ("burst".equals(style)) mode = SpoilerOverlayView.BURST;
+        else mode = SpoilerOverlayView.PANEL;
+
+        SpoilerOverlayView overlay = new SpoilerOverlayView(section.getContext(), mode);
+        overlay.setTag(OVERLAY_TAG);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(0, 0);
+        lp.addRule(RelativeLayout.ALIGN_TOP, row.getId());
+        lp.addRule(RelativeLayout.ALIGN_BOTTOM, row.getId());
+        lp.addRule(RelativeLayout.ALIGN_START, row.getId());
+        lp.addRule(RelativeLayout.ALIGN_END, row.getId());
+        overlay.setLayoutParams(lp);
+        overlay.setOnRevealListener(new SpoilerOverlayView.OnReveal() {
+            @Override
+            public void onReveal() {
+                REVEALED.put(wrapper, Boolean.TRUE);
+                restore(wrapper);
+            }
+        });
+        section.addView(overlay);
+        overlay.bringToFront();
     }
 
     /** The unnamed horizontal row holding the endpoint stars, histogram, average and RatingView. */
