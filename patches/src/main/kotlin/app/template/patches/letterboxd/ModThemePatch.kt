@@ -63,11 +63,11 @@ internal val modThemeResourcePatch = resourcePatch {
 
 @Suppress("unused")
 val modThemePatch = bytecodePatch(
-    name = "Mod theme",
-    description = "Adds \"Pure black (OLED)\", \"Accent colour\" and \"Bottom nav selected style\" " +
-        "controls to the \"Mod settings\" screen on Android 12+. They repaint Letterboxd's dark " +
-        "surfaces / green accent at runtime via resource overlays; changing one prompts for a " +
-        "restart. Needs the \"Mod settings\" patch.",
+    name = "Appearance",
+    description = "In-app appearance controls, adjustable from the Letterboxd Mods screen without " +
+        "re-patching: a true-black OLED surface, a custom accent colour (presets or any hex), and " +
+        "the bottom-navigation selected style. Applied at runtime via resource overlays on " +
+        "Android 12 and later. Needs the \"Mod settings\" patch.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)

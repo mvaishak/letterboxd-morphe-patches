@@ -28,6 +28,11 @@ public final class ModTheme {
 
             Prefs.load(context);
             String surface = Prefs.surface(); // stock | oled  (Material You is a patch-time patch)
+            // The Material You theme patch owns the surfaces; don't stack the OLED overlay on it.
+            if (context.getResources().getIdentifier("morphe_my_surface", "color",
+                    context.getPackageName()) != 0) {
+                surface = "stock";
+            }
             String accent = Prefs.getString(Prefs.KEY_THEME_ACCENT, "green");
             String navStyle = Prefs.getString(Prefs.KEY_NAV_INDICATOR, "stock");
             boolean hasSurface = "oled".equals(surface);

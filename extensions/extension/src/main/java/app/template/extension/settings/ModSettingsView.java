@@ -52,8 +52,16 @@ final class ModSettingsView extends ScrollView {
 
         boolean themeAvailable = ModTheme.isSupported();
 
+        boolean materialYouActive = ctx.getResources().getIdentifier(
+                "morphe_my_surface", "color", ctx.getPackageName()) != 0;
+
         header("Theme");
-        if (themeAvailable) {
+        if (!themeAvailable) {
+            column.addView(disabledRow("Pure black (OLED)", "Needs Android 12 or newer"));
+        } else if (materialYouActive) {
+            column.addView(disabledRow("Pure black (OLED)",
+                    "Disabled — the Material You theme patch is active"));
+        } else {
             PillToggle oled = new PillToggle(ctx);
             View oledRow = toggleRow(oled, "Pure black (OLED)",
                     "True-black surfaces; elevated bits stay a faint grey",
@@ -67,8 +75,6 @@ final class ModSettingsView extends ScrollView {
                 }
             });
             column.addView(oledRow);
-        } else {
-            column.addView(disabledRow("Pure black (OLED)", "Needs Android 12 or newer"));
         }
 
         column.addView(toggleRow("Match bottom nav to top bar",
@@ -81,9 +87,8 @@ final class ModSettingsView extends ScrollView {
                     labelFor(NAV_LABELS, NAV_VALUES, Prefs.getString(Prefs.KEY_NAV_INDICATOR, "stock")),
                     new Runnable() {
                         @Override public void run() {
-                            new ChoiceDialog(ctx, "Bottom nav selected style", NAV_LABELS, NAV_VALUES,
-                                    Prefs.getString(Prefs.KEY_NAV_INDICATOR, "stock"), accent,
-                                    new ChoiceDialog.OnPick() {
+                            new NavStyleDialog(ctx, Prefs.getString(Prefs.KEY_NAV_INDICATOR, "stock"),
+                                    accent, new NavStyleDialog.OnPick() {
                                         @Override public void onPick(String value) {
                                             Prefs.putString(Prefs.KEY_NAV_INDICATOR, value);
                                             rebuildAndRestart();

@@ -93,13 +93,22 @@ internal object MeFragmentConfigureFingerprint : Fingerprint(
     ),
 )
 
+/** For the one-time welcome dialog. */
+internal object MainActivityOnCreateFingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/MainActivity;",
+    name = "onCreate",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "V",
+    parameters = listOf("Landroid/os/Bundle;"),
+)
+
 @Suppress("unused")
 val modSettingsPatch = bytecodePatch(
     name = "Mod settings",
-    description = "Adds a \"Letterboxd Mods\" settings screen — reachable from a launcher " +
-        "long-press shortcut and from a long-press on the settings icon on the profile tab — " +
-        "where options for the other patches can be changed without re-patching. Changes apply " +
-        "the next time the relevant screen is opened; some need an app restart.",
+    description = "Adds a Letterboxd Mods screen that gathers the options from the other patches so " +
+        "you can change them inside the app instead of re-patching. Open it with a long-press on " +
+        "the Letterboxd app icon, or a long-press on the settings gear on your profile tab. Some " +
+        "changes take effect right away, others after a restart (you'll be prompted).",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
@@ -120,6 +129,14 @@ val modSettingsPatch = bytecodePatch(
             MeFragmentConfigureFingerprint.method.addInstruction(
                 0,
                 "invoke-static { p1 }, Lapp/template/extension/settings/ModEntryPoint;->attachToToolbar(Landroid/view/View;)V",
+            )
+        }
+
+        // One-time welcome / changelog dialog. Optional.
+        runCatching {
+            MainActivityOnCreateFingerprint.method.addInstruction(
+                0,
+                "invoke-static { p0 }, Lapp/template/extension/settings/ModWelcome;->maybeShow(Landroid/app/Activity;)V",
             )
         }
     }
