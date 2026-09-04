@@ -17,9 +17,6 @@ import android.widget.TextView;
  */
 final class ModSettingsView extends ScrollView {
 
-    private static final String[] SURFACE_LABELS = { "Default", "Material You (wallpaper)", "Pure black (OLED)" };
-    private static final String[] SURFACE_VALUES = { "stock", "wallpaper", "oled" };
-
     private static final String[] NAV_LABELS = {
             "Stock", "No pill", "No pill, white icon", "No pill, accent icon", "Accent pill",
     };
@@ -57,20 +54,21 @@ final class ModSettingsView extends ScrollView {
 
         header("Theme");
         if (themeAvailable) {
-            column.addView(choiceRow("Surface style", null, labelFor(SURFACE_LABELS, SURFACE_VALUES,
-                    Prefs.surface()), new Runnable() {
-                @Override public void run() {
-                    new ChoiceDialog(ctx, "Surface style", SURFACE_LABELS, SURFACE_VALUES,
-                            Prefs.surface(), accent, new ChoiceDialog.OnPick() {
-                        @Override public void onPick(String value) {
-                            Prefs.putString(Prefs.KEY_THEME_SURFACE, value);
-                            rebuildAndRestart();
-                        }
-                    }).show();
+            PillToggle oled = new PillToggle(ctx);
+            View oledRow = toggleRow(oled, "Pure black (OLED)",
+                    "True-black surfaces; elevated bits stay a faint grey",
+                    Prefs.KEY_THEME_OLED, false, true);
+            oled.setChecked("oled".equals(Prefs.surface()), false);
+            oled.setOnToggle(new PillToggle.OnToggle() {
+                @Override public void onToggle(boolean checked) {
+                    Prefs.putString(Prefs.KEY_THEME_SURFACE, checked ? "oled" : "stock");
+                    Prefs.putBoolean(Prefs.KEY_THEME_OLED, checked);
+                    RestartHelper.promptRestart(ctx);
                 }
-            }));
+            });
+            column.addView(oledRow);
         } else {
-            column.addView(disabledRow("Surface style", "Needs Android 12 or newer"));
+            column.addView(disabledRow("Pure black (OLED)", "Needs Android 12 or newer"));
         }
 
         column.addView(toggleRow("Match bottom nav to top bar",

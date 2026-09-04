@@ -27,10 +27,10 @@ public final class ModTheme {
             if (!isSupported() || context == null) return;
 
             Prefs.load(context);
-            String surface = Prefs.surface(); // stock | wallpaper | oled
+            String surface = Prefs.surface(); // stock | oled  (Material You is a patch-time patch)
             String accent = Prefs.getString(Prefs.KEY_THEME_ACCENT, "green");
             String navStyle = Prefs.getString(Prefs.KEY_NAV_INDICATOR, "stock");
-            boolean hasSurface = "wallpaper".equals(surface) || "oled".equals(surface);
+            boolean hasSurface = "oled".equals(surface);
             boolean hasAccent = accent != null && !accent.isEmpty() && !"green".equals(accent);
             boolean hasNavIcon = "white".equals(navStyle) || "accent".equals(navStyle)
                     || "accentPill".equals(navStyle);

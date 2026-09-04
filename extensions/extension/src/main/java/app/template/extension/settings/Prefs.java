@@ -30,16 +30,17 @@ public final class Prefs {
     public static final String KEY_NAV_INDICATOR = "nav_indicator";
 
     // "Mod theme"
-    public static final String KEY_THEME_SURFACE = "theme_surface"; // stock | wallpaper | oled
-    public static final String KEY_THEME_OLED = "theme_oled";       // legacy, migrated to _SURFACE
+    public static final String KEY_THEME_SURFACE = "theme_surface"; // stock | oled
+    public static final String KEY_THEME_OLED = "theme_oled";       // boolean mirror of the above
     public static final String KEY_THEME_ACCENT = "theme_accent";
     public static final String KEY_THEME_ACCENT_HEX = "theme_accent_hex";
 
-    /** Resolves the surface style, falling back to the old boolean key. */
+    /** Resolves the surface style ({@code stock} or {@code oled}). */
     public static String surface() {
         String s = getString(KEY_THEME_SURFACE, "");
-        if (!s.isEmpty()) return s;
-        return getBoolean(KEY_THEME_OLED, false) ? "oled" : "stock";
+        if ("oled".equals(s)) return "oled";
+        if (s.isEmpty() && getBoolean(KEY_THEME_OLED, false)) return "oled";
+        return "stock";
     }
 
     private static SharedPreferences sp;

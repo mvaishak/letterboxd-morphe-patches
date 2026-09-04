@@ -49,8 +49,6 @@ final class ModThemeApi31 {
 
         if ("oled".equals(surface)) {
             addAssetLoader(app, "morphe/oled.arsc", "morphe-oled.arsc");
-        } else if ("wallpaper".equals(surface)) {
-            addAssetLoader(app, "morphe/materialyou.arsc", "morphe-materialyou.arsc");
         }
         if ("custom".equals(accent)) {
             addCustomAccentLoader(app);
