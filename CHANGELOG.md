@@ -1,3 +1,9 @@
+## [1.5.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0-dev.3...v1.5.0-dev.4) (2026-09-04)
+
+### 🐛 Bug Fixes
+
+* Stop rating stars peeking out under the spoiler overlay ([4746d8d](https://github.com/mvaishak/letterboxd-morphe-patches/commit/4746d8d9c49edccc32a873f970555b5723f8c160))
+
 ## [1.5.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-09-04)
 
 ### ✨ New Features
