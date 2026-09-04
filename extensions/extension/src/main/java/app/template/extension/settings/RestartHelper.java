@@ -40,6 +40,9 @@ public final class RestartHelper {
             Context app = context.getApplicationContext();
             Intent launch = app.getPackageManager().getLaunchIntentForPackage(app.getPackageName());
             if (launch != null) {
+                // Land on the home tab, not whichever tab was last open (the mod screen is usually
+                // reached from the profile tab). Ignored by the app if the key ever changes.
+                launch.putExtra("KEY_SELECTED_TAB", "popular");
                 launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pending = PendingIntent.getActivity(
                         app, 0, launch,
