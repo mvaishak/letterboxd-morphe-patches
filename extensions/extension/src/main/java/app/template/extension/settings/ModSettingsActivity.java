@@ -7,18 +7,15 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
- * Standalone host for {@link ModSettingsFragment}. Added to the Letterboxd manifest by the
- * "Mod settings" patch and launched from a launcher long-press shortcut.
+ * Standalone host for {@link ModSettingsView}. Added to the Letterboxd manifest by the "Mod
+ * settings" patch and launched from a launcher long-press shortcut / the profile-tab gear.
  *
- * <p>Framework {@code Activity} + {@code android.preference} are used deliberately: they need no
- * extra runtime dependency and no {@code preferenceTheme} attribute on the host theme. The manifest
- * theme is {@code @android:style/Theme.Material.NoActionBar}; this class draws its own header and
- * applies the status-/navigation-bar insets itself.
+ * <p>The manifest theme is {@code @android:style/Theme.Material.NoActionBar}; this class draws its
+ * own header and applies the system-bar insets itself.
  */
 @SuppressWarnings("deprecation")
 public class ModSettingsActivity extends Activity {
@@ -33,11 +30,7 @@ public class ModSettingsActivity extends Activity {
 
         root.addView(buildHeader(), new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-
-        final FrameLayout container = new FrameLayout(this);
-        final int containerId = View.generateViewId();
-        container.setId(containerId);
-        root.addView(container, new LinearLayout.LayoutParams(
+        root.addView(new ModSettingsView(this), new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
 
         root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
@@ -50,13 +43,6 @@ public class ModSettingsActivity extends Activity {
         });
 
         setContentView(root);
-
-        if (getFragmentManager().findFragmentById(containerId) == null) {
-            getFragmentManager()
-                    .beginTransaction()
-                    .replace(containerId, new ModSettingsFragment())
-                    .commit();
-        }
     }
 
     private View buildHeader() {

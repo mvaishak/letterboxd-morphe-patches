@@ -40,7 +40,7 @@ final class ModThemeApi31 {
             "colorAccent", "green00E054", "green0ADE53", "green00A010", "green00B020", "green00C030",
     };
 
-    static synchronized void prepare(Context context, String surface, String accent) {
+    static synchronized void prepare(Context context, String surface, String accent, String navStyle) {
         if (prepared) return;
         prepared = true;
 
@@ -56,6 +56,38 @@ final class ModThemeApi31 {
             addCustomAccentLoader(app);
         } else if (accent != null && !accent.isEmpty() && !"green".equals(accent)) {
             addAssetLoader(app, "morphe/accent_" + accent + ".arsc", "morphe-accent-" + accent + ".arsc");
+        }
+        addNavIconLoader(app, accent, navStyle);
+    }
+
+    /** Recolour the selected bottom-nav icon (the {@code @color/blue40BCF4} the 4 filled vectors use). */
+    private static void addNavIconLoader(Context app, String accent, String navStyle) {
+        try {
+            int color;
+            if ("white".equals(navStyle)) {
+                color = 0xFFF2F2F2;
+            } else if ("accent".equals(navStyle) || "accentPill".equals(navStyle)) {
+                int a = AccentPresets.previewColor(accent, Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
+                // Stock green would clash with the always-green "+" button — keep the icon white.
+                color = "green".equals(accent) ? 0xFFF2F2F2 : (0xFF000000 | a);
+            } else {
+                return; // stock / nopill — leave the app's blue
+            }
+
+            String pkg = app.getPackageName();
+            int id = app.getResources().getIdentifier("blue40BCF4", "color", pkg);
+            if (id == 0) return;
+
+            Map<Integer, Integer> one = new java.util.LinkedHashMap<>();
+            one.put(id, color);
+            byte[] table = MiniArsc.colorOverlay(pkg, (id >> 24) & 0xff, one);
+
+            File file = new File(app.getCodeCacheDir(), "morphe-navicon.arsc");
+            try (FileOutputStream out = new FileOutputStream(file, false)) {
+                out.write(table);
+            }
+            addFileLoader(file);
+        } catch (Throwable ignored) {
         }
     }
 

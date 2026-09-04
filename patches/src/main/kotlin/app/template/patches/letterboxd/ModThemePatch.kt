@@ -9,7 +9,7 @@ import app.template.patches.shared.Constants.COMPATIBILITY_LETTERBOXD
 
 /**
  * Letterboxd's dark surface greys, remapped to true-black tones. Names match `res/values/public.xml`
- * (all frozen public colour ids); values are the OLED tones from [materialYouThemePatch] — elevated
+ * (all frozen public colour ids); values are OLED tones — elevated
  * surfaces stay a faint grey so histogram bars etc. don't vanish on black.
  */
 private val OLED_SURFACES = mapOf(
@@ -29,7 +29,7 @@ private val OLED_SURFACES = mapOf(
 
 /**
  * The same surface greys pointed at the device's Material You palette (Android 12+ only). Values
- * are the `dynamic` tones from [materialYouThemePatch]; the OS resolves them from the wallpaper.
+ * are the wallpaper-palette references the OS resolves from the device theme.
  * This only recolours the named surface colours — the app-bar / tab-strip style flattening the
  * patch-time "Material You theme" also does is not applied at runtime.
  */
@@ -97,7 +97,9 @@ val modThemePatch = bytecodePatch(
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
 
-    dependsOn(modThemeResourcePatch, modSettingsPatch)
+    // bottomNavColorPatch carries the MainActivity.setup hook that ModChrome uses for the
+    // bottom-nav selected style (the pill); the selected-icon colour is done by an overlay here.
+    dependsOn(modThemeResourcePatch, modSettingsPatch, bottomNavColorPatch)
 
     extendWith("extensions/extension.mpe")
 

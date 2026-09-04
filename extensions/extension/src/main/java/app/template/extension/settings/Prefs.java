@@ -26,6 +26,9 @@ public final class Prefs {
     // "Match bottom nav to top bar color"
     public static final String KEY_MATCH_BOTTOM_NAV = "match_bottom_nav";
 
+    // Bottom nav selected style: stock | nopill | white | accent | accentPill
+    public static final String KEY_NAV_INDICATOR = "nav_indicator";
+
     // "Mod theme"
     public static final String KEY_THEME_SURFACE = "theme_surface"; // stock | wallpaper | oled
     public static final String KEY_THEME_OLED = "theme_oled";       // legacy, migrated to _SURFACE
@@ -78,6 +81,20 @@ public final class Prefs {
             return (value == null || value.isEmpty()) ? fallback : value;
         } catch (Throwable t) {
             return fallback;
+        }
+    }
+
+    public static void putString(String key, String value) {
+        try {
+            if (sp != null) sp.edit().putString(key, value).apply();
+        } catch (Throwable ignored) {
+        }
+    }
+
+    public static void putBoolean(String key, boolean value) {
+        try {
+            if (sp != null) sp.edit().putBoolean(key, value).apply();
+        } catch (Throwable ignored) {
         }
     }
 

@@ -1,6 +1,9 @@
 package app.template.extension.settings;
 
+import android.content.res.ColorStateList;
 import android.view.View;
+
+import java.lang.reflect.Method;
 
 /**
  * Runtime chrome tweaks that used to be baked in by resource patches, now gated on {@link Prefs}
@@ -16,9 +19,38 @@ public final class ModChrome {
         try {
             if (bottomNav == null) return;
             Prefs.load(bottomNav.getContext());
+
             if (Prefs.getBoolean(Prefs.KEY_MATCH_BOTTOM_NAV, true)) {
                 bottomNav.setBackgroundColor(0xFF000000); // @color/black100, the top bar colour
             }
+
+            applyIndicator(bottomNav, Prefs.getString(Prefs.KEY_NAV_INDICATOR, "stock"));
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /** The selected-icon colour is handled by an overlay in {@link ModThemeApi31}; this does the pill. */
+    private static void applyIndicator(View nav, String style) {
+        if ("stock".equals(style)) return;
+
+        if ("accentPill".equals(style)) {
+            int accent = AccentPresets.previewColor(
+                    Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+                    Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
+            // ~22% alpha tint behind the selected icon
+            int pill = (0x38 << 24) | (accent & 0xFFFFFF);
+            invoke(nav, "setItemActiveIndicatorColor", ColorStateList.class,
+                    ColorStateList.valueOf(pill));
+        } else {
+            // nopill / white / accent — drop the pill entirely
+            invoke(nav, "setItemActiveIndicatorEnabled", boolean.class, Boolean.FALSE);
+        }
+    }
+
+    private static void invoke(View target, String name, Class<?> paramType, Object arg) {
+        try {
+            Method m = target.getClass().getMethod(name, paramType);
+            m.invoke(target, arg);
         } catch (Throwable ignored) {
         }
     }

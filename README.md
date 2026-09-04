@@ -20,9 +20,9 @@ A personal collection of resource-only patches for Letterboxd on Android — the
 and layout tweaks, nothing more. No behaviour changes, no unlocking, no ad or
 tracking work, no network changes.
 
-Every patch is opt-in and independent. Three of them restyle the bottom navigation
-bar (**Material You theme**, **Match bottom nav to top bar colour**), so enable
-only one.
+Every patch is opt-in and independent. Theme options (surface colour, accent,
+bottom-nav style) live in the in-app **Mod settings** screen rather than in the
+patcher.
 
 Not affiliated with Letterboxd or the Morphe project.
 
@@ -133,29 +133,32 @@ on a mismatch.
 
 ### Details
 
-**Material You theme** — *opt-in*
+**Mod settings** — *opt-in*
 
-Recolours Letterboxd's dark chrome — window background, cards, top bar, tab strip,
-bottom nav — into one flat surface, with sheets and dialogs a step above and
-separators nudged to stay visible. White and the greys used for body text and
-icons are left alone. No effect on the few Jetpack Compose screens.
+Adds a "Letterboxd Mods" screen (long-press the app icon, or the settings gear on
+the profile tab) where the options below can be changed without re-patching. The
+theme controls need **Mod theme** enabled too and apply on the next app start.
 
-- **Surface style** — *Wallpaper tint* (device Material You palette, Android 12+
-  only) or *Pure black (OLED)* (true black on any version; elevated surfaces,
-  including the ratings-histogram bars, stay a faint grey so they don't
-  disappear).
-- **Accent colour** — a colour picker (preset swatches or any hex) for
-  Letterboxd's green: stars, rating indicators, primary buttons. Lighter and
-  darker shades for gradients and pressed states are derived from your pick.
-  Green is left untouched unless OLED, where it is brightened to read on black.
-- **Bottom nav selected style** — *Stock* (grey pill + blue icon), *No pill*,
-  *No pill + white icon*, *No pill + accent icon*, or *Accent pill*. The green
-  "+" button is never touched.
+**Mod theme** — *opt-in, Android 12+*
+
+Repaints Letterboxd's dark surfaces and green accent at runtime via resource
+overlays, driven from **Mod settings**:
+
+- **Surface style** — *Default*, *Material You (wallpaper)* (device palette), or
+  *Pure black (OLED)* (elevated surfaces stay a faint grey so histogram bars
+  don't disappear).
+- **Accent colour** — presets or a full HSV / hex picker; recolours the stars,
+  rating indicators and primary buttons.
+- **Bottom nav selected style** — *Stock*, *No pill*, *No pill + white icon*,
+  *No pill + accent icon*, or *Accent pill*. The green "+" is never touched.
+
+Only the named surface / accent colour resources change — no Jetpack Compose
+screens, no app-bar style flattening.
 
 **Match bottom nav to top bar colour** — *on by default*
 
-Makes only the bottom navigation bar black, matching the top bar. A minimal
-alternative to the Material You patch.
+Makes the bottom navigation bar black, matching the top bar. Toggleable from
+**Mod settings**.
 
 **Denser poster grid** — *opt-in*
 

@@ -25,7 +25,7 @@ internal fun blend(from: String, toArgb: Long, t: Float): String {
 /**
  * The six accent/green colour resources -> values derived from [hex]: the pick itself for the main
  * green and `colorAccent`, a lighter shade for gradient highlights, a darker shade for the
- * pressed/gradient tail. Matches [materialYouThemePatch]'s accent maths.
+ * pressed/gradient tail.
  */
 internal fun accentColorMap(hex: String): Map<String, String> {
     val primary = normaliseArgb(hex)

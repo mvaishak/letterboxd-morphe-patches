@@ -135,15 +135,6 @@ final class AccentPickerDialog extends Dialog {
 
         int onColor = AccentPresets.isLight(argb) ? 0xFF141414 : 0xFFFFFFFF;
 
-        TextView glyph = new TextView(getContext());
-        glyph.setText("🎨"); // palette
-        glyph.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
-        glyph.setAlpha(AccentPresets.isLight(argb) ? 0.8f : 0.9f);
-        LinearLayout.LayoutParams gl = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        gl.rightMargin = dp(14);
-        row.addView(glyph, gl);
-
         TextView name = new TextView(getContext());
         name.setText(label);
         name.setTextColor(onColor);
