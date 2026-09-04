@@ -12,7 +12,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump when {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 1;
+    private static final int BUILD = 2;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "Letterboxd Mods";
