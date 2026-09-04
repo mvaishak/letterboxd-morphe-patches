@@ -23,9 +23,14 @@ final class ModSettingsView extends ScrollView {
     private static final String[] NAV_VALUES = { "stock", "nopill", "white", "accent", "accentPill" };
 
     private static final String[] REVEAL_LABELS = {
-            "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst",
+            "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst", "Pixel crumble", "Confetti",
     };
-    private static final String[] REVEAL_VALUES = { "panel", "link", "shimmer", "burst" };
+    private static final String[] REVEAL_VALUES = {
+            "panel", "link", "shimmer", "burst", "crumble", "confetti",
+    };
+
+    private static final String[] STREAMING_LABELS = { "Off", "Stremio", "Nuvio" };
+    private static final String[] STREAMING_VALUES = { "off", "stremio", "nuvio" };
 
     private final Context ctx;
     private final float density;
@@ -34,6 +39,7 @@ final class ModSettingsView extends ScrollView {
 
     private View revealRow;
     private TextView revealValue;
+    private TextView streamingValue;
 
     ModSettingsView(Context context) {
         super(context);
@@ -106,7 +112,27 @@ final class ModSettingsView extends ScrollView {
         header("Home");
         column.addView(toggleRow("Hide Video Store",
                 "Remove the Video Store promo row from the Films tab",
-                Prefs.KEY_HIDE_VIDEO_STORE, true, true));
+                Prefs.KEY_HIDE_VIDEO_STORE, false, true));
+        column.addView(toggleRow("Hide Where to Watch",
+                "Remove the \"Where to watch\" section from a film's page",
+                Prefs.KEY_HIDE_WHERE_TO_WATCH, false, false));
+
+        header("Streaming");
+        column.addView(choiceRow("Open in player", null,
+                labelFor(STREAMING_LABELS, STREAMING_VALUES, Prefs.streamingApp()),
+                new Runnable() {
+                    @Override public void run() {
+                        new StreamingAppDialog(ctx, Prefs.streamingApp(), accent,
+                                new StreamingAppDialog.OnPick() {
+                                    @Override public void onPick(String value) {
+                                        Prefs.putString(Prefs.KEY_STREAMING_APP, value);
+                                        if (streamingValue != null) {
+                                            streamingValue.setText(labelFor(STREAMING_LABELS, STREAMING_VALUES, value));
+                                        }
+                                    }
+                                }).show();
+                    }
+                }));
 
         header("Ratings");
         final PillToggle hideRatings = new PillToggle(ctx);
@@ -196,6 +222,7 @@ final class ModSettingsView extends ScrollView {
         v.setGravity(Gravity.CENTER_VERTICAL);
         row.addView(v);
         if (title.equals("Reveal style")) revealValue = v;
+        if (title.equals("Open in player")) streamingValue = v;
 
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { onClick.run(); }

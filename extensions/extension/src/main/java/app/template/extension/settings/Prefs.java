@@ -20,8 +20,14 @@ public final class Prefs {
     public static final String KEY_HIDE_RATINGS_ENABLED = "hide_ratings_enabled";
     public static final String KEY_HIDE_RATINGS_STYLE = "hide_ratings_style";
 
-    // "Hide Video Store on home"
+    // "Hide Video Store on home" — bundled into "Mod settings" itself, not its own patch.
     public static final String KEY_HIDE_VIDEO_STORE = "hide_video_store";
+
+    // "Hide Where to Watch"
+    public static final String KEY_HIDE_WHERE_TO_WATCH = "hide_where_to_watch";
+
+    // "Open in player" — off | stremio | nuvio
+    public static final String KEY_STREAMING_APP = "streaming_app";
 
     // "Match bottom nav to top bar color"
     public static final String KEY_MATCH_BOTTOM_NAV = "match_bottom_nav";
@@ -99,12 +105,18 @@ public final class Prefs {
         }
     }
 
-    /**
-     * Whether the "Video Store on home" row should be hidden. Defaults to {@code true} — once the
-     * patch is applied the historical behaviour is to always hide, and the settings screen (when
-     * present) lets the user turn it back on.
-     */
+    /** Whether the "Video Store on home" row should be hidden. Off by default. */
     public static boolean hideVideoStore() {
-        return getBoolean(KEY_HIDE_VIDEO_STORE, true);
+        return getBoolean(KEY_HIDE_VIDEO_STORE, false);
+    }
+
+    /** Whether the film page's "Where to watch" section should be hidden. Off by default. */
+    public static boolean hideWhereToWatch() {
+        return getBoolean(KEY_HIDE_WHERE_TO_WATCH, false);
+    }
+
+    /** Which app the "Open in player" button launches ({@code off}, {@code stremio}, {@code nuvio}). */
+    public static String streamingApp() {
+        return getString(KEY_STREAMING_APP, "off");
     }
 }

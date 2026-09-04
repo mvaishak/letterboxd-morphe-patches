@@ -121,9 +121,10 @@ val modThemePatch = bytecodePatch(
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
 
-    // bottomNavColorPatch carries the MainActivity.setup hook that ModChrome uses for the
-    // bottom-nav selected style (the pill); the selected-icon colour is done by an overlay here.
-    dependsOn(modThemeResourcePatch, modSettingsPatch, bottomNavColorPatch)
+    // modSettingsPatch carries the MainActivity.setup hook (ModChrome.applyBottomNav) that
+    // ModChrome also uses for the bottom-nav selected style (the pill); the selected-icon colour
+    // is done by an overlay here.
+    dependsOn(modThemeResourcePatch, modSettingsPatch)
 
     extendWith("extensions/extension.mpe")
 
