@@ -1,3 +1,9 @@
+/*
+ * The .arsc overlay-encoding technique in buildColorOverlay() is adapted from Piko
+ * (https://github.com/crimera/piko), licensed under GPLv3 with additional Section 7 terms.
+ * See the included NOTICE file for the credit this project owes under those terms.
+ */
+
 package app.template.patches.letterboxd.theme
 
 import com.reandroid.apk.xmlencoder.XMLTableBlockEncoder

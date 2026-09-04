@@ -1,3 +1,9 @@
+/*
+ * The ResourcesLoader-based runtime .arsc overlay technique here is adapted from Piko
+ * (https://github.com/crimera/piko), licensed under GPLv3 with additional Section 7 terms.
+ * See the included NOTICE file for the credit this project owes under those terms.
+ */
+
 package app.template.extension.settings;
 
 import android.content.Context;

@@ -237,7 +237,15 @@ hand, and do not edit the generated files (`patches-list.json`,
 
 ---
 
+## Acknowledgements
+
+The runtime `.arsc` resource-overlay theming technique behind **Appearance**
+(Material You / OLED) is adapted from
+[Piko](https://github.com/crimera/piko), a Morphe patches collection for
+Twitter/X and Instagram. See [NOTICE](NOTICE) for the credit owed under
+Piko's GPLv3 Section 7 terms.
+
 ## License
 
 [GNU General Public License v3.0](LICENSE). See [NOTICE](NOTICE) for Morphe's
-additional conditions under GPLv3 Section 7.
+and Piko's additional conditions under GPLv3 Section 7.
