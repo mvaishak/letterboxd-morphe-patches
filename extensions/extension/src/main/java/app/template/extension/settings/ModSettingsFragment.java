@@ -2,6 +2,7 @@ package app.template.extension.settings;
 
 import android.os.Bundle;
 import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -21,6 +22,16 @@ import android.preference.SwitchPreference;
  */
 @SuppressWarnings("deprecation")
 public class ModSettingsFragment extends PreferenceFragment {
+
+    /** Set on preferences whose patch only re-reads the value on process start. */
+    private final Preference.OnPreferenceChangeListener promptRestartOnChange =
+            new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    RestartHelper.promptRestart(getActivity());
+                    return true;
+                }
+            };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,6 +58,7 @@ public class ModSettingsFragment extends PreferenceFragment {
         matchColor.setTitle("Match top bar colour");
         matchColor.setSummary("Paint the bottom navigation bar black to match the top bar");
         matchColor.setDefaultValue(Boolean.TRUE);
+        matchColor.setOnPreferenceChangeListener(promptRestartOnChange);
         category.addPreference(matchColor);
     }
 
@@ -60,6 +72,7 @@ public class ModSettingsFragment extends PreferenceFragment {
         hideVideoStore.setTitle("Hide Video Store");
         hideVideoStore.setSummary("Remove the Video Store promo row from the Films tab");
         hideVideoStore.setDefaultValue(Boolean.TRUE);
+        hideVideoStore.setOnPreferenceChangeListener(promptRestartOnChange);
         category.addPreference(hideVideoStore);
     }
 
