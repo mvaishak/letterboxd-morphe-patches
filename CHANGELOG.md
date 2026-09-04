@@ -1,3 +1,27 @@
+## [1.5.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0-dev.3...v1.5.0-dev.4) (2026-09-04)
+
+### 🐛 Bug Fixes
+
+* Stop rating stars peeking out under the spoiler overlay ([4746d8d](https://github.com/mvaishak/letterboxd-morphe-patches/commit/4746d8d9c49edccc32a873f970555b5723f8c160))
+
+## [1.5.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-09-04)
+
+### ✨ New Features
+
+* Add reveal-style dropdown to 'Hide ratings until watched' ([141ac7c](https://github.com/mvaishak/letterboxd-morphe-patches/commit/141ac7c291538ad3d082632a288a50075014d634))
+
+## [1.5.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-09-04)
+
+### ✨ New Features
+
+* Add tap-to-reveal to 'Hide ratings until watched' ([50e9bc3](https://github.com/mvaishak/letterboxd-morphe-patches/commit/50e9bc3e1aadcdb45feb488c444213dd8ae9b275))
+
+## [1.5.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.4.0...v1.5.0-dev.1) (2026-09-03)
+
+### ✨ New Features
+
+* Add 'Hide ratings until watched' patch ([76e4984](https://github.com/mvaishak/letterboxd-morphe-patches/commit/76e49844bc02b413530092313077f6e062426ff2))
+
 ## [1.4.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.3.0...v1.4.0) (2026-09-02)
 
 ### 🐛 Bug Fixes
