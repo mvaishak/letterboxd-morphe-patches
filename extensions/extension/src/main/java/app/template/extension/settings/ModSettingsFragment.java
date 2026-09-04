@@ -46,6 +46,26 @@ public class ModSettingsFragment extends PreferenceFragment {
         buildHideRatings(screen);
         buildHome(screen);
         buildNavigationBar(screen);
+        buildTheme(screen);
+    }
+
+    private void buildTheme(PreferenceScreen screen) {
+        PreferenceCategory category = new PreferenceCategory(getActivity());
+        category.setTitle("Theme");
+        screen.addPreference(category);
+
+        SwitchPreference oled = new SwitchPreference(getActivity());
+        oled.setKey(Prefs.KEY_THEME_OLED);
+        oled.setTitle("Pure black (OLED)");
+        oled.setDefaultValue(Boolean.FALSE);
+        oled.setOnPreferenceChangeListener(promptRestartOnChange);
+        if (ModTheme.isSupported()) {
+            oled.setSummary("Repaint Letterboxd's dark surfaces true black");
+        } else {
+            oled.setEnabled(false);
+            oled.setSummary("Needs Android 12 or newer");
+        }
+        category.addPreference(oled);
     }
 
     private void buildNavigationBar(PreferenceScreen screen) {

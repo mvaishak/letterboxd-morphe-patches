@@ -26,6 +26,9 @@ public final class Prefs {
     // "Match bottom nav to top bar color"
     public static final String KEY_MATCH_BOTTOM_NAV = "match_bottom_nav";
 
+    // "Mod theme (OLED)"
+    public static final String KEY_THEME_OLED = "theme_oled";
+
     private static SharedPreferences sp;
 
     private Prefs() {}
