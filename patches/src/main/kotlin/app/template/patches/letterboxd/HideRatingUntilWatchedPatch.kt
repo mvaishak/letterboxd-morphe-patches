@@ -28,7 +28,7 @@ val hideRatingUntilWatchedPatch = bytecodePatch(
         "marked that film as watched, covering it with a tap-to-reveal control. The reveal is per " +
         "visit — leave the film and come back and it is hidden again. Only the film page is " +
         "affected; ratings shown in lists, search and elsewhere are unchanged.",
-    default = false,
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
 

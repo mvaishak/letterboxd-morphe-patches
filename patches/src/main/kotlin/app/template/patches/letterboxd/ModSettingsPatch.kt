@@ -109,7 +109,7 @@ val modSettingsPatch = bytecodePatch(
         "you can change them inside the app instead of re-patching. Open it with a long-press on " +
         "the Letterboxd app icon, or a long-press on the settings gear on your profile tab. Some " +
         "changes take effect right away, others after a restart (you'll be prompted).",
-    default = false,
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
 

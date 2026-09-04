@@ -27,7 +27,7 @@ val hideVideoStoreHomeSectionPatch = bytecodePatch(
     description = "Removes the \"Letterboxd Video Store\" promo row from the Films tab. The Video " +
         "Store itself, its settings and every other entry point are left untouched. Can be toggled " +
         "from the \"Mod settings\" screen if that patch is also enabled.",
-    default = false,
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
 

@@ -68,7 +68,7 @@ val modThemePatch = bytecodePatch(
         "re-patching: a true-black OLED surface, a custom accent colour (presets or any hex), and " +
         "the bottom-navigation selected style. Applied at runtime via resource overlays on " +
         "Android 12 and later. Needs the \"Mod settings\" patch.",
-    default = false,
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
 
