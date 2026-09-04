@@ -75,6 +75,14 @@ The green **+** button is untouched in every mode.
 | :---: | :---: |
 | <img src="docs/screenshots/videostore-before.jpg" width="220"> | <img src="docs/screenshots/videostore-after.jpg" width="220"> |
 
+### Hide ratings until watched
+
+The film's community rating is fully covered until you tap. 
+| Shimmer | Frosted panel | Tap to burst | Tap-to-show link |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/spoiler-shimmer-updated.gif" width="220"> | <img src="docs/screenshots/spoiler-panel.jpg" width="220"> | <img src="docs/screenshots/spoiler-burst.jpg" width="220"> | <img src="docs/screenshots/spoiler-link.jpg" width="220"> |
+
+
 ---
 
 ## Install
