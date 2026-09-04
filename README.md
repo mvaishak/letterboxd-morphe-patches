@@ -97,6 +97,12 @@ The film's community rating is fully covered until you tap.
    tool has already patched or re-zipped.
 4. Select the patches you want and patch.
 
+> **Opening the Mods screen.** With the **Mod settings** patch enabled, everything
+> configurable lives in an in-app screen — reach it by **long-pressing the
+> Letterboxd app icon** on your home screen, or **long-pressing the settings gear
+> on your profile tab**. A one-time note explaining this also shows on first
+> launch after patching.
+
 Current target: **Letterboxd 3.5.4 (496)**. Other versions may work; Morphe warns
 on a mismatch.
 
@@ -133,20 +139,27 @@ on a mismatch.
 
 ### Details
 
-**Mod settings** — *opt-in*
+**Mod settings** — *on by default*
 
-Adds a "Letterboxd Mods" screen (long-press the app icon, or the settings gear on
-the profile tab) where the options below can be changed without re-patching. The
-theme controls need **Mod theme** enabled too and apply on the next app start.
+Adds a **Letterboxd Mods** screen that collects the other patches' options so you
+can change them in the app instead of re-patching.
 
-**Mod theme** — *opt-in, Android 12+*
+> **HOW TO OPEN IT:** long-press the **Letterboxd app icon** on your home screen,
+> **or** long-press the **settings gear on your profile tab**. (A one-time note
+> also appears on first launch after patching.)
+
+Some changes apply immediately (e.g. hide-ratings reveal style); others need a
+restart — you're always prompted. The theme controls also need **Appearance**
+enabled.
+
+**Appearance** — *on by default, Android 12+*
 
 Repaints Letterboxd's dark surfaces and green accent at runtime via resource
 overlays, driven from **Mod settings**:
 
-- **Surface style** — *Default*, *Material You (wallpaper)* (device palette), or
-  *Pure black (OLED)* (elevated surfaces stay a faint grey so histogram bars
-  don't disappear).
+- **Surface style** — *Default* or *Pure black (OLED)* (elevated surfaces stay a
+  faint grey so histogram bars don't disappear). Locked while the separate
+  **Material You theme** patch is enabled.
 - **Accent colour** — presets or a full HSV / hex picker; recolours the stars,
   rating indicators and primary buttons.
 - **Bottom nav selected style** — *Stock*, *No pill*, *No pill + white icon*,

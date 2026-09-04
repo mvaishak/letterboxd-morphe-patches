@@ -108,10 +108,11 @@ internal object MainActivityOnResumeFingerprint : Fingerprint(
 @Suppress("unused")
 val modSettingsPatch = bytecodePatch(
     name = "Mod settings",
-    description = "Adds a Letterboxd Mods screen that gathers the options from the other patches so " +
-        "you can change them inside the app instead of re-patching. Open it with a long-press on " +
-        "the Letterboxd app icon, or a long-press on the settings gear on your profile tab. Some " +
-        "changes take effect right away, others after a restart (you'll be prompted).",
+    description = "HOW TO OPEN: long-press the Letterboxd app icon on your home screen, OR " +
+        "long-press the settings gear on your profile tab. — This adds a \"Letterboxd Mods\" " +
+        "screen that collects the other patches' options (theme, accent, hide ratings, hide video " +
+        "store, etc.) so you can change them inside the app instead of re-patching. Some changes " +
+        "apply immediately, others after a restart, and you'll be prompted either way.",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
