@@ -39,7 +39,11 @@ internal val modSettingsResourcePatch = resourcePatch {
                     setAttribute("android:name", SETTINGS_ACTIVITY)
                     setAttribute("android:exported", "false")
                     setAttribute("android:label", "@string/$LABEL_STRING")
-                    setAttribute("android:theme", "@style/Theme.Letterboxd")
+                    // A platform theme: framework android.preference.* needs the
+                    // ?android:attr/preference*Style chain that Theme.Material defines.
+                    // The app's own Theme.Letterboxd is Material3/AppCompat and lacks it,
+                    // which crashes the PreferenceFragment on inflation.
+                    setAttribute("android:theme", "@android:style/Theme.Material")
                 },
             )
         }
