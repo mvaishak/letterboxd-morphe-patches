@@ -70,7 +70,7 @@
     },
     {
       "name": "Hide Video Store on home",
-      "description": "Removes the \"Letterboxd Video Store\" promo row from the Films tab. The Video Store itself, its settings and every other entry point are left untouched.",
+      "description": "Removes the \"Letterboxd Video Store\" promo row from the Films tab. The Video Store itself, its settings and every other entry point are left untouched. Can be toggled from the \"Mod settings\" screen if that patch is also enabled.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -137,7 +137,7 @@
     },
     {
       "name": "Match bottom nav to top bar color",
-      "description": "Sets Letterboxd's bottom navigation bar background to the same color as the top bar (@color/black100), so it blends into the app's dark chrome instead of showing the default slate bar.",
+      "description": "Paints Letterboxd's bottom navigation bar black (#000000), matching the top bar, instead of the default slate. Can be toggled from the \"Mod settings\" screen if that patch is also enabled; the change applies on the next app start. With \"Material You theme\" also on, this wins — turn it off to keep the Material You nav tint.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -233,6 +233,34 @@
           }
         }
       ]
+    },
+    {
+      "name": "Mod settings",
+      "description": "Adds a \"Letterboxd Mods\" settings screen — reachable from a launcher long-press shortcut and from a long-press on the settings icon on the profile tab — where options for the other patches can be changed without re-patching. Changes apply the next time the relevant screen is opened; some need an app restart.",
+      "default": false,
+      "dependencies": [
+        "ResourcePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.letterboxd.letterboxd",
+          "name": "Letterboxd",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF8000",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.5.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
     }
   ]
 }

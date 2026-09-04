@@ -1,42 +1,45 @@
 package app.template.patches.letterboxd
 
-import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_LETTERBOXD
-import org.w3c.dom.Element
+import com.android.tools.smali.dexlib2.AccessFlags
 
-private const val BOTTOM_NAV_STYLE = "Widget.Letterboxd.BottomNavigationView"
-
-// Letterboxd's top app bar (Widget.Letterboxd.AppBarLayout) uses this color as its background.
-private const val TOP_BAR_COLOR = "@color/black100"
+/**
+ * `MainActivity.setup(BottomNavigationView, Tab)` configures the bottom navigation bar (menu,
+ * tint, listeners) once at startup. Injecting there lets the extension paint the bar's background
+ * from a preference instead of hard-coding it in `styles.xml`, so the "Mod settings" screen can
+ * turn it off.
+ */
+internal object MainActivitySetupBottomNavFingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/MainActivity;",
+    name = "setup",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.FINAL),
+    returnType = "V",
+    parameters = listOf(
+        "Lcom/google/android/material/bottomnavigation/BottomNavigationView;",
+        "Lcom/letterboxd/letterboxd/MainActivity\$Tab;",
+    ),
+)
 
 @Suppress("unused")
-val bottomNavColorPatch = resourcePatch(
+val bottomNavColorPatch = bytecodePatch(
     name = "Match bottom nav to top bar color",
-    description = "Sets Letterboxd's bottom navigation bar background to the same color as the top bar " +
-        "($TOP_BAR_COLOR), so it blends into the app's dark chrome instead of showing the default slate bar.",
+    description = "Paints Letterboxd's bottom navigation bar black (#000000), matching the top bar, " +
+        "instead of the default slate. Can be toggled from the \"Mod settings\" screen if that " +
+        "patch is also enabled; the change applies on the next app start. With \"Material You " +
+        "theme\" also on, this wins — turn it off to keep the Material You nav tint.",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
 
+    extendWith("extensions/extension.mpe")
+
     execute {
-        document("res/values/styles.xml").use { document ->
-            val styles = document.getElementsByTagName("style")
-
-            val bottomNavStyle = (0 until styles.length)
-                .map { styles.item(it) as Element }
-                .firstOrNull { it.getAttribute("name") == BOTTOM_NAV_STYLE }
-                ?: throw PatchException("Could not find <style name=\"$BOTTOM_NAV_STYLE\"> in res/values/styles.xml")
-
-            val items = bottomNavStyle.getElementsByTagName("item")
-            val background = (0 until items.length)
-                .map { items.item(it) as Element }
-                .firstOrNull { it.getAttribute("name") == "android:background" }
-                ?: throw PatchException("Style \"$BOTTOM_NAV_STYLE\" has no <item name=\"android:background\"> to patch")
-
-            // Was @color/gray445566 (#445566), which is also colorPrimary and therefore
-            // cannot be swapped safely in colors.xml.
-            background.textContent = TOP_BAR_COLOR
-        }
+        MainActivitySetupBottomNavFingerprint.method.addInstruction(
+            0,
+            "invoke-static { p1 }, Lapp/template/extension/settings/ModChrome;->applyBottomNav(Landroid/view/View;)V",
+        )
     }
 }

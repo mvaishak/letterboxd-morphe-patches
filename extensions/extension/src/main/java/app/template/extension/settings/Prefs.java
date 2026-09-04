@@ -23,6 +23,9 @@ public final class Prefs {
     // "Hide Video Store on home"
     public static final String KEY_HIDE_VIDEO_STORE = "hide_video_store";
 
+    // "Match bottom nav to top bar color"
+    public static final String KEY_MATCH_BOTTOM_NAV = "match_bottom_nav";
+
     private static SharedPreferences sp;
 
     private Prefs() {}

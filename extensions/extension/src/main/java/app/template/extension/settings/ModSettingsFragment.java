@@ -34,6 +34,20 @@ public class ModSettingsFragment extends PreferenceFragment {
 
         buildHideRatings(screen);
         buildHome(screen);
+        buildNavigationBar(screen);
+    }
+
+    private void buildNavigationBar(PreferenceScreen screen) {
+        PreferenceCategory category = new PreferenceCategory(getActivity());
+        category.setTitle("Navigation bar");
+        screen.addPreference(category);
+
+        SwitchPreference matchColor = new SwitchPreference(getActivity());
+        matchColor.setKey(Prefs.KEY_MATCH_BOTTOM_NAV);
+        matchColor.setTitle("Match top bar colour");
+        matchColor.setSummary("Paint the bottom navigation bar black to match the top bar");
+        matchColor.setDefaultValue(Boolean.TRUE);
+        category.addPreference(matchColor);
     }
 
     private void buildHome(PreferenceScreen screen) {
