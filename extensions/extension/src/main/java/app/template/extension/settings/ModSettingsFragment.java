@@ -33,6 +33,20 @@ public class ModSettingsFragment extends PreferenceFragment {
         setPreferenceScreen(screen);
 
         buildHideRatings(screen);
+        buildHome(screen);
+    }
+
+    private void buildHome(PreferenceScreen screen) {
+        PreferenceCategory category = new PreferenceCategory(getActivity());
+        category.setTitle("Home");
+        screen.addPreference(category);
+
+        SwitchPreference hideVideoStore = new SwitchPreference(getActivity());
+        hideVideoStore.setKey(Prefs.KEY_HIDE_VIDEO_STORE);
+        hideVideoStore.setTitle("Hide Video Store");
+        hideVideoStore.setSummary("Remove the Video Store promo row from the Films tab");
+        hideVideoStore.setDefaultValue(Boolean.TRUE);
+        category.addPreference(hideVideoStore);
     }
 
     private void buildHideRatings(PreferenceScreen screen) {

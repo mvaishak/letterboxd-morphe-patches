@@ -20,6 +20,9 @@ public final class Prefs {
     public static final String KEY_HIDE_RATINGS_ENABLED = "hide_ratings_enabled";
     public static final String KEY_HIDE_RATINGS_STYLE = "hide_ratings_style";
 
+    // "Hide Video Store on home"
+    public static final String KEY_HIDE_VIDEO_STORE = "hide_video_store";
+
     private static SharedPreferences sp;
 
     private Prefs() {}
@@ -60,5 +63,14 @@ public final class Prefs {
         } catch (Throwable t) {
             return fallback;
         }
+    }
+
+    /**
+     * Whether the "Video Store on home" row should be hidden. Defaults to {@code true} — once the
+     * patch is applied the historical behaviour is to always hide, and the settings screen (when
+     * present) lets the user turn it back on.
+     */
+    public static boolean hideVideoStore() {
+        return getBoolean(KEY_HIDE_VIDEO_STORE, true);
     }
 }
