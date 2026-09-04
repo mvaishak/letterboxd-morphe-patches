@@ -5,7 +5,7 @@ patches {
         name = "mvaishak Letterboxd Patches"
         description = "Personal patches for the Letterboxd Android app"
         source = "git@github.com:mvaishak/letterboxd-morphe-patches.git"
-        author = "mvaishak"
+        author = "V"
         contact = "na"
         website = "https://github.com/mvaishak/letterboxd-morphe-patches"
         license = "GPLv3"
