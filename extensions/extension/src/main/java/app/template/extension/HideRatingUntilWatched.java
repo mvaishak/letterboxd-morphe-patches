@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import app.template.extension.settings.Prefs;
+
 import java.lang.reflect.Method;
 import java.util.WeakHashMap;
 
@@ -62,14 +64,24 @@ public final class HideRatingUntilWatched {
         enforce(fragment, "panel");
     }
 
-    /** Injected at the top of {@code FilmRatingsHistogramFragment.onViewCreated}. */
+    /**
+     * Injected at the top of {@code FilmRatingsHistogramFragment.onViewCreated}. {@code style} is
+     * the value baked in when patching; if the "Mod settings" screen has been used to override it
+     * (or to turn the feature off) that takes precedence.
+     */
     public static void enforce(final Fragment fragment, final String style) {
         try {
+            Prefs.load(fragment != null ? fragment.getContext() : null);
+            if (!Prefs.getBoolean(Prefs.KEY_HIDE_RATINGS_ENABLED, true)) return;
+
             final View wrapper = fragment.getView();
             if (wrapper == null || Boolean.TRUE.equals(ATTACHED.get(wrapper))) return;
             ATTACHED.put(wrapper, Boolean.TRUE);
 
-            final String reveal = (style == null || style.isEmpty()) ? "panel" : style;
+            final String baked = (style == null || style.isEmpty()) ? "panel" : style;
+            final String reveal = Prefs.has(Prefs.KEY_HIDE_RATINGS_STYLE)
+                    ? Prefs.getString(Prefs.KEY_HIDE_RATINGS_STYLE, baked)
+                    : baked;
 
             final ViewTreeObserver.OnGlobalLayoutListener[] self =
                     new ViewTreeObserver.OnGlobalLayoutListener[1];
