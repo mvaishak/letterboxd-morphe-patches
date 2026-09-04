@@ -164,9 +164,11 @@ and every other entry point (settings, film pages, search) are left alone.
 **Hide ratings until watched** — *opt-in*
 
 Hides the community rating (average + histogram) on a film's page until you've
-marked that film as watched. Only the film page is affected — ratings in lists,
-search and "similar films" are unchanged. If the watched state can't be read for
-any reason it fails open (ratings stay visible).
+marked that film as watched. While hidden, the section keeps its title and shows
+a **Tap to show ratings** control that reveals them for the current visit —
+leave the film and come back and they're hidden again. Only the film page is
+affected — ratings in lists, search and "similar films" are unchanged. If the
+watched state can't be read for any reason it fails open (ratings stay visible).
 
 **Brighter Watched-by stars** — *on by default*
 
