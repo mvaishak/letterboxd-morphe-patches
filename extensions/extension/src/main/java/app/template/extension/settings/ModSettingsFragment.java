@@ -12,6 +12,10 @@ import android.preference.SwitchPreference;
  * The mod settings screen, built in code (no preference XML shipped). Every preference writes to
  * the {@link Prefs#NAME} store that the patches' runtime code reads.
  *
+ * <p>Ordering matters with the framework preference API: the screen must be attached to the
+ * {@link PreferenceManager} (via {@link #setPreferenceScreen}) before {@code setDependency} can
+ * resolve a sibling by key, so dependencies are wired only after every preference has been added.
+ *
  * <p>Phase 1 exposes only "Hide ratings until watched". More feature groups are added here as
  * each patch is wired to read {@link Prefs}.
  */
@@ -26,11 +30,12 @@ public class ModSettingsFragment extends PreferenceFragment {
         pm.setSharedPreferencesName(Prefs.NAME);
 
         PreferenceScreen screen = pm.createPreferenceScreen(getActivity());
-        addHideRatingsCategory(screen);
         setPreferenceScreen(screen);
+
+        buildHideRatings(screen);
     }
 
-    private void addHideRatingsCategory(PreferenceScreen screen) {
+    private void buildHideRatings(PreferenceScreen screen) {
         PreferenceCategory category = new PreferenceCategory(getActivity());
         category.setTitle("Hide ratings until watched");
         screen.addPreference(category);
@@ -39,7 +44,7 @@ public class ModSettingsFragment extends PreferenceFragment {
         enabled.setKey(Prefs.KEY_HIDE_RATINGS_ENABLED);
         enabled.setTitle("Enabled");
         enabled.setSummary("Cover a film's community rating until you mark it watched");
-        enabled.setDefaultValue(true);
+        enabled.setDefaultValue(Boolean.TRUE);
         category.addPreference(enabled);
 
         ListPreference style = new ListPreference(getActivity());
@@ -54,7 +59,9 @@ public class ModSettingsFragment extends PreferenceFragment {
         });
         style.setDefaultValue("panel");
         style.setSummary("%s");
-        style.setDependency(Prefs.KEY_HIDE_RATINGS_ENABLED);
         category.addPreference(style);
+
+        // Both preferences are now in the attached hierarchy, so this resolves.
+        style.setDependency(Prefs.KEY_HIDE_RATINGS_ENABLED);
     }
 }
