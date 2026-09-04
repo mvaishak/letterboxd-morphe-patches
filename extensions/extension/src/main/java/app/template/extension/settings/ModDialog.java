@@ -105,7 +105,10 @@ final class ModDialog {
             root.addView(buttons);
             dialog.setContentView(root);
             if (window != null) {
-                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+                int margin = Math.round(24 * d);
+                int max = Math.round(420 * d);
+                int screen = ctx.getResources().getDisplayMetrics().widthPixels;
+                window.setLayout(Math.min(screen - 2 * margin, max),
                         ViewGroup.LayoutParams.WRAP_CONTENT);
             }
             if (onDismiss != null) {

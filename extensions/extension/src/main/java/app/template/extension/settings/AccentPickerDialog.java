@@ -104,7 +104,9 @@ final class AccentPickerDialog extends Dialog {
 
         setContentView(root);
         if (window != null) {
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setLayout(
+                    Math.min(getContext().getResources().getDisplayMetrics().widthPixels - dp(44), dp(420)),
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
         }
     }
 
