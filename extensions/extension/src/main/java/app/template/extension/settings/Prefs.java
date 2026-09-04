@@ -29,6 +29,7 @@ public final class Prefs {
     // "Mod theme"
     public static final String KEY_THEME_OLED = "theme_oled";
     public static final String KEY_THEME_ACCENT = "theme_accent";
+    public static final String KEY_THEME_ACCENT_HEX = "theme_accent_hex";
 
     private static SharedPreferences sp;
 

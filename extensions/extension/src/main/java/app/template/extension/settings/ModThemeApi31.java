@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -35,6 +36,10 @@ final class ModThemeApi31 {
 
     private ModThemeApi31() {}
 
+    private static final String[] ACCENT_RESOURCES = {
+            "colorAccent", "green00E054", "green0ADE53", "green00A010", "green00B020", "green00C030",
+    };
+
     static synchronized void prepare(Context context, boolean oled, String accent) {
         if (prepared) return;
         prepared = true;
@@ -43,10 +48,37 @@ final class ModThemeApi31 {
         if (app == null) app = context;
 
         if (oled) {
-            addLoader(app, "morphe/oled.arsc", "morphe-oled.arsc");
+            addAssetLoader(app, "morphe/oled.arsc", "morphe-oled.arsc");
         }
-        if (accent != null && !accent.isEmpty() && !"green".equals(accent)) {
-            addLoader(app, "morphe/accent_" + accent + ".arsc", "morphe-accent-" + accent + ".arsc");
+        if ("custom".equals(accent)) {
+            addCustomAccentLoader(app);
+        } else if (accent != null && !accent.isEmpty() && !"green".equals(accent)) {
+            addAssetLoader(app, "morphe/accent_" + accent + ".arsc", "morphe-accent-" + accent + ".arsc");
+        }
+    }
+
+    private static void addCustomAccentLoader(Context app) {
+        try {
+            String hex = Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, "");
+            if (hex.isEmpty()) return;
+            int primary = AccentMath.parseHex(hex);
+
+            String pkg = app.getPackageName();
+            int[] ids = new int[ACCENT_RESOURCES.length];
+            for (int i = 0; i < ids.length; i++) {
+                ids[i] = app.getResources().getIdentifier(ACCENT_RESOURCES[i], "color", pkg);
+                if (ids[i] == 0) return; // resource names changed — bail, keep stock green
+            }
+
+            Map<Integer, Integer> overrides = AccentMath.overlay(ids, primary);
+            byte[] table = MiniArsc.colorOverlay(pkg, (ids[0] >> 24) & 0xff, overrides);
+
+            File file = new File(app.getCodeCacheDir(), "morphe-accent-custom.arsc");
+            try (FileOutputStream out = new FileOutputStream(file, false)) {
+                out.write(table);
+            }
+            addFileLoader(file);
+        } catch (Throwable ignored) {
         }
     }
 
@@ -59,11 +91,17 @@ final class ModThemeApi31 {
         }
     }
 
-    private static void addLoader(Context app, String assetName, String cacheName) {
+    private static void addAssetLoader(Context app, String assetName, String cacheName) {
         try {
             File file = new File(app.getCodeCacheDir(), cacheName);
             copyAsset(app, assetName, file);
+            addFileLoader(file);
+        } catch (Throwable ignored) {
+        }
+    }
 
+    private static void addFileLoader(File file) {
+        try {
             ResourcesProvider provider;
             try (ParcelFileDescriptor descriptor = ParcelFileDescriptor.open(
                     file, ParcelFileDescriptor.MODE_READ_ONLY)) {
