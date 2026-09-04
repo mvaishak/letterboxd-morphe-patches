@@ -1,7 +1,6 @@
 package app.template.extension.settings;
 
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -9,7 +8,6 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
-import android.widget.Toast;
 
 /**
  * The mod settings screen, built in code (no preference XML shipped). Every preference writes to
@@ -70,57 +68,53 @@ public class ModSettingsFragment extends PreferenceFragment {
         }
         category.addPreference(oled);
 
-        ListPreference accent = new ListPreference(getActivity());
-        accent.setKey(Prefs.KEY_THEME_ACCENT);
+        final Preference accent = new Preference(getActivity());
         accent.setTitle("Accent colour");
-        accent.setDialogTitle("Accent colour");
-        accent.setEntries(new CharSequence[] {
-                "Letterboxd green", "Amber", "Orange", "Coral", "Pink",
-                "Violet", "Blue", "Teal", "Mono (near-white)", "Custom (hex)",
-        });
-        accent.setEntryValues(new CharSequence[] {
-                "green", "amber", "orange", "coral", "pink",
-                "violet", "blue", "teal", "mono", "custom",
-        });
-        accent.setDefaultValue("green");
-        accent.setOnPreferenceChangeListener(promptRestartOnChange);
         if (ModTheme.isSupported()) {
-            accent.setSummary("%s");
+            refreshAccent(accent);
+            accent.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    String key = Prefs.getString(Prefs.KEY_THEME_ACCENT, "green");
+                    String hex = Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, "");
+                    new AccentPickerDialog(getActivity(), key, hex,
+                            new AccentPickerDialog.OnAccentChosen() {
+                                @Override
+                                public void onChosen(String accentKey, String customHex) {
+                                    getPreferenceManager().getSharedPreferences().edit()
+                                            .putString(Prefs.KEY_THEME_ACCENT, accentKey)
+                                            .putString(Prefs.KEY_THEME_ACCENT_HEX, customHex)
+                                            .apply();
+                                    refreshAccent(accent);
+                                    RestartHelper.promptRestart(getActivity());
+                                }
+                            }).show();
+                    return true;
+                }
+            });
         } else {
             accent.setEnabled(false);
             accent.setSummary("Needs Android 12 or newer");
         }
         category.addPreference(accent);
+    }
 
-        EditTextPreference customHex = new EditTextPreference(getActivity());
-        customHex.setKey(Prefs.KEY_THEME_ACCENT_HEX);
-        customHex.setTitle("Custom accent hex");
-        customHex.setDialogTitle("Colour hex, e.g. #5AA9FF");
-        customHex.setSummary("Used when Accent colour is set to \"Custom (hex)\"");
-        if (ModTheme.isSupported()) {
-            customHex.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    String value = String.valueOf(newValue).trim();
-                    try {
-                        AccentMath.parseHex(value);
-                    } catch (Throwable t) {
-                        Toast.makeText(getActivity(), "Enter a colour like #5AA9FF",
-                                Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                    Preference list = findPreference(Prefs.KEY_THEME_ACCENT);
-                    if (list instanceof ListPreference) {
-                        ((ListPreference) list).setValue("custom");
-                    }
-                    RestartHelper.promptRestart(getActivity());
-                    return true;
-                }
-            });
-        } else {
-            customHex.setEnabled(false);
-        }
-        category.addPreference(customHex);
+    private void refreshAccent(Preference accent) {
+        String key = Prefs.getString(Prefs.KEY_THEME_ACCENT, "green");
+        String hex = Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, "");
+        int argb = AccentPresets.previewColor(key, hex);
+        String label = AccentPresets.CUSTOM.equals(key)
+                ? "Custom  " + (hex.isEmpty() ? "" : hex)
+                : AccentPresets.LABELS.get(key);
+        accent.setSummary(label == null ? "Letterboxd green" : label);
+
+        android.graphics.drawable.GradientDrawable dot =
+                new android.graphics.drawable.GradientDrawable();
+        dot.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        dot.setColor(0xFF000000 | argb);
+        int size = Math.round(22 * getResources().getDisplayMetrics().density);
+        dot.setSize(size, size);
+        accent.setIcon(dot);
     }
 
     private void buildNavigationBar(PreferenceScreen screen) {
