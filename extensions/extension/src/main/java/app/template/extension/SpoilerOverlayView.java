@@ -114,10 +114,12 @@ final class SpoilerOverlayView extends View {
         if (w == 0 || h == 0) return;
 
         float visible = 1f - revealT;
-        float radius = dp(10f);
 
+        // A full rectangle, not a rounded rect: rounded corners would leave the
+        // endpoint star and the RatingView stars (which sit in the row's bottom
+        // corners) poking through. Coverage first.
         backing.setAlpha((int) (255 * visible));
-        canvas.drawRoundRect(0f, 0f, w, h, radius, radius, backing);
+        canvas.drawRect(0f, 0f, w, h, backing);
 
         if (mode == PANEL) {
             drawEye(canvas, w, h, visible);

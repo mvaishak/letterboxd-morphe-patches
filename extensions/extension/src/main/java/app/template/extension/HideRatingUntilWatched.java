@@ -197,6 +197,13 @@ public final class HideRatingUntilWatched {
         lp.addRule(RelativeLayout.ALIGN_BOTTOM, row.getId());
         lp.addRule(RelativeLayout.ALIGN_START, row.getId());
         lp.addRule(RelativeLayout.ALIGN_END, row.getId());
+        // Negative margins outset the overlay past the row so nothing at the edges
+        // (endpoint star, RatingView stars) can peek out. Top is left flush so the
+        // section title stays clear.
+        int over = Math.round(4f * section.getResources().getDisplayMetrics().density);
+        lp.bottomMargin = -over;
+        lp.leftMargin = -over;
+        lp.rightMargin = -over;
         overlay.setLayoutParams(lp);
         overlay.setOnRevealListener(new SpoilerOverlayView.OnReveal() {
             @Override
