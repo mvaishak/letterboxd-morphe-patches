@@ -75,6 +75,8 @@ final class SpoilerOverlayView extends View {
         label.setColor(0xFFE0E4E8);
         label.setTextAlign(Paint.Align.CENTER);
         label.setTextSize(dp(mode == PANEL ? 13f : 12f));
+        label.setTypeface(AppFont.semibold(c));
+        label.setLetterSpacing(0.01f);
     }
 
     void setOnRevealListener(OnReveal l) {

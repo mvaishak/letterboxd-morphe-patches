@@ -165,10 +165,12 @@ public final class HideRatingUntilWatched {
 
         final TextView tv = new TextView(parent.getContext());
         tv.setTag(LINK_TAG);
-        tv.setText("Tap to show ratings");
+        tv.setText("Tap to reveal ratings ›");
         tv.setAllCaps(false);
+        tv.setTypeface(AppFont.semibold(parent.getContext()));
+        tv.setLetterSpacing(0.01f);
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-        tv.setTextColor(0xFF9AA7B0);
+        tv.setTextColor(0xFFAEB8C2);
         int padV = Math.round(10f * parent.getResources().getDisplayMetrics().density);
         tv.setPadding(0, padV, 0, padV);
 
