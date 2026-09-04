@@ -40,6 +40,12 @@ public class ModSettingsFragment extends PreferenceFragment {
         PreferenceManager pm = getPreferenceManager();
         pm.setSharedPreferencesName(Prefs.NAME);
 
+        // Migrate the old boolean OLED key to the surface-style key.
+        android.content.SharedPreferences sp = pm.getSharedPreferences();
+        if (!sp.contains(Prefs.KEY_THEME_SURFACE) && sp.getBoolean(Prefs.KEY_THEME_OLED, false)) {
+            sp.edit().putString(Prefs.KEY_THEME_SURFACE, "oled").apply();
+        }
+
         PreferenceScreen screen = pm.createPreferenceScreen(getActivity());
         setPreferenceScreen(screen);
 
@@ -54,19 +60,23 @@ public class ModSettingsFragment extends PreferenceFragment {
         category.setTitle("Theme");
         screen.addPreference(category);
 
-        SwitchPreference oled = new SwitchPreference(getActivity());
-        oled.setKey(Prefs.KEY_THEME_OLED);
-        oled.setTitle("Pure black (OLED)");
-        oled.setDefaultValue(Boolean.FALSE);
-        oled.setOnPreferenceChangeListener(promptRestartOnChange);
+        ListPreference surface = new ListPreference(getActivity());
+        surface.setKey(Prefs.KEY_THEME_SURFACE);
+        surface.setTitle("Surface style");
+        surface.setDialogTitle("Surface style");
+        surface.setEntries(new CharSequence[] {
+                "Stock", "Material You (wallpaper)", "Pure black (OLED)",
+        });
+        surface.setEntryValues(new CharSequence[] { "stock", "wallpaper", "oled" });
+        surface.setDefaultValue("stock");
+        surface.setOnPreferenceChangeListener(promptRestartOnChange);
         if (ModTheme.isSupported()) {
-            oled.setSummary("Repaint Letterboxd's dark surfaces true black. "
-                    + "Enable \"Match top bar colour\" too for a black navigation bar.");
+            surface.setSummary("%s — enable \"Match top bar colour\" too for a black navigation bar");
         } else {
-            oled.setEnabled(false);
-            oled.setSummary("Needs Android 12 or newer");
+            surface.setEnabled(false);
+            surface.setSummary("Needs Android 12 or newer");
         }
-        category.addPreference(oled);
+        category.addPreference(surface);
 
         final Preference accent = new Preference(getActivity());
         accent.setTitle("Accent colour");

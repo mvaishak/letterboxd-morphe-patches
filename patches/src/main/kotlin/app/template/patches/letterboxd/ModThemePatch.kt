@@ -28,8 +28,29 @@ private val OLED_SURFACES = mapOf(
 )
 
 /**
- * Emits the runtime overlay tables loaded by `ModThemeApi31`:
- * `assets/morphe/oled.arsc` and one `assets/morphe/accent_<key>.arsc` per accent preset.
+ * The same surface greys pointed at the device's Material You palette (Android 12+ only). Values
+ * are the `dynamic` tones from [materialYouThemePatch]; the OS resolves them from the wallpaper.
+ * This only recolours the named surface colours — the app-bar / tab-strip style flattening the
+ * patch-time "Material You theme" also does is not applied at runtime.
+ */
+private val MATERIALYOU_SURFACES = mapOf(
+    "gray0D1012" to "@android:color/system_neutral1_1000",
+    "gray14181C" to "@android:color/system_neutral1_900",
+    "gray181C20" to "@android:color/system_neutral1_900",
+    "windowBackground" to "@android:color/system_neutral1_900",
+    "gray1C242C" to "@android:color/system_neutral2_900",
+    "gray202830" to "@android:color/system_neutral1_800",
+    "gray283038" to "@android:color/system_neutral1_800",
+    "gray223344" to "@android:color/system_neutral2_800",
+    "gray2C3440" to "@android:color/system_neutral2_800",
+    "gray303840" to "@android:color/system_neutral1_700",
+    "gray334455" to "@android:color/system_neutral2_700",
+    "gray445566" to "@android:color/system_neutral2_700",
+)
+
+/**
+ * Emits the runtime overlay tables loaded by `ModThemeApi31`: `assets/morphe/oled.arsc`,
+ * `materialyou.arsc`, and one `accent_<key>.arsc` per accent preset.
  */
 internal val modThemeResourcePatch = resourcePatch {
     execute {
@@ -43,6 +64,14 @@ internal val modThemeResourcePatch = resourcePatch {
             packageName = packageName,
             outputFile = get("assets/morphe/oled.arsc", copy = false),
             colors = OLED_SURFACES,
+        )
+
+        buildColorOverlay(
+            sourceManifest = manifest,
+            sourcePublic = public,
+            packageName = packageName,
+            outputFile = get("assets/morphe/materialyou.arsc", copy = false),
+            colors = MATERIALYOU_SURFACES,
         )
 
         ACCENT_OVERLAYS.forEach { (key, colors) ->
@@ -60,10 +89,10 @@ internal val modThemeResourcePatch = resourcePatch {
 @Suppress("unused")
 val modThemePatch = bytecodePatch(
     name = "Mod theme",
-    description = "Adds \"Pure black (OLED)\" and \"Accent colour\" controls to the \"Mod settings\" " +
-        "screen on Android 12+. They repaint Letterboxd's dark surfaces / green accent at runtime " +
-        "via resource overlays; changing either prompts for a restart. Needs the \"Mod settings\" " +
-        "patch.",
+    description = "Adds \"Surface style\" (Stock / Material You / Pure black OLED) and " +
+        "\"Accent colour\" controls to the \"Mod settings\" screen on Android 12+. They repaint " +
+        "Letterboxd's dark surfaces / green accent at runtime via resource overlays; changing " +
+        "either prompts for a restart. Needs the \"Mod settings\" patch.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)

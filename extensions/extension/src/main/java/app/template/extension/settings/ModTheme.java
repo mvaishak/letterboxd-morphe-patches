@@ -27,12 +27,13 @@ public final class ModTheme {
             if (!isSupported() || context == null) return;
 
             Prefs.load(context);
-            boolean oled = Prefs.getBoolean(Prefs.KEY_THEME_OLED, false);
+            String surface = Prefs.surface(); // stock | wallpaper | oled
             String accent = Prefs.getString(Prefs.KEY_THEME_ACCENT, "green");
+            boolean hasSurface = "wallpaper".equals(surface) || "oled".equals(surface);
             boolean hasAccent = accent != null && !accent.isEmpty() && !"green".equals(accent);
-            if (!oled && !hasAccent) return;
+            if (!hasSurface && !hasAccent) return;
 
-            ModThemeApi31.prepare(context, oled, accent);
+            ModThemeApi31.prepare(context, surface, accent);
             ModThemeApi31.applyTo(context.getResources());
 
             Context appContext = context.getApplicationContext();

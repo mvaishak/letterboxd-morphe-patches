@@ -40,15 +40,17 @@ final class ModThemeApi31 {
             "colorAccent", "green00E054", "green0ADE53", "green00A010", "green00B020", "green00C030",
     };
 
-    static synchronized void prepare(Context context, boolean oled, String accent) {
+    static synchronized void prepare(Context context, String surface, String accent) {
         if (prepared) return;
         prepared = true;
 
         Context app = context.getApplicationContext();
         if (app == null) app = context;
 
-        if (oled) {
+        if ("oled".equals(surface)) {
             addAssetLoader(app, "morphe/oled.arsc", "morphe-oled.arsc");
+        } else if ("wallpaper".equals(surface)) {
+            addAssetLoader(app, "morphe/materialyou.arsc", "morphe-materialyou.arsc");
         }
         if ("custom".equals(accent)) {
             addCustomAccentLoader(app);
