@@ -105,7 +105,7 @@ on a mismatch.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.5.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v1.5.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
+> **[v1.5.0](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v1.5.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
 <details open>
 <summary>Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
