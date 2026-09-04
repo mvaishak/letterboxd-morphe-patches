@@ -60,12 +60,35 @@ public class ModSettingsFragment extends PreferenceFragment {
         oled.setDefaultValue(Boolean.FALSE);
         oled.setOnPreferenceChangeListener(promptRestartOnChange);
         if (ModTheme.isSupported()) {
-            oled.setSummary("Repaint Letterboxd's dark surfaces true black");
+            oled.setSummary("Repaint Letterboxd's dark surfaces true black. "
+                    + "Enable \"Match top bar colour\" too for a black navigation bar.");
         } else {
             oled.setEnabled(false);
             oled.setSummary("Needs Android 12 or newer");
         }
         category.addPreference(oled);
+
+        ListPreference accent = new ListPreference(getActivity());
+        accent.setKey(Prefs.KEY_THEME_ACCENT);
+        accent.setTitle("Accent colour");
+        accent.setDialogTitle("Accent colour");
+        accent.setEntries(new CharSequence[] {
+                "Letterboxd green", "Amber", "Orange", "Coral", "Pink",
+                "Violet", "Blue", "Teal", "Mono (near-white)",
+        });
+        accent.setEntryValues(new CharSequence[] {
+                "green", "amber", "orange", "coral", "pink",
+                "violet", "blue", "teal", "mono",
+        });
+        accent.setDefaultValue("green");
+        accent.setOnPreferenceChangeListener(promptRestartOnChange);
+        if (ModTheme.isSupported()) {
+            accent.setSummary("%s");
+        } else {
+            accent.setEnabled(false);
+            accent.setSummary("Needs Android 12 or newer");
+        }
+        category.addPreference(accent);
     }
 
     private void buildNavigationBar(PreferenceScreen screen) {

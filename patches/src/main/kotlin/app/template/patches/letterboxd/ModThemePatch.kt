@@ -3,6 +3,7 @@ package app.template.patches.letterboxd
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
+import app.template.patches.letterboxd.theme.ACCENT_OVERLAYS
 import app.template.patches.letterboxd.theme.buildColorOverlay
 import app.template.patches.shared.Constants.COMPATIBILITY_LETTERBOXD
 
@@ -26,25 +27,43 @@ private val OLED_SURFACES = mapOf(
     "gray445566" to "#FF2E2E2E",
 )
 
-/** Emits `assets/morphe/oled.arsc`, loaded at runtime by `ModThemeApi31` when the pref is on. */
+/**
+ * Emits the runtime overlay tables loaded by `ModThemeApi31`:
+ * `assets/morphe/oled.arsc` and one `assets/morphe/accent_<key>.arsc` per accent preset.
+ */
 internal val modThemeResourcePatch = resourcePatch {
     execute {
+        val manifest = get("AndroidManifest.xml")
+        val public = get("res/values/public.xml")
+        val packageName = packageMetadata.packageName
+
         buildColorOverlay(
-            sourceManifest = get("AndroidManifest.xml"),
-            sourcePublic = get("res/values/public.xml"),
-            packageName = packageMetadata.packageName,
+            sourceManifest = manifest,
+            sourcePublic = public,
+            packageName = packageName,
             outputFile = get("assets/morphe/oled.arsc", copy = false),
             colors = OLED_SURFACES,
         )
+
+        ACCENT_OVERLAYS.forEach { (key, colors) ->
+            buildColorOverlay(
+                sourceManifest = manifest,
+                sourcePublic = public,
+                packageName = packageName,
+                outputFile = get("assets/morphe/accent_$key.arsc", copy = false),
+                colors = colors,
+            )
+        }
     }
 }
 
 @Suppress("unused")
 val modThemePatch = bytecodePatch(
-    name = "Mod theme (OLED)",
-    description = "Adds a \"Pure black (OLED)\" switch to the \"Mod settings\" screen on Android 12+. " +
-        "When on, Letterboxd's dark surfaces are repainted true black at runtime via a resource " +
-        "overlay; toggling it prompts for a restart. Needs the \"Mod settings\" patch.",
+    name = "Mod theme",
+    description = "Adds \"Pure black (OLED)\" and \"Accent colour\" controls to the \"Mod settings\" " +
+        "screen on Android 12+. They repaint Letterboxd's dark surfaces / green accent at runtime " +
+        "via resource overlays; changing either prompts for a restart. Needs the \"Mod settings\" " +
+        "patch.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)

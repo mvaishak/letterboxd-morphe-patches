@@ -27,9 +27,12 @@ public final class ModTheme {
             if (!isSupported() || context == null) return;
 
             Prefs.load(context);
-            if (!Prefs.getBoolean(Prefs.KEY_THEME_OLED, false)) return;
+            boolean oled = Prefs.getBoolean(Prefs.KEY_THEME_OLED, false);
+            String accent = Prefs.getString(Prefs.KEY_THEME_ACCENT, "green");
+            boolean hasAccent = accent != null && !accent.isEmpty() && !"green".equals(accent);
+            if (!oled && !hasAccent) return;
 
-            ModThemeApi31.load(context);
+            ModThemeApi31.prepare(context, oled, accent);
             ModThemeApi31.applyTo(context.getResources());
 
             Context appContext = context.getApplicationContext();

@@ -11,54 +11,67 @@ import androidx.annotation.RequiresApi;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 /**
- * The Android 12+ half of {@link ModTheme}: copies the overlay {@code .arsc} out of assets, wraps
- * it in a {@link ResourcesLoader}, and adds that loader to each {@link Resources} instance once.
+ * The Android 12+ half of {@link ModTheme}: copies the chosen overlay {@code .arsc} files out of
+ * assets, wraps each in a {@link ResourcesLoader}, and adds the whole set to each {@link Resources}
+ * instance once. Later loaders win, so the accent overlay is added after OLED (they touch disjoint
+ * resources, so ordering is only a safety net).
+ *
+ * <p>Restart-based: the loader set is fixed at process start, there is no removal path.
  */
 @RequiresApi(31)
 final class ModThemeApi31 {
 
-    private static final String OVERLAY_ASSET = "morphe/oled.arsc";
-    private static final String OVERLAY_CACHE = "morphe-oled.arsc";
-
-    private static ResourcesProvider provider;
-    private static ResourcesLoader loader;
-
+    private static final List<ResourcesLoader> LOADERS = new ArrayList<>();
     private static final Set<Resources> APPLIED =
             Collections.newSetFromMap(new WeakHashMap<Resources, Boolean>());
+    private static boolean prepared;
 
     private ModThemeApi31() {}
 
-    static synchronized void load(Context context) {
-        if (loader != null) return;
-        try {
-            Context app = context.getApplicationContext();
-            if (app == null) app = context;
+    static synchronized void prepare(Context context, boolean oled, String accent) {
+        if (prepared) return;
+        prepared = true;
 
-            File file = new File(app.getCodeCacheDir(), OVERLAY_CACHE);
-            copyAsset(app, OVERLAY_ASSET, file);
+        Context app = context.getApplicationContext();
+        if (app == null) app = context;
 
-            try (ParcelFileDescriptor descriptor = ParcelFileDescriptor.open(
-                    file, ParcelFileDescriptor.MODE_READ_ONLY)) {
-                provider = ResourcesProvider.loadFromTable(descriptor, null);
-            }
-            loader = new ResourcesLoader();
-            loader.addProvider(provider);
-        } catch (Throwable t) {
-            provider = null;
-            loader = null;
+        if (oled) {
+            addLoader(app, "morphe/oled.arsc", "morphe-oled.arsc");
+        }
+        if (accent != null && !accent.isEmpty() && !"green".equals(accent)) {
+            addLoader(app, "morphe/accent_" + accent + ".arsc", "morphe-accent-" + accent + ".arsc");
         }
     }
 
     static synchronized void applyTo(Resources resources) {
-        if (resources == null || loader == null || APPLIED.contains(resources)) return;
+        if (resources == null || LOADERS.isEmpty() || APPLIED.contains(resources)) return;
         try {
-            resources.addLoaders(loader);
+            resources.addLoaders(LOADERS.toArray(new ResourcesLoader[0]));
             APPLIED.add(resources);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void addLoader(Context app, String assetName, String cacheName) {
+        try {
+            File file = new File(app.getCodeCacheDir(), cacheName);
+            copyAsset(app, assetName, file);
+
+            ResourcesProvider provider;
+            try (ParcelFileDescriptor descriptor = ParcelFileDescriptor.open(
+                    file, ParcelFileDescriptor.MODE_READ_ONLY)) {
+                provider = ResourcesProvider.loadFromTable(descriptor, null);
+            }
+            ResourcesLoader loader = new ResourcesLoader();
+            loader.addProvider(provider);
+            LOADERS.add(loader);
         } catch (Throwable ignored) {
         }
     }
