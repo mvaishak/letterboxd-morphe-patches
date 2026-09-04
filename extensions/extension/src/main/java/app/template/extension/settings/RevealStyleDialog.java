@@ -24,8 +24,12 @@ final class RevealStyleDialog extends Dialog {
         void onPick(String value);
     }
 
-    private static final String[] LABELS = { "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst" };
-    private static final String[] VALUES = { "panel", "link", "shimmer", "burst" };
+    private static final String[] LABELS = {
+            "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst", "Pixel crumble", "Confetti",
+    };
+    private static final String[] VALUES = {
+            "panel", "link", "shimmer", "burst", "crumble", "confetti",
+    };
 
     private final float density;
     private final int accent;
@@ -122,7 +126,7 @@ final class RevealStyleDialog extends Dialog {
             float cx = w / 2f;
             float cy = top + (h - top) / 2f;
 
-            if ("panel".equals(mode)) {
+            if ("panel".equals(mode) || "crumble".equals(mode)) {
                 // eye glyph
                 p.setStyle(Paint.Style.STROKE);
                 p.setStrokeWidth(dp(1.4f));
@@ -130,6 +134,27 @@ final class RevealStyleDialog extends Dialog {
                 canvas.drawOval(cx - dp(9), cy - dp(5.5f), cx + dp(9), cy + dp(5.5f), p);
                 p.setStyle(Paint.Style.FILL);
                 canvas.drawCircle(cx, cy, dp(2.6f), p);
+                if ("crumble".equals(mode)) drawGrid(canvas, 0, top, w, h);
+                return;
+            }
+
+            if ("confetti".equals(mode)) {
+                p.setStyle(Paint.Style.FILL);
+                int n = 50;
+                Random g = new Random(mode.hashCode());
+                int[] palette = { accent, 0xFFFFFFFF, 0xFF1A1A1A };
+                for (int i = 0; i < n; i++) {
+                    float x = g.nextFloat() * w;
+                    float y = top + g.nextFloat() * (h - top);
+                    float rot = g.nextFloat() * 360f;
+                    float s = dp(1.6f + g.nextFloat() * 1.6f);
+                    p.setColor(palette[g.nextInt(palette.length)]);
+                    p.setAlpha(140 + g.nextInt(100));
+                    canvas.save();
+                    canvas.rotate(rot, x, y);
+                    canvas.drawRect(x - s, y - s * 0.6f, x + s, y + s * 0.6f, p);
+                    canvas.restore();
+                }
                 return;
             }
 
@@ -152,6 +177,21 @@ final class RevealStyleDialog extends Dialog {
                 p.setColor((a << 24) | 0x00C6D0DA);
                 canvas.drawCircle(x, y, dp(1f), p);
             }
+        }
+
+        /** A faint grid overlay hinting at the pixel-block dissolve this style reveals with. */
+        private void drawGrid(Canvas canvas, float left, float top, float right, float bottom) {
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(dp(0.6f));
+            p.setColor(0x22FFFFFF);
+            float cell = dp(7f);
+            for (float x = left + cell; x < right; x += cell) {
+                canvas.drawLine(x, top, x, bottom, p);
+            }
+            for (float y = top + cell; y < bottom; y += cell) {
+                canvas.drawLine(left, y, right, y, p);
+            }
+            p.setStyle(Paint.Style.FILL);
         }
     }
 }

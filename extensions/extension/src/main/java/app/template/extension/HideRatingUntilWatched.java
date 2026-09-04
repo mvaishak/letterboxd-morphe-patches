@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import app.template.extension.settings.AccentPresets;
 import app.template.extension.settings.Prefs;
 
 import java.lang.reflect.Method;
@@ -202,9 +203,14 @@ public final class HideRatingUntilWatched {
         int mode;
         if ("shimmer".equals(style)) mode = SpoilerOverlayView.SHIMMER;
         else if ("burst".equals(style)) mode = SpoilerOverlayView.BURST;
+        else if ("crumble".equals(style)) mode = SpoilerOverlayView.CRUMBLE;
+        else if ("confetti".equals(style)) mode = SpoilerOverlayView.CONFETTI;
         else mode = SpoilerOverlayView.PANEL;
 
-        SpoilerOverlayView overlay = new SpoilerOverlayView(section.getContext(), mode);
+        int accent = AccentPresets.previewColor(
+                Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+                Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
+        SpoilerOverlayView overlay = new SpoilerOverlayView(section.getContext(), mode, accent);
         overlay.setTag(OVERLAY_TAG);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(0, 0);
         lp.addRule(RelativeLayout.ALIGN_TOP, row.getId());

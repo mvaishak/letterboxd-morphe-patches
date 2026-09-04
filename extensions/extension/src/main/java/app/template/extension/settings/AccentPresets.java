@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** The accent presets shown in {@link AccentPickerDialog}; keys match the patch's overlay names. */
-final class AccentPresets {
+public final class AccentPresets {
 
     private AccentPresets() {}
 
@@ -31,7 +31,7 @@ final class AccentPresets {
     }
 
     /** ARGB preview for a stored accent choice (preset key or {@link #CUSTOM} with a hex). */
-    static int previewColor(String accent, String customHex) {
+    public static int previewColor(String accent, String customHex) {
         if (CUSTOM.equals(accent)) {
             try {
                 return AccentMath.parseHex(customHex);
@@ -43,7 +43,7 @@ final class AccentPresets {
         return argb != null ? argb : 0xFF00E054;
     }
 
-    static boolean isLight(int argb) {
+    public static boolean isLight(int argb) {
         int r = (argb >> 16) & 0xFF, g = (argb >> 8) & 0xFF, b = argb & 0xFF;
         return (r * 299 + g * 587 + b * 114) / 1000 > 150;
     }
