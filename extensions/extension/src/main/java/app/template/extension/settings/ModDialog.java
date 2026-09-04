@@ -118,6 +118,9 @@ final class ModDialog {
                     }
                 });
             }
+            // Dismiss only via a button — no outside-touch, no back-button.
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setCancelable(false);
             dialog.show();
         } catch (Throwable ignored) {
         }
