@@ -1,11 +1,31 @@
 package app.template.patches.letterboxd
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.template.patches.letterboxd.theme.ACCENT_OVERLAYS
 import app.template.patches.letterboxd.theme.buildColorOverlay
+import app.template.patches.letterboxd.theme.ensurePublicColor
+import app.template.patches.letterboxd.theme.setStyleItem
+import app.template.patches.letterboxd.theme.styleItemValue
+import app.template.patches.letterboxd.theme.upsertColor
 import app.template.patches.shared.Constants.COMPATIBILITY_LETTERBOXD
+
+/**
+ * `Widget.Letterboxd.BottomSheet.Modal` (the log/rate/similar action sheets) paints its background
+ * with `@color/colorPrimary`, an alias for `@color/gray445566` — the same resource the ratings
+ * histogram bars use, kept at a deliberately visible grey (`#FF2E2E2E`) rather than true black so
+ * the bars don't disappear (see [OLED_SURFACES] below). That grey shows through every modal sheet
+ * as a "slate" colour instead of black. This indirection colour lets the sheet go pure black
+ * without touching the shared histogram-bar tone: it starts as an alias for the same stock colour
+ * (so nothing changes when OLED is off) and only [OLED_SURFACES] repoints it.
+ */
+private const val BOTTOM_SHEET_BG = "morphe_bottomsheet_bg"
+// One past the app's real highest "color" type entry (0x7f060506 — confirmed via the compiled
+// resources.arsc, a fully dense range with zero private extras beyond the public ones) so the
+// generated overlay's entry array stays compact instead of stretching to cover a far-off id.
+private const val BOTTOM_SHEET_BG_ID = "0x7f060507"
 
 /**
  * Letterboxd's dark surface greys, remapped to true-black tones. Names match `res/values/public.xml`
@@ -28,6 +48,10 @@ private val OLED_SURFACES = mapOf(
     // Unfilled rating stars (log sheet etc.) tint with colorPrimaryDark (= @color/gray334455);
     // a direct, lighter value here keeps them visible without brightening the histogram bars.
     "colorPrimaryDark" to "#FF4A4A4A",
+    // Modal action sheets (log, rate, similar) — see the BOTTOM_SHEET_BG doc comment above.
+    // #161616, not pure black: matches the shade the old full-app OLED patch used for this sheet
+    // (and the one Mod settings' own dialogs already use) rather than a flatter true #000000.
+    BOTTOM_SHEET_BG to "#FF161616",
 )
 
 /**
@@ -37,6 +61,29 @@ private val OLED_SURFACES = mapOf(
  */
 internal val modThemeResourcePatch = resourcePatch {
     execute {
+        // Introduce the bottom-sheet indirection colour before reading public.xml below, so the
+        // overlay-building step sees (and can target) its freshly pinned id.
+        document("res/values/public.xml").use { document ->
+            val resources = document.documentElement
+                ?: throw PatchException("res/values/public.xml has no root element")
+            ensurePublicColor(document, resources, BOTTOM_SHEET_BG, BOTTOM_SHEET_BG_ID)
+        }
+        document("res/values/colors.xml").use { document ->
+            val resources = document.documentElement
+                ?: throw PatchException("res/values/colors.xml has no root element")
+            // Alias, not a literal hex: tracks colorPrimary's stock tone until OLED overlays it.
+            upsertColor(document, resources, BOTTOM_SHEET_BG, "@color/colorPrimary")
+        }
+        document("res/values/styles.xml").use { document ->
+            val current = styleItemValue(document, "Widget.Letterboxd.BottomSheet.Modal", "backgroundTint")
+            // These two patches are independent, so execution order between them isn't guaranteed.
+            // Only take over the stock value; if "Material You theme" already repointed this to its
+            // own indirection colour (whichever order the two ran in), leave that alone — it wins.
+            if (current == null || current == "@color/colorPrimary") {
+                setStyleItem(document, "Widget.Letterboxd.BottomSheet.Modal", "backgroundTint", "@color/$BOTTOM_SHEET_BG")
+            }
+        }
+
         val manifest = get("AndroidManifest.xml")
         val public = get("res/values/public.xml")
         val packageName = packageMetadata.packageName
@@ -67,7 +114,9 @@ val modThemePatch = bytecodePatch(
     description = "In-app appearance controls, adjustable from the Letterboxd Mods screen without " +
         "re-patching: a true-black OLED surface, a custom accent colour (presets or any hex), and " +
         "the bottom-navigation selected style. Applied at runtime via resource overlays on " +
-        "Android 12 and later. Needs the \"Mod settings\" patch.",
+        "Android 12 and later. Needs the \"Mod settings\" patch. If the separate \"Material You " +
+        "theme\" patch is also applied, its OLED and nav-bar-match switches are disabled here " +
+        "automatically — the two theming systems can't run at once.",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)

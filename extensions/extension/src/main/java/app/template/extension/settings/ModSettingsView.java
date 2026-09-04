@@ -57,10 +57,10 @@ final class ModSettingsView extends ScrollView {
 
         header("Theme");
         if (!themeAvailable) {
-            column.addView(disabledRow("Pure black (OLED)", "Needs Android 12 or newer"));
+            column.addView(disabledRow("Pure black (OLED)", "Needs Android 12 or newer", null));
         } else if (materialYouActive) {
-            column.addView(disabledRow("Pure black (OLED)",
-                    "Disabled — the Material You theme patch is active"));
+            column.addView(disabledRow("Pure black (OLED)", "Disabled — tap to find out why",
+                    materialYouConflictExplainer()));
         } else {
             PillToggle oled = new PillToggle(ctx);
             View oledRow = toggleRow(oled, "Pure black (OLED)",
@@ -78,8 +78,8 @@ final class ModSettingsView extends ScrollView {
         }
 
         if (materialYouActive) {
-            column.addView(disabledRow("Match bottom nav to top bar",
-                    "Disabled — the Material You theme patch styles the navigation bar"));
+            column.addView(disabledRow("Match bottom nav to top bar", "Disabled — tap to find out why",
+                    materialYouConflictExplainer()));
         } else {
             column.addView(toggleRow("Match bottom nav to top bar",
                     "Paint the bottom navigation bar black to match the top bar",
@@ -237,11 +237,42 @@ final class ModSettingsView extends ScrollView {
         return row;
     }
 
-    private View disabledRow(String title, String subtitle) {
+    private View disabledRow(String title, String subtitle, final Runnable onTap) {
         LinearLayout row = rowBase();
-        row.setAlpha(0.45f);
+        row.setAlpha(onTap != null ? 0.7f : 0.45f);
         row.addView(titleBlock(title, subtitle), textLp());
+        if (onTap != null) {
+            row.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) { onTap.run(); }
+            });
+        } else {
+            row.setClickable(false);
+        }
         return row;
+    }
+
+    /**
+     * A new user seeing "Disabled — the Material You theme patch is active" under a greyed-out
+     * switch has no way to know that's a deliberate design choice rather than a bug — explain it
+     * in full when tapped instead of relying on a one-line subtitle to carry that.
+     */
+    private Runnable materialYouConflictExplainer() {
+        return new Runnable() {
+            @Override public void run() {
+                ModDialog.show(ctx,
+                        "Why is this switch off?",
+                        "You've separately patched \"Material You theme\", which paints Letterboxd's " +
+                                "surfaces and navigation bar on its own, before the app even starts. " +
+                                "This screen's \"Pure black (OLED)\" and \"Match bottom nav\" switches " +
+                                "control a different, runtime version of the same thing — running both " +
+                                "at once would have them fight over the same colours.\n\n" +
+                                "So Mod settings turns these two switches off automatically whenever " +
+                                "Material You theme is applied. Nothing is broken — to use them from " +
+                                "here instead, re-patch your Letterboxd APK with \"Material You theme\" " +
+                                "unchecked. Everything else in this screen keeps working either way.",
+                        "Got it", null, null, null);
+            }
+        };
     }
 
     // --- helpers ------------------------------------------------------

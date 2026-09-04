@@ -2,9 +2,9 @@ package app.template.patches.letterboxd
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.resourcePatch
+import app.template.patches.letterboxd.theme.setStyleItem
+import app.template.patches.letterboxd.theme.upsertColor
 import app.template.patches.shared.Constants.COMPATIBILITY_LETTERBOXD
-import org.w3c.dom.Document
-import org.w3c.dom.Element
 
 /** A dark surface colour: [fallback] for Android 11 and below, [dynamic] wallpaper ref for `-v31`. */
 private data class Tone(val fallback: String, val dynamic: String)
@@ -52,7 +52,9 @@ val materialYouThemePatch = resourcePatch(
     description = "Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top " +
         "bar, tab strip, bottom nav and sheets — from the device's Material You palette on " +
         "Android 12+ (no effect below). No accent or OLED options here; those live in the " +
-        "\"Mod settings\" screen. No effect on Jetpack Compose screens.",
+        "\"Mod settings\" screen — but that screen's \"Pure black (OLED)\" and \"Match bottom nav\" " +
+        "switches turn themselves off while this patch is applied, since it already repaints those " +
+        "surfaces on its own. No effect on Jetpack Compose screens.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
@@ -83,46 +85,4 @@ val materialYouThemePatch = resourcePatch(
             setStyleItem(document, "Widget.Letterboxd.Divider", "dividerColor", "@color/morphe_my_divider")
         }
     }
-}
-
-/** Replace the value of `<color name="[name]">` in [resources], or add it if absent. */
-private fun upsertColor(document: Document, resources: Element, name: String, value: String) {
-    val colors = resources.getElementsByTagName("color")
-    for (i in 0 until colors.length) {
-        val color = colors.item(i) as Element
-        if (color.getAttribute("name") == name) {
-            color.textContent = value
-            return
-        }
-    }
-    resources.appendChild(
-        document.createElement("color").apply {
-            setAttribute("name", name)
-            textContent = value
-        },
-    )
-}
-
-/** Replace `<item name="[itemName]">` inside `<style name="[styleName]">`, or add it if absent. */
-private fun setStyleItem(document: Document, styleName: String, itemName: String, value: String) {
-    val styles = document.getElementsByTagName("style")
-    val style = (0 until styles.length)
-        .map { styles.item(it) as Element }
-        .firstOrNull { it.getAttribute("name") == styleName }
-        ?: throw PatchException("Style \"$styleName\" not found in res/values/styles.xml")
-
-    val items = style.getElementsByTagName("item")
-    for (i in 0 until items.length) {
-        val item = items.item(i) as Element
-        if (item.getAttribute("name") == itemName) {
-            item.textContent = value
-            return
-        }
-    }
-    style.appendChild(
-        document.createElement("item").apply {
-            setAttribute("name", itemName)
-            textContent = value
-        },
-    )
 }
