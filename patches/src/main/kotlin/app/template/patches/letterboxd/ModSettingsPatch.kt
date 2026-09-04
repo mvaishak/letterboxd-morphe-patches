@@ -77,13 +77,29 @@ internal object LetterboxdApplicationOnCreateFingerprint : Fingerprint(
     parameters = emptyList(),
 )
 
+/**
+ * `MeFragment.configure(MaterialToolbar, Member)` sets the "Me" tab toolbar's navigation icon to
+ * the settings gear and its click to open Letterboxd's own `SettingsActivity`. We add a long-press
+ * on the same toolbar that opens the mod settings screen.
+ */
+internal object MeFragmentConfigureFingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/ui/fragments/user/MeFragment;",
+    name = "configure",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.FINAL),
+    returnType = "V",
+    parameters = listOf(
+        "Lcom/google/android/material/appbar/MaterialToolbar;",
+        "Lcom/letterboxd/api/model/Member;",
+    ),
+)
+
 @Suppress("unused")
 val modSettingsPatch = bytecodePatch(
     name = "Mod settings",
     description = "Adds a \"Letterboxd Mods\" settings screen — reachable from a launcher " +
-        "long-press shortcut — where options for the other patches can be changed without " +
-        "re-patching. Changes apply the next time the relevant screen is opened; some need an " +
-        "app restart.",
+        "long-press shortcut and from a long-press on the settings icon on the profile tab — " +
+        "where options for the other patches can be changed without re-patching. Changes apply " +
+        "the next time the relevant screen is opened; some need an app restart.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_LETTERBOXD)
@@ -97,5 +113,14 @@ val modSettingsPatch = bytecodePatch(
             0,
             "invoke-static { p0 }, Lapp/template/extension/settings/Prefs;->load(Landroid/content/Context;)V",
         )
+
+        // In-app entry point: long-press the profile-tab settings icon. Optional — if the
+        // fingerprint stops matching on a future app version the shortcut still works.
+        runCatching {
+            MeFragmentConfigureFingerprint.method.addInstruction(
+                0,
+                "invoke-static { p1 }, Lapp/template/extension/settings/ModEntryPoint;->attachToToolbar(Landroid/view/View;)V",
+            )
+        }
     }
 }
