@@ -1,15 +1,13 @@
 package app.template.extension.settings;
 
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 
 /**
  * Shown when a preference that only re-applies on process start is changed: an alert that offers
- * to restart Letterboxd now ("OK") or leave it for later.
+ * to restart Letterboxd now or leave it for later.
  */
 public final class RestartHelper {
 
@@ -18,20 +16,12 @@ public final class RestartHelper {
     /** {@code context} must be an Activity context (the dialog needs a UI context). */
     public static void promptRestart(final Context context) {
         if (context == null) return;
-        try {
-            new AlertDialog.Builder(context)
-                    .setTitle("Restart required")
-                    .setMessage("This change becomes visible after Letterboxd restarts.")
-                    .setNegativeButton("Later", null)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            restart(context);
-                        }
-                    })
-                    .show();
-        } catch (Throwable ignored) {
-        }
+        ModDialog.show(context, "Restart required",
+                "This change becomes visible after Letterboxd restarts.",
+                "Restart now", new Runnable() {
+                    @Override public void run() { restart(context); }
+                },
+                "Later", null);
     }
 
     /** Relaunches the app: schedules the launcher intent a moment out, then ends this process. */
@@ -40,9 +30,9 @@ public final class RestartHelper {
             Context app = context.getApplicationContext();
             Intent launch = app.getPackageManager().getLaunchIntentForPackage(app.getPackageName());
             if (launch != null) {
-                // Land on the home tab, not whichever tab was last open (the mod screen is usually
-                // reached from the profile tab). Ignored by the app if the key ever changes.
-                launch.putExtra("KEY_SELECTED_TAB", "popular");
+                // Land on the profile tab — where the mod screen is usually opened from. This
+                // matches the tab Letterboxd restores, so there's no profile→home swipe on launch.
+                launch.putExtra("KEY_SELECTED_TAB", "profile");
                 launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pending = PendingIntent.getActivity(
                         app, 0, launch,

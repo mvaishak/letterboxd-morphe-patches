@@ -1,8 +1,6 @@
 package app.template.extension.settings;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 
 /**
  * One-time "what's new / how to open Mod settings" dialog, shown the first time the app is opened
@@ -48,18 +46,9 @@ public final class ModWelcome {
     private static void show(Activity activity) {
         try {
             if (activity.isFinishing() || activity.isDestroyed()) return;
-            // Explicit platform dialog theme — MainActivity's own theme is Material3 and its
-            // alertDialogTheme may not resolve for a framework AlertDialog.
-            new AlertDialog.Builder(activity, android.R.style.Theme_Material_Dialog_Alert)
-                    .setTitle(TITLE)
-                    .setMessage(BODY)
-                    .setPositiveButton("Got it", null)
-                    .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override public void onDismiss(DialogInterface d) {
-                            Prefs.putString(KEY, String.valueOf(BUILD));
-                        }
-                    })
-                    .show();
+            // Mark seen up front — if the dialog itself fails we don't want to nag every launch.
+            Prefs.putString(KEY, String.valueOf(BUILD));
+            ModDialog.show(activity, TITLE, BODY, "Got it", null, null, null);
         } catch (Throwable ignored) {
         }
     }
