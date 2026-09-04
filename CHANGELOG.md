@@ -1,3 +1,9 @@
+## [1.5.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-09-04)
+
+### ✨ New Features
+
+* Add reveal-style dropdown to 'Hide ratings until watched' ([141ac7c](https://github.com/mvaishak/letterboxd-morphe-patches/commit/141ac7c291538ad3d082632a288a50075014d634))
+
 ## [1.5.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-09-04)
 
 ### ✨ New Features
