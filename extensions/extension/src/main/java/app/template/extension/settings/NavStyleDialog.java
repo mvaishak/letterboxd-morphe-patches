@@ -42,7 +42,7 @@ final class NavStyleDialog extends Dialog {
         Window window = getWindow();
         if (window != null) {
             GradientDrawable bg = new GradientDrawable();
-            bg.setColor(0xFF161616);
+            bg.setColor(SurfaceColors.elevated(getContext()));
             bg.setCornerRadius(dp(20));
             window.setBackgroundDrawable(bg);
         }

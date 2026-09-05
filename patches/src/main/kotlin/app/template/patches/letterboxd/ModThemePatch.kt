@@ -73,6 +73,9 @@ internal val modThemeResourcePatch = resourcePatch {
                 ?: throw PatchException("res/values/colors.xml has no root element")
             // Alias, not a literal hex: tracks colorPrimary's stock tone until OLED overlays it.
             upsertColor(document, resources, BOTTOM_SHEET_BG, "@color/colorPrimary")
+            // tag_background_color (film/list tag chips) is its own alias of colorPrimary too —
+            // same "slate" problem as the bottom sheet, same fix: repoint it at our indirection.
+            upsertColor(document, resources, "tag_background_color", "@color/$BOTTOM_SHEET_BG")
         }
         document("res/values/styles.xml").use { document ->
             val current = styleItemValue(document, "Widget.Letterboxd.BottomSheet.Modal", "backgroundTint")

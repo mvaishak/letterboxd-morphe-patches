@@ -42,7 +42,7 @@ final class ModDialog {
             Window window = dialog.getWindow();
             if (window != null) {
                 GradientDrawable bg = new GradientDrawable();
-                bg.setColor(0xFF161616);
+                bg.setColor(SurfaceColors.elevated(ctx));
                 bg.setCornerRadius(24 * d);
                 window.setBackgroundDrawable(bg);
             }

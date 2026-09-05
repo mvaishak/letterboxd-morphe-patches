@@ -23,14 +23,13 @@ final class ModSettingsView extends ScrollView {
     private static final String[] NAV_VALUES = { "stock", "nopill", "white", "accent", "accentPill" };
 
     private static final String[] REVEAL_LABELS = {
-            "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst", "Pixel crumble", "Confetti",
+            "Frosted panel", "Frosted panel (crumble)", "Tap-to-show link",
+            "Shimmer", "Shimmer (crumble)", "Tap to burst", "Confetti",
     };
     private static final String[] REVEAL_VALUES = {
-            "panel", "link", "shimmer", "burst", "crumble", "confetti",
+            "panel", "panel_crumble", "link", "shimmer", "shimmer_crumble", "burst", "confetti",
     };
 
-    private static final String[] STREAMING_LABELS = { "Off", "Stremio", "Nuvio" };
-    private static final String[] STREAMING_VALUES = { "off", "stremio", "nuvio" };
 
     private final Context ctx;
     private final float density;
@@ -39,7 +38,6 @@ final class ModSettingsView extends ScrollView {
 
     private View revealRow;
     private TextView revealValue;
-    private TextView streamingValue;
 
     ModSettingsView(Context context) {
         super(context);
@@ -118,21 +116,9 @@ final class ModSettingsView extends ScrollView {
                 Prefs.KEY_HIDE_WHERE_TO_WATCH, false, false));
 
         header("Streaming");
-        column.addView(choiceRow("Open in player", null,
-                labelFor(STREAMING_LABELS, STREAMING_VALUES, Prefs.streamingApp()),
-                new Runnable() {
-                    @Override public void run() {
-                        new StreamingAppDialog(ctx, Prefs.streamingApp(), accent,
-                                new StreamingAppDialog.OnPick() {
-                                    @Override public void onPick(String value) {
-                                        Prefs.putString(Prefs.KEY_STREAMING_APP, value);
-                                        if (streamingValue != null) {
-                                            streamingValue.setText(labelFor(STREAMING_LABELS, STREAMING_VALUES, value));
-                                        }
-                                    }
-                                }).show();
-                    }
-                }));
+        column.addView(toggleRow("Open in player",
+                "Add a small button beside Trailer that opens the film in Stremio",
+                Prefs.KEY_OPEN_IN_PLAYER, false, false));
 
         header("Ratings");
         final PillToggle hideRatings = new PillToggle(ctx);
@@ -222,7 +208,6 @@ final class ModSettingsView extends ScrollView {
         v.setGravity(Gravity.CENTER_VERTICAL);
         row.addView(v);
         if (title.equals("Reveal style")) revealValue = v;
-        if (title.equals("Open in player")) streamingValue = v;
 
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { onClick.run(); }
@@ -287,16 +272,9 @@ final class ModSettingsView extends ScrollView {
         return new Runnable() {
             @Override public void run() {
                 ModDialog.show(ctx,
-                        "Why is this switch off?",
-                        "You've separately patched \"Material You theme\", which paints Letterboxd's " +
-                                "surfaces and navigation bar on its own, before the app even starts. " +
-                                "This screen's \"Pure black (OLED)\" and \"Match bottom nav\" switches " +
-                                "control a different, runtime version of the same thing — running both " +
-                                "at once would have them fight over the same colours.\n\n" +
-                                "So Mod settings turns these two switches off automatically whenever " +
-                                "Material You theme is applied. Nothing is broken — to use them from " +
-                                "here instead, re-patch your Letterboxd APK with \"Material You theme\" " +
-                                "unchecked. Everything else in this screen keeps working either way.",
+                        "Handled by Material You",
+                        "This is off because you also patched \"Material You theme\" — it already " +
+                                "controls this. Disable that patch to use OLED here.",
                         "Got it", null, null, null);
             }
         };

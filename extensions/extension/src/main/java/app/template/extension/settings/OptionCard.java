@@ -30,7 +30,8 @@ final class OptionCard {
 
         GradientDrawable bg = new GradientDrawable();
         bg.setCornerRadius(dp(density, 14));
-        bg.setColor(selected ? blend(accent, 0xFF1E1E1E, 0.16f) : 0xFF1B1B1B);
+        int surface = SurfaceColors.elevated(ctx);
+        bg.setColor(selected ? blend(accent, surface, 0.16f) : surface);
         bg.setStroke(dp(density, selected ? 2f : 1f), selected ? accent : 0xFF2E2E2E);
         card.setBackground(bg);
 
