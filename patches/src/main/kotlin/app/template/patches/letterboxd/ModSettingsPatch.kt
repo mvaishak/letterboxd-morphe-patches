@@ -193,10 +193,11 @@ val modSettingsPatch = bytecodePatch(
         default = "panel",
         values = mapOf(
             "Frosted panel" to "panel",
+            "Frosted panel (crumble)" to "panel_crumble",
             "Tap-to-show link" to "link",
             "Shimmer (Telegram-style)" to "shimmer",
+            "Shimmer (crumble)" to "shimmer_crumble",
             "Tap to burst" to "burst",
-            "Pixel crumble" to "crumble",
             "Confetti" to "confetti",
         ),
         title = "Reveal style",
@@ -204,8 +205,9 @@ val modSettingsPatch = bytecodePatch(
             "screen. 'Frosted panel' is an opaque panel with an eye glyph; 'Tap-to-show link' is a " +
             "plain text link under the section title; 'Shimmer' is a continuously animating " +
             "particle field; 'Tap to burst' is a static particle field that scatters when tapped; " +
-            "'Pixel crumble' dissolves the panel in a staggered grid of blocks; 'Confetti' scatters " +
-            "coloured, accent-tinted pieces that tumble away when tapped.",
+            "'Confetti' scatters accent-tinted pieces that pop and fall when tapped. The '(crumble)' " +
+            "variants of Frosted panel and Shimmer look the same until tapped, then dissolve in a " +
+            "staggered grid of blocks instead of their normal reveal.",
     )
 
     execute {

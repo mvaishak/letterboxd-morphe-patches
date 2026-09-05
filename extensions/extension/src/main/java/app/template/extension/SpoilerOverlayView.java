@@ -14,20 +14,24 @@ import java.util.Random;
  * "Hide ratings until watched" patch. Tapping it runs a short reveal animation and
  * then calls {@link OnReveal}, which removes the overlay and restores the ratings.
  *
- * <p>Five looks, chosen at patch time or from Mod settings:
+ * <p>Covers ({@code mode}), chosen at patch time or from Mod settings:
  * <ul>
  *   <li>{@link #PANEL} — a flat panel with an eye glyph; fades out on tap.</li>
+ *   <li>{@link #SHIMMER} — particles drift and twinkle continuously; they fly outward on tap.</li>
  *   <li>{@link #BURST} — a static speckle of particles over the panel; they fly outward on tap.</li>
- *   <li>{@link #SHIMMER} — the particles drift and twinkle continuously until tapped.</li>
- *   <li>{@link #CRUMBLE} — a flat panel like {@link #PANEL}, but it dissolves in a staggered grid
- *       of shrinking blocks on tap instead of a plain fade.</li>
- *   <li>{@link #CONFETTI} — like {@link #BURST}, but the speckle is coloured, rotated rectangles
- *       tinted from the current accent colour, and they tumble outward with a slight fall on tap.</li>
+ *   <li>{@link #CONFETTI} — like {@link #BURST}, but the speckle is coloured pieces tinted from
+ *       the current accent; it just fades on tap — {@link ConfettiOverlay} does the real "burst
+ *       and fall" spectacle in a separate, full-screen overlay, since a genuine fall needs travel
+ *       distance this small view's own bounds can't offer.</li>
  * </ul>
  *
- * <p>Every mode paints a fully opaque backing first, so the rating underneath never
- * shows through. Only {@link #SHIMMER} runs an animation loop while idle, and it stops
- * as soon as the view is detached or the reveal finishes.
+ * <p>{@code crumbleTransition} is a separate flag, independent of the cover: when set (only
+ * offered in Mod settings for {@link #PANEL} and {@link #SHIMMER}), tapping dissolves the panel
+ * in a staggered grid of shrinking, fading blocks instead of that cover's plain default reveal.
+ *
+ * <p>Every mode paints a fully opaque backing first, so the rating underneath never shows through.
+ * Only {@link #SHIMMER} runs an animation loop while idle, and it stops as soon as the view is
+ * detached or the reveal finishes.
  */
 final class SpoilerOverlayView extends View {
 
@@ -38,15 +42,14 @@ final class SpoilerOverlayView extends View {
     static final int PANEL = 0;
     static final int SHIMMER = 1;
     static final int BURST = 2;
-    static final int CRUMBLE = 3;
-    static final int CONFETTI = 4;
+    static final int CONFETTI = 3;
 
     private static final long REVEAL_MS = 360L;
     private static final long CRUMBLE_REVEAL_MS = 520L;
-    private static final long CONFETTI_REVEAL_MS = 620L;
 
     private final int mode;
     private final int accent;
+    private final boolean crumbleTransition;
     private OnReveal listener;
 
     private final Paint backing = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -63,10 +66,10 @@ final class SpoilerOverlayView extends View {
     private float[] px, py, phase;
     private int[] baseAlpha;
     private int count;
-    // CONFETTI only: per-piece colour, size and spin.
+    // CONFETTI only: per-piece colour and size (static — no push animation here any more).
     private int[] pieceColor;
-    private float[] pieceSize, pieceRotation, pieceSpin;
-    // CRUMBLE only: a grid of blocks, each with its own reveal delay.
+    private float[] pieceSize, pieceRotation;
+    // crumbleTransition only: a grid of blocks, each with its own reveal delay.
     private int cols, rows;
     private float blockW, blockH;
     private float[] blockDelay;
@@ -76,10 +79,11 @@ final class SpoilerOverlayView extends View {
     private float revealT;
     private ValueAnimator animator;
 
-    SpoilerOverlayView(Context c, int mode, int accentArgb) {
+    SpoilerOverlayView(Context c, int mode, int accentArgb, boolean crumbleTransition) {
         super(c);
         this.mode = mode;
         this.accent = 0xFF000000 | accentArgb;
+        this.crumbleTransition = crumbleTransition;
         this.density = c.getResources().getDisplayMetrics().density;
         setClickable(true);
 
@@ -95,7 +99,7 @@ final class SpoilerOverlayView extends View {
 
         label.setColor(0xFFE0E4E8);
         label.setTextAlign(Paint.Align.CENTER);
-        label.setTextSize(dp(mode == PANEL || mode == CRUMBLE ? 13f : 12f));
+        label.setTextSize(dp(mode == PANEL ? 13f : 12f));
         label.setTypeface(AppFont.semibold(c));
         label.setLetterSpacing(0.01f);
     }
@@ -113,12 +117,10 @@ final class SpoilerOverlayView extends View {
 
         if (mode == PANEL) {
             count = 0;
-        } else if (mode == CRUMBLE) {
-            count = 0;
-            setUpBlocks(w, h);
         } else {
             setUpParticles(w, h);
         }
+        if (crumbleTransition) setUpBlocks(w, h);
     }
 
     private void setUpParticles(int w, int h) {
@@ -132,13 +134,11 @@ final class SpoilerOverlayView extends View {
             pieceColor = new int[count];
             pieceSize = new float[count];
             pieceRotation = new float[count];
-            pieceSpin = new float[count];
             int[] palette = confettiPalette();
             for (int i = 0; i < count; i++) {
                 pieceColor[i] = palette[rnd.nextInt(palette.length)];
                 pieceSize[i] = dp(2.2f + rnd.nextFloat() * 2.4f);
                 pieceRotation[i] = rnd.nextFloat() * 360f;
-                pieceSpin[i] = (rnd.nextFloat() - 0.5f) * 10f;
             }
         }
         for (int i = 0; i < count; i++) {
@@ -174,7 +174,7 @@ final class SpoilerOverlayView extends View {
 
         float visible = 1f - revealT;
 
-        if (mode == CRUMBLE && revealing) {
+        if (revealing && crumbleTransition) {
             drawCrumble(canvas, w, h);
         } else {
             // A full rectangle, not a rounded rect: rounded corners would leave the endpoint
@@ -183,15 +183,15 @@ final class SpoilerOverlayView extends View {
             backing.setAlpha((int) (255 * visible));
             canvas.drawRect(0f, 0f, w, h, backing);
 
-            if (mode == PANEL || mode == CRUMBLE) {
+            if (mode == PANEL) {
                 drawEye(canvas, w, h, visible);
             } else if (mode == CONFETTI) {
-                drawConfetti(canvas, w, h);
+                drawConfetti(canvas, visible);
                 drawLabel(canvas, w, h, visible);
             } else {
                 drawParticles(canvas, w, h);
-                // BURST has no icon to anchor on, so it keeps the caption; PANEL/CRUMBLE's eye
-                // glyph and SHIMMER's animated field are self-explanatory enough without one.
+                // BURST has no icon to anchor on, so it keeps the caption; PANEL's eye glyph and
+                // SHIMMER's animated field are self-explanatory enough without one.
                 if (mode == BURST) drawLabel(canvas, w, h, visible);
             }
         }
@@ -235,29 +235,17 @@ final class SpoilerOverlayView extends View {
         }
     }
 
-    private void drawConfetti(Canvas canvas, int w, int h) {
+    /** Static coloured speckle — no push animation; {@link ConfettiOverlay} does the real burst. */
+    private void drawConfetti(Canvas canvas, float visible) {
         if (count == 0 || px == null) return;
-        float cx = w / 2f;
-        float cy = h / 2f;
         for (int i = 0; i < count; i++) {
-            float x = px[i];
-            float y = py[i];
-            float rot = pieceRotation[i];
-            int alpha = baseAlpha[i];
-            if (revealing) {
-                float push = revealT * revealT * 2.8f;
-                float fall = revealT * revealT * dp(28f);
-                x = px[i] + (px[i] - cx) * push;
-                y = py[i] + (py[i] - cy) * push + fall;
-                rot += pieceSpin[i] * revealT * 36f;
-                alpha = (int) (alpha * (1f - revealT));
-            }
+            int alpha = (int) (baseAlpha[i] * visible);
             piece.setColor(pieceColor[i]);
             piece.setAlpha(clamp(alpha, 0, 255));
             float s = pieceSize[i];
             canvas.save();
-            canvas.rotate(rot, x, y);
-            pieceRect.set(x - s, y - s * 0.6f, x + s, y + s * 0.6f);
+            canvas.rotate(pieceRotation[i], px[i], py[i]);
+            pieceRect.set(px[i] - s, py[i] - s * 0.6f, px[i] + s, py[i] + s * 0.6f);
             canvas.drawRect(pieceRect, piece);
             canvas.restore();
         }
@@ -278,13 +266,12 @@ final class SpoilerOverlayView extends View {
                         left + blockW - insetX, top + blockH - insetY, backing);
             }
         }
-        drawEye(canvas, w, h, 1f - revealT);
+        if (mode == PANEL) drawEye(canvas, w, h, 1f - revealT);
     }
 
     private void drawLabel(Canvas canvas, int w, int h, float visible) {
         label.setAlpha((int) (255 * visible));
-        float baseline = (mode == PANEL || mode == CRUMBLE) ? h * 0.78f
-                : h / 2f + label.getTextSize() * 0.36f;
+        float baseline = mode == PANEL ? h * 0.78f : h / 2f + label.getTextSize() * 0.36f;
         canvas.drawText("Tap to reveal", w / 2f, baseline, label);
     }
 
@@ -319,6 +306,7 @@ final class SpoilerOverlayView extends View {
     @Override
     public boolean performClick() {
         super.performClick();
+        if (mode == CONFETTI) ConfettiOverlay.burst(this, accent);
         startReveal();
         return true;
     }
@@ -326,8 +314,7 @@ final class SpoilerOverlayView extends View {
     private void startReveal() {
         if (revealing || dead) return;
         revealing = true;
-        long duration = mode == CRUMBLE ? CRUMBLE_REVEAL_MS
-                : mode == CONFETTI ? CONFETTI_REVEAL_MS : REVEAL_MS;
+        long duration = crumbleTransition ? CRUMBLE_REVEAL_MS : REVEAL_MS;
         animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(duration);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {

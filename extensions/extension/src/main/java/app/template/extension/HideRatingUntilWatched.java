@@ -200,17 +200,22 @@ public final class HideRatingUntilWatched {
         if (section.findViewWithTag(OVERLAY_TAG) != null) return;
         if (row.getId() == View.NO_ID) row.setId(View.generateViewId());
 
+        // "panel"/"shimmer" pick the cover; an optional "_crumble" suffix (Mod settings' "Frosted
+        // panel (crumble)" / "Shimmer (crumble)") swaps just the tap transition, independent of it.
+        boolean crumbleTransition = style != null && style.endsWith("_crumble");
+        String cover = crumbleTransition ? style.substring(0, style.length() - "_crumble".length()) : style;
+
         int mode;
-        if ("shimmer".equals(style)) mode = SpoilerOverlayView.SHIMMER;
-        else if ("burst".equals(style)) mode = SpoilerOverlayView.BURST;
-        else if ("crumble".equals(style)) mode = SpoilerOverlayView.CRUMBLE;
-        else if ("confetti".equals(style)) mode = SpoilerOverlayView.CONFETTI;
+        if ("shimmer".equals(cover)) mode = SpoilerOverlayView.SHIMMER;
+        else if ("burst".equals(cover)) mode = SpoilerOverlayView.BURST;
+        else if ("confetti".equals(cover)) mode = SpoilerOverlayView.CONFETTI;
         else mode = SpoilerOverlayView.PANEL;
 
         int accent = AccentPresets.previewColor(
                 Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
                 Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
-        SpoilerOverlayView overlay = new SpoilerOverlayView(section.getContext(), mode, accent);
+        SpoilerOverlayView overlay = new SpoilerOverlayView(
+                section.getContext(), mode, accent, crumbleTransition);
         overlay.setTag(OVERLAY_TAG);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(0, 0);
         lp.addRule(RelativeLayout.ALIGN_TOP, row.getId());

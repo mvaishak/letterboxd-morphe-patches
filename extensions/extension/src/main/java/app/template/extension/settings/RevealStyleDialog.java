@@ -25,10 +25,11 @@ final class RevealStyleDialog extends Dialog {
     }
 
     private static final String[] LABELS = {
-            "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst", "Pixel crumble", "Confetti",
+            "Frosted panel", "Frosted panel (crumble)", "Tap-to-show link",
+            "Shimmer", "Shimmer (crumble)", "Tap to burst", "Confetti",
     };
     private static final String[] VALUES = {
-            "panel", "link", "shimmer", "burst", "crumble", "confetti",
+            "panel", "panel_crumble", "link", "shimmer", "shimmer_crumble", "burst", "confetti",
     };
 
     private final float density;
@@ -45,7 +46,7 @@ final class RevealStyleDialog extends Dialog {
         Window window = getWindow();
         if (window != null) {
             GradientDrawable bg = new GradientDrawable();
-            bg.setColor(0xFF161616);
+            bg.setColor(SurfaceColors.elevated(getContext()));
             bg.setCornerRadius(dp(20));
             window.setBackgroundDrawable(bg);
         }
@@ -119,6 +120,9 @@ final class RevealStyleDialog extends Dialog {
                 return;
             }
 
+            boolean crumble = mode.endsWith("_crumble");
+            String base = crumble ? mode.substring(0, mode.length() - "_crumble".length()) : mode;
+
             // opaque panel
             p.setColor(0xFF232323);
             canvas.drawRoundRect(r, rad, rad, p);
@@ -126,7 +130,7 @@ final class RevealStyleDialog extends Dialog {
             float cx = w / 2f;
             float cy = top + (h - top) / 2f;
 
-            if ("panel".equals(mode) || "crumble".equals(mode)) {
+            if ("panel".equals(base)) {
                 // eye glyph
                 p.setStyle(Paint.Style.STROKE);
                 p.setStrokeWidth(dp(1.4f));
@@ -134,11 +138,11 @@ final class RevealStyleDialog extends Dialog {
                 canvas.drawOval(cx - dp(9), cy - dp(5.5f), cx + dp(9), cy + dp(5.5f), p);
                 p.setStyle(Paint.Style.FILL);
                 canvas.drawCircle(cx, cy, dp(2.6f), p);
-                if ("crumble".equals(mode)) drawGrid(canvas, 0, top, w, h);
+                if (crumble) drawGrid(canvas, 0, top, w, h);
                 return;
             }
 
-            if ("confetti".equals(mode)) {
+            if ("confetti".equals(base)) {
                 p.setStyle(Paint.Style.FILL);
                 int n = 50;
                 Random g = new Random(mode.hashCode());
@@ -161,10 +165,10 @@ final class RevealStyleDialog extends Dialog {
             // shimmer / burst — particle field
             p.setStyle(Paint.Style.FILL);
             int n = 60;
-            Random g = new Random(mode.hashCode());
+            Random g = new Random(base.hashCode());
             for (int i = 0; i < n; i++) {
                 float x, y;
-                if ("burst".equals(mode)) {
+                if ("burst".equals(base)) {
                     double ang = g.nextDouble() * Math.PI * 2;
                     double dist = Math.pow(g.nextDouble(), 0.5); // bias outward
                     x = cx + (float) (Math.cos(ang) * dist * (w / 2f));
@@ -177,6 +181,7 @@ final class RevealStyleDialog extends Dialog {
                 p.setColor((a << 24) | 0x00C6D0DA);
                 canvas.drawCircle(x, y, dp(1f), p);
             }
+            if (crumble) drawGrid(canvas, 0, top, w, h);
         }
 
         /** A faint grid overlay hinting at the pixel-block dissolve this style reveals with. */
