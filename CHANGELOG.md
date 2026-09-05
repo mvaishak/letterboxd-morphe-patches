@@ -1,3 +1,49 @@
+## [2.0.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.6.0-dev.1...v2.0.0-dev.1) (2026-09-05)
+
+### ⚠ BREAKING CHANGES
+
+* "Hide Video Store on home", "Hide ratings until
+watched", and "Match bottom nav to top bar color" are no longer
+separate Manager patches. Their toggles now live entirely inside "Mod
+settings" instead. Anyone with these three enabled as standalone
+patches needs to re-patch and turn them on from the Letterboxd Mods
+screen instead.
+
+"Hide Video Store" also now defaults to off (it used to default to on
+as a standalone patch).
+
+"Hide ratings until watched"'s reveal-style option changed shape: the
+single "revealStyle" list is now three separate Mod settings options,
+Cover, Reveal animation, and Confetti color.
+
+### chore
+
+* Consolidate 3 patches into Mod settings; flip Hide Video Store default ([6a0ed2e](https://github.com/mvaishak/letterboxd-morphe-patches/commit/6a0ed2e41e7b1b61a49b52931c7e1e2c26a3c659))
+
+### 🐛 Bug Fixes
+
+* Drop the streaming-app preview; fix the Cover dialog's forced height ([d4d054c](https://github.com/mvaishak/letterboxd-morphe-patches/commit/d4d054c9a33eb4dae28b5b055f2e29f5ad93d254))
+* Explain the Material You / OLED conflict; extend OLED to modal sheets ([7c7de3f](https://github.com/mvaishak/letterboxd-morphe-patches/commit/7c7de3f4e2387a2254e7fce1cc2d7fe11dc65a8b))
+* Give the nav-style and reveal-style pickers bordered option cards ([2430bbb](https://github.com/mvaishak/letterboxd-morphe-patches/commit/2430bbb9ee248ae6ba4bbf9778f90f37be053ef6))
+* Make "Hide Where to Watch" actually stick ([3b510b5](https://github.com/mvaishak/letterboxd-morphe-patches/commit/3b510b531ef63c43d031c293ea725def07243c46))
+* Shorten OLED conflict text; extend OLED to tag chips; Mod settings follows the app theme ([ea94a4f](https://github.com/mvaishak/letterboxd-morphe-patches/commit/ea94a4fa0aa3196236d1d2d7a51bbca0842a29cf))
+* Show all 3 Material You tones; theme the accent picker's background ([2760e54](https://github.com/mvaishak/letterboxd-morphe-patches/commit/2760e548a62f4ff1e3f1f5a089d4accfa10eeb01))
+* Simplify Open in player to on/off; shrink the button ([1e37148](https://github.com/mvaishak/letterboxd-morphe-patches/commit/1e37148fbd847d206d77b4ae59b195223d56e4b1))
+* Space out the streaming button; fix the tag chip's literal hardcoded colors ([2a8d6db](https://github.com/mvaishak/letterboxd-morphe-patches/commit/2a8d6db6ab59b98c11a071bcb29ba593c01cb3b4))
+* Tag chips always match colorPrimary (e.g. the Film button), not forced black ([e25483d](https://github.com/mvaishak/letterboxd-morphe-patches/commit/e25483de6219b2852437bc5381a9754afa977a25))
+* Use Letterboxd's own font for the tap-to-reveal text ([c743c41](https://github.com/mvaishak/letterboxd-morphe-patches/commit/c743c41cc1211ec4dae2d6df8ba1ff2da2ec9fce))
+* Use tone 200 for Material You accents, not 600 ([4fb43d7](https://github.com/mvaishak/letterboxd-morphe-patches/commit/4fb43d7610f798ff4a72b2cae0151da73a228b55))
+
+### ✨ New Features
+
+* Add "Classic red" confetti color; default to Confetti + Letterboxd colors ([5df6cd0](https://github.com/mvaishak/letterboxd-morphe-patches/commit/5df6cd08e46e51380247f35f60352b22636a5409))
+* Add Pixel crumble and Confetti reveal styles; drop panel/shimmer captions ([b4159fd](https://github.com/mvaishak/letterboxd-morphe-patches/commit/b4159fdacdb137a879ddbf92beea40de203169a7))
+* Crumble as a transition modifier; confetti as a real floating burst ([7324249](https://github.com/mvaishak/letterboxd-morphe-patches/commit/7324249a5ef9dd98e584d34a1fef11ae15e10031))
+* Fold 5 toggles into Mod settings; add Hide Where to Watch and Open in player ([c9f07f7](https://github.com/mvaishak/letterboxd-morphe-patches/commit/c9f07f718d3dfa18823d357fe678e505d12bba40))
+* Material You accent — device tone in the picker, default when active ([d4799d0](https://github.com/mvaishak/letterboxd-morphe-patches/commit/d4799d00d5fd8dee22918a6cc4f64c479d0ff0ab))
+* Real Nuvio deep link; restore Stremio/Nuvio picker ([b73f37e](https://github.com/mvaishak/letterboxd-morphe-patches/commit/b73f37ebfba542bde424924fdb4a11295f86362d))
+* Split reveal style into Cover/Animation/Confetti color; add haptics ([f4d25be](https://github.com/mvaishak/letterboxd-morphe-patches/commit/f4d25be9ee44e037e6f6fb116e8a91f60e0681c9))
+
 ## [1.6.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v1.5.0...v1.6.0-dev.1) (2026-09-04)
 
 ### 🐛 Bug Fixes
