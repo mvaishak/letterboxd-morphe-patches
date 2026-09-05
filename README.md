@@ -2,7 +2,7 @@
 
 <div align="center">
 
-Small, cosmetic patches for the **Letterboxd** Android app (`com.letterboxd.letterboxd`),
+Patches for the **Letterboxd** Android app (`com.letterboxd.letterboxd`),
 built for [Morphe](https://morphe.software).
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
@@ -16,21 +16,100 @@ built for [Morphe](https://morphe.software).
 
 ## About
 
-A personal collection of resource-only patches for Letterboxd on Android — theming
-and layout tweaks, nothing more. No behaviour changes, no unlocking, no ad or
-tracking work, no network changes.
+A personal collection of patches for Letterboxd on Android — theming, layout
+tweaks, and a handful of small conveniences. No unlocking, no ad or tracking
+work, and nothing that talks to a new server: the two patches that open a
+streaming app just hand off to whatever's already on your phone.
 
-Every patch is opt-in and independent. Theme options (surface colour, accent,
-bottom-nav style) live in the in-app **Mod settings** screen rather than in the
-patcher.
+Almost everything is opt-in and controlled from one in-app **Letterboxd Mods**
+screen rather than by re-patching — pick your patches once, then change your
+mind about styling, ratings behaviour, or which sections show up, any time,
+from inside the app.
 
 Not affiliated with Letterboxd or the Morphe project.
 
 ---
 
+## The Mods screen
+
+With the **Mod settings** patch enabled (on by default), long-press the
+**settings gear on your profile tab** to open **Letterboxd Mods**. A one-time
+note also points this out the first time you launch after patching. Some
+changes apply immediately; others need a restart — you're always prompted
+either way.
+
+### Theme
+
+- **Pure black (OLED)** — true-black surfaces; elevated bits (cards, sheets)
+  stay a faint grey so the ratings histogram and similar bars don't
+  disappear. Needs Android 12+, and is locked off while the separate
+  **Material You theme** patch is applied (see below) — the two systems
+  would otherwise fight over the same colours; tap the row to see why.
+- **Match bottom nav to top bar** — paints the bottom navigation bar black to
+  match the top bar, instead of the default slate.
+- **Accent colour** — a colour picker covering the stars, rating indicators,
+  and the selected bottom-nav icon:
+  - Nine presets (Letterboxd green, amber, orange, coral, pink, violet, blue,
+    teal, mono), plus a full HSV/hex picker for anything else.
+  - **Material You** (Android 12+, only offered once the separate **Material
+    You theme** patch is applied): your device's own wallpaper-derived
+    palette, as up to three distinct tones — Material You, Material You 2,
+    Material You 3 — matching the tone Android itself uses for accents in
+    dark contexts elsewhere on your phone (Quick Settings, toggles, the
+    notification shade). Selected automatically as the default once available.
+- **Bottom nav selected style** — *Stock*, *No pill*, *No pill + white icon*,
+  *No pill + accent icon*, or *Accent pill*. The green **+** is never touched.
+
+### Home
+
+- **Hide Video Store** — removes the "Letterboxd Video Store" promo row from
+  the Films tab. The Video Store itself and every other entry point are left
+  alone. Off by default.
+- **Hide Where to Watch** — removes the "Where to watch" section from a
+  film's page. Off by default.
+
+### Streaming
+
+- **Open in player** — adds a small icon-only button beside Trailer on a
+  film's page that opens the film directly in **Stremio** or **Nuvio**
+  (your choice, in a second setting that appears once this is on). Off by
+  default. The film's IMDb ID is read from Letterboxd's own data for the
+  page you're on — nothing is looked up over the network by this patch.
+
+### Ratings
+
+- **Hide ratings until watched** — covers a film's community rating (average
+  + histogram) until you've marked it watched. The reveal lasts for the
+  current visit — leave the film and come back and it's hidden again. Only
+  the film page is affected; ratings in lists, search, and "similar films"
+  are unchanged. If the watched state can't be read for any reason, this
+  fails open (ratings stay visible) rather than getting stuck hidden. On by
+  default.
+  - **Cover** — what the rating looks like while hidden: *Frosted panel* (an
+    opaque panel with an eye glyph, default), *Tap-to-show link* (a plain
+    text link under the section title, no cover animation), *Shimmer* (a
+    continuously animating particle field), or *Tap to burst* (a static
+    particle field).
+  - **Reveal animation** — how tapping a cover disappears, independent of
+    which one you picked (has no effect on *Tap-to-show link*, which has no
+    cover to animate): *Pop* (that cover's own plain reveal, default),
+    *Crumble* (dissolves in a staggered grid of shrinking, fading blocks),
+    or *Confetti* (a real particle burst that flies out from the rating and
+    falls, rendered as a brief full-screen overlay so it has room to move).
+  - **Confetti color** — only shown once Confetti is selected: *Accent*
+    (your current accent colour, plus lighter/darker tones), *Letterboxd
+    colors* (the brand's orange/green/blue, default), or *Classic red*
+    (a red/gold party-confetti palette).
+  - **Reveal haptic feedback** — a short vibration when the rating is
+    revealed, on any cover. On by default.
+
+---
+
 ## Screenshots
 
-Every shot is the same film page / home screen, changing only the setting.
+Some of these predate the Mods-screen consolidation below and show a couple
+of these as separate re-patch-time options rather than in-app toggles — the
+visuals themselves are unchanged either way.
 
 ### Material You — surface style
 
@@ -75,13 +154,17 @@ The green **+** button is untouched in every mode.
 | :---: | :---: |
 | <img src="docs/screenshots/videostore-before.jpg" width="220"> | <img src="docs/screenshots/videostore-after.jpg" width="220"> |
 
-### Hide ratings until watched
+### Hide ratings until watched — cover
 
-The film's community rating is fully covered until you tap. 
+The film's community rating is fully covered until you tap.
+
 | Shimmer | Frosted panel | Tap to burst | Tap-to-show link |
 | :---: | :---: | :---: | :---: |
 | <img src="docs/screenshots/spoiler-shimmer-updated.gif" width="220"> | <img src="docs/screenshots/spoiler-panel.jpg" width="220"> | <img src="docs/screenshots/spoiler-burst.jpg" width="220"> | <img src="docs/screenshots/spoiler-link.jpg" width="220"> |
 
+Crumble and Confetti are reveal *animations* layered on top of these covers
+(shown when you tap) rather than covers of their own — no static shot really
+captures a burst of confetti flying off the screen.
 
 ---
 
@@ -97,14 +180,13 @@ The film's community rating is fully covered until you tap.
    tool has already patched or re-zipped.
 4. Select the patches you want and patch.
 
-> **Opening the Mods screen.** With the **Mod settings** patch enabled, everything
-> configurable lives in an in-app screen — reach it by **long-pressing the
-> Letterboxd app icon** on your home screen, or **long-pressing the settings gear
-> on your profile tab**. A one-time note explaining this also shows on first
-> launch after patching.
+> **Opening the Mods screen.** With the **Mod settings** patch enabled, almost
+> everything configurable lives in an in-app screen — reach it by
+> **long-pressing the settings gear on your profile tab**. A one-time note
+> explaining this also shows on first launch after patching.
 
-Current target: **Letterboxd 3.5.4 (496)**. Other versions may work; Morphe warns
-on a mismatch.
+Any Letterboxd version should work — Morphe will warn you if something else
+about your APK doesn't match (signature, etc.).
 
 ---
 
@@ -137,76 +219,43 @@ on a mismatch.
 <!-- PATCHES_END -->
 
 > The table above, between the `PATCHES_START` / `PATCHES_END` markers, is
-> regenerated on every release. Don't edit it by hand.
+> regenerated on every release and may lag one release behind everything
+> described in [The Mods screen](#the-mods-screen) above — that section is
+> the one to trust for what's actually configurable today. Don't hand-edit
+> the table.
 
-### Details
+### Patch notes
 
-**Mod settings** — *on by default*
+**Mod settings** bundles several behaviours directly (not separate patches,
+since each is fully controlled by its own toggle above anyway): hiding the
+Video Store row, hiding Where to Watch, the "Open in player" button, hiding
+ratings until watched, and matching the bottom nav to the top bar. See
+[The Mods screen](#the-mods-screen) for the full walkthrough of every option.
 
-Adds a **Letterboxd Mods** screen that collects the other patches' options so you
-can change them in the app instead of re-patching.
+**Appearance** — *on by default, Android 12+* — is the runtime half of
+theming: OLED, accent colour (including Material You), and the bottom-nav
+selected style, all applied via resource overlays with no restart-time
+patch-file changes needed. Needs **Mod settings**.
 
-> **HOW TO OPEN IT:** Long-press the **settings gear on your profile tab**. (A one-time note
-> also appears on first launch after patching.)
+**Material You theme** — *opt-in, Android 12+* — a separate, heavier
+patch-time treatment: it flattens Letterboxd's app bar, tab strip, bottom
+nav, cards and sheets onto the device's wallpaper palette directly in
+`styles.xml`, rather than through a runtime overlay. This is *not* the same
+thing as the Material You **accent** option above (which works without this
+patch) — this one repaints the whole chrome, not just the accent, and can't
+be toggled without re-patching. Turning it on locks out **Appearance**'s OLED
+and bottom-nav-match switches, since the two would otherwise fight over the
+same colours.
 
-Some changes apply immediately (e.g. hide-ratings reveal style); others need a
-restart — you're always prompted. The theme controls also need **Appearance**
-enabled.
+**Denser poster grid** — *opt-in* — tightens the spacing around posters so
+they render larger and closer together. Does not change the column count.
+Its density option (Cozy / Compact / Dense) is baked in at patch time, not
+adjustable from Mod settings.
 
-**Appearance** — *on by default, Android 12+*
-
-Repaints Letterboxd's dark surfaces and green accent at runtime via resource
-overlays, driven from **Mod settings**:
-
-- **Surface style** — *Default* or *Pure black (OLED)* (elevated surfaces stay a
-  faint grey so histogram bars don't disappear). Locked while the separate
-  **Material You theme** patch is enabled.
-- **Accent colour** — presets or a full HSV / hex picker; recolours the stars,
-  rating indicators and primary buttons.
-- **Bottom nav selected style** — *Stock*, *No pill*, *No pill + white icon*,
-  *No pill + accent icon*, or *Accent pill*. The green "+" is never touched.
-
-Only the named surface / accent colour resources change — no Jetpack Compose
-screens, no app-bar style flattening.
-
-**Match bottom nav to top bar colour** — *on by default*
-
-Makes the bottom navigation bar black, matching the top bar. Toggleable from
-**Mod settings**.
-
-**Denser poster grid** — *opt-in*
-
-Tightens the spacing around posters so they render larger and closer together.
-Does not change the column count.
-
-- **Grid density** — Cozy, Compact (default), or Dense.
-
-**Hide Video Store on home** — *opt-in*
-
-Removes the "Letterboxd Video Store" promo row from the Films tab. The Video Store
-and every other entry point (settings, film pages, search) are left alone.
-
-**Hide ratings until watched** — *opt-in*
-
-Hides the community rating (average + histogram) on a film's page until you've
-marked that film as watched. The section keeps its title and a tap-to-reveal
-control takes the place of the rating; the reveal lasts for the current visit,
-so leaving the film and coming back hides it again. Only the film page is
-affected — ratings in lists, search and "similar films" are unchanged. If the
-watched state can't be read for any reason it fails open (ratings stay visible).
-
-- **Reveal style** — *Frosted panel* (default; an opaque panel with an eye glyph
-  and a "Tap to reveal" label), *Tap-to-show link* (a plain text link under the
-  section title), *Shimmer* (a Telegram-style particle field that animates until
-  tapped) or *Tap to burst* (a static particle field that scatters on tap). Every
-  style fully covers the rating — nothing shows through until you tap.
-
-**Brighter Watched-by stars** — *on by default*
-
-Switches other people's star ratings in a film's "Watched by" row from a
-near-unreadable dark grey (`#445566`) to the lighter grey (`#99AABB`) the rest of
-the app uses for other people's ratings. A small legibility fix, applied
-regardless of which theme patch (if any) you use.
+**Brighter Watched-by stars** — *on by default* — switches other people's
+star ratings in a film's "Watched by" row from a near-unreadable dark grey
+(`#445566`) to the lighter grey (`#99AABB`) the rest of the app uses for
+other people's ratings. Always on, regardless of which theme patch you use.
 
 ## Building
 
@@ -230,7 +279,9 @@ hand, and do not edit the generated files (`patches-list.json`,
 
 - Work on the **`dev`** branch with
   [conventional commits](https://www.conventionalcommits.org): `feat:` and `fix:`
-  cut a pre-release; `chore:` and `docs:` do not.
+  cut a pre-release; `chore:` and `docs:` do not. A commit with a
+  `BREAKING CHANGE:` footer (or a `!` after the type) cuts a **major** release
+  regardless of type.
 - Pushing to `dev` builds a pre-release and opens a `dev` to `main` pull request.
 - Merge that pull request with a merge commit (not squash) to cut a stable
   release.
