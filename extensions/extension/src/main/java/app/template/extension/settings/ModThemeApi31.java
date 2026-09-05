@@ -64,11 +64,14 @@ final class ModThemeApi31 {
                 } catch (Throwable ignored) {
                 }
             }
-        } else if (AccentPresets.MATERIAL_YOU.equals(accent)) {
+        } else if (AccentPresets.MATERIAL_YOU.equals(accent) || AccentPresets.MATERIAL_YOU_2.equals(accent)
+                || AccentPresets.MATERIAL_YOU_3.equals(accent)) {
             // Device-dependent, so it can't be a pre-baked patch-time asset like the presets below
             // — built at runtime the same way "custom" hex is, from the live system tone instead.
-            Integer tone = AccentPresets.materialYouTone(app);
-            if (tone != null) addAccentColorLoader(app, tone, "morphe-accent-materialyou.arsc");
+            int family = AccentPresets.MATERIAL_YOU_3.equals(accent) ? 3
+                    : AccentPresets.MATERIAL_YOU_2.equals(accent) ? 2 : 1;
+            Integer tone = AccentPresets.materialYouTone(app, family);
+            if (tone != null) addAccentColorLoader(app, tone, "morphe-accent-" + accent + ".arsc");
         } else if (accent != null && !accent.isEmpty() && !"green".equals(accent)) {
             addAssetLoader(app, "morphe/accent_" + accent + ".arsc", "morphe-accent-" + accent + ".arsc");
         }

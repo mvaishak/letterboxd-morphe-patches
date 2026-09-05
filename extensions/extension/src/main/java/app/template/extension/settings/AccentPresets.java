@@ -12,7 +12,15 @@ public final class AccentPresets {
     private AccentPresets() {}
 
     static final String CUSTOM = "custom";
+    // Android's dynamic-colour extraction returns three distinct tonal palettes from the
+    // wallpaper (accent1/2/3, roughly primary/secondary/tertiary) — offer all three, not just one.
     public static final String MATERIAL_YOU = "materialyou";
+    public static final String MATERIAL_YOU_2 = "materialyou2";
+    public static final String MATERIAL_YOU_3 = "materialyou3";
+    static final String[] MATERIAL_YOU_KEYS = { MATERIAL_YOU, MATERIAL_YOU_2, MATERIAL_YOU_3 };
+    static final String[] MATERIAL_YOU_LABELS = {
+            "Material You", "Material You 2", "Material You 3",
+    };
 
     static final Map<String, String> LABELS = new LinkedHashMap<>();
     static final Map<String, Integer> ARGB = new LinkedHashMap<>();
@@ -67,8 +75,9 @@ public final class AccentPresets {
                 return 0xFF00E054;
             }
         }
-        if (MATERIAL_YOU.equals(accent)) {
-            Integer dynamic = materialYouTone(ctx);
+        int family = materialYouFamily(accent);
+        if (family != 0) {
+            Integer dynamic = materialYouTone(ctx, family);
             if (dynamic != null) return dynamic;
             // Not available on this device/API — fall through to the static default below.
         }
@@ -76,11 +85,25 @@ public final class AccentPresets {
         return argb != null ? argb : 0xFF00E054;
     }
 
-    /** The device's live Material You accent tone, or null if unavailable. */
-    static Integer materialYouTone(Context ctx) {
+    /** 1/2/3 for a {@code materialyou}/{@code materialyou2}/{@code materialyou3} key, else 0. */
+    private static int materialYouFamily(String accent) {
+        if (MATERIAL_YOU.equals(accent)) return 1;
+        if (MATERIAL_YOU_2.equals(accent)) return 2;
+        if (MATERIAL_YOU_3.equals(accent)) return 3;
+        return 0;
+    }
+
+    /** The device's live Material You accent tone (1/2/3 = accent1/2/3_600), or null if unavailable. */
+    static Integer materialYouTone(Context ctx, int family) {
         if (ctx == null || Build.VERSION.SDK_INT < 31) return null;
         try {
-            return ctx.getColor(android.R.color.system_accent1_600);
+            int id;
+            switch (family) {
+                case 2: id = android.R.color.system_accent2_600; break;
+                case 3: id = android.R.color.system_accent3_600; break;
+                default: id = android.R.color.system_accent1_600; break;
+            }
+            return ctx.getColor(id);
         } catch (Throwable ignored) {
             return null;
         }

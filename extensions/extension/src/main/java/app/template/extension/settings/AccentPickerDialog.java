@@ -42,7 +42,7 @@ final class AccentPickerDialog extends Dialog {
 
     private void build() {
         Window window = getWindow();
-        if (window != null) window.setBackgroundDrawable(round(0xFF0D0D0D, dp(20)));
+        if (window != null) window.setBackgroundDrawable(round(SurfaceColors.elevated(getContext()), dp(20)));
 
         LinearLayout root = new LinearLayout(getContext());
         root.setOrientation(LinearLayout.VERTICAL);
@@ -61,12 +61,14 @@ final class AccentPickerDialog extends Dialog {
         list.setOrientation(LinearLayout.VERTICAL);
 
         if (AccentPresets.materialYouAccentAvailable(getContext())) {
-            Integer tone = AccentPresets.materialYouTone(getContext());
-            if (tone != null) {
-                list.addView(card("Material You", tone, AccentPresets.MATERIAL_YOU.equals(currentKey),
+            for (int family = 1; family <= AccentPresets.MATERIAL_YOU_KEYS.length; family++) {
+                final String key = AccentPresets.MATERIAL_YOU_KEYS[family - 1];
+                Integer tone = AccentPresets.materialYouTone(getContext(), family);
+                if (tone == null) continue;
+                list.addView(card(AccentPresets.MATERIAL_YOU_LABELS[family - 1], tone, key.equals(currentKey),
                         new View.OnClickListener() {
                             @Override public void onClick(View v) {
-                                if (callback != null) callback.onChosen(AccentPresets.MATERIAL_YOU, "");
+                                if (callback != null) callback.onChosen(key, "");
                                 dismiss();
                             }
                         }));
