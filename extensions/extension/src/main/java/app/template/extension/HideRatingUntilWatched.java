@@ -10,6 +10,9 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import app.template.extension.settings.AccentPresets;
+import app.template.extension.settings.Prefs;
+
 import java.lang.reflect.Method;
 import java.util.WeakHashMap;
 
@@ -22,12 +25,14 @@ import java.util.WeakHashMap;
  * the chosen reveal style; tapping it reveals the ratings for the current visit, and leaving and
  * returning to the film hides them again.
  *
- * <p>Reveal styles ({@code style} baked in by the patch):
+ * <p>Cover ({@code style} baked in by the patch, overridable from Mod settings):
  * <ul>
  *   <li>{@code link} — the row is hidden and a plain "Tap to show ratings" text sits below the
  *       section title.</li>
  *   <li>{@code panel} / {@code shimmer} / {@code burst} — the row stays laid out and a
- *       {@link SpoilerOverlayView} is placed over it.</li>
+ *       {@link SpoilerOverlayView} is placed over it. Mod settings' separate "Reveal animation"
+ *       (default / crumble / confetti) and, for confetti, "Confetti color" settings are read fresh
+ *       each time an overlay is built — see {@link Prefs#revealAnimation()}.</li>
  * </ul>
  *
  * <p>The relationship and the rating data load asynchronously in unpredictable order, and a
@@ -62,14 +67,24 @@ public final class HideRatingUntilWatched {
         enforce(fragment, "panel");
     }
 
-    /** Injected at the top of {@code FilmRatingsHistogramFragment.onViewCreated}. */
+    /**
+     * Injected at the top of {@code FilmRatingsHistogramFragment.onViewCreated}. {@code style} is
+     * the value baked in when patching; if the "Mod settings" screen has been used to override it
+     * (or to turn the feature off) that takes precedence.
+     */
     public static void enforce(final Fragment fragment, final String style) {
         try {
+            Prefs.load(fragment != null ? fragment.getContext() : null);
+            if (!Prefs.getBoolean(Prefs.KEY_HIDE_RATINGS_ENABLED, true)) return;
+
             final View wrapper = fragment.getView();
             if (wrapper == null || Boolean.TRUE.equals(ATTACHED.get(wrapper))) return;
             ATTACHED.put(wrapper, Boolean.TRUE);
 
-            final String reveal = (style == null || style.isEmpty()) ? "panel" : style;
+            final String baked = (style == null || style.isEmpty()) ? "panel" : style;
+            final String reveal = Prefs.has(Prefs.KEY_HIDE_RATINGS_STYLE)
+                    ? Prefs.getString(Prefs.KEY_HIDE_RATINGS_STYLE, baked)
+                    : baked;
 
             final ViewTreeObserver.OnGlobalLayoutListener[] self =
                     new ViewTreeObserver.OnGlobalLayoutListener[1];
@@ -153,10 +168,12 @@ public final class HideRatingUntilWatched {
 
         final TextView tv = new TextView(parent.getContext());
         tv.setTag(LINK_TAG);
-        tv.setText("Tap to show ratings");
+        tv.setText("Tap to reveal ratings ›");
         tv.setAllCaps(false);
+        tv.setTypeface(AppFont.semibold(parent.getContext()));
+        tv.setLetterSpacing(0.01f);
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-        tv.setTextColor(0xFF9AA7B0);
+        tv.setTextColor(0xFFAEB8C2);
         int padV = Math.round(10f * parent.getResources().getDisplayMetrics().density);
         tv.setPadding(0, padV, 0, padV);
 
@@ -171,6 +188,7 @@ public final class HideRatingUntilWatched {
         tv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Haptics.tap(v);
                 REVEALED.put(wrapper, Boolean.TRUE);
                 restore(wrapper);
             }
@@ -178,7 +196,7 @@ public final class HideRatingUntilWatched {
         parent.addView(tv);
     }
 
-    private static void ensureOverlay(final View wrapper, String style) {
+    private static void ensureOverlay(final View wrapper, String cover) {
         View row = ratingRow(wrapper);
         if (row == null || !(row.getParent() instanceof RelativeLayout)) return;
         RelativeLayout section = (RelativeLayout) row.getParent();
@@ -186,11 +204,32 @@ public final class HideRatingUntilWatched {
         if (row.getId() == View.NO_ID) row.setId(View.generateViewId());
 
         int mode;
-        if ("shimmer".equals(style)) mode = SpoilerOverlayView.SHIMMER;
-        else if ("burst".equals(style)) mode = SpoilerOverlayView.BURST;
+        if ("shimmer".equals(cover)) mode = SpoilerOverlayView.SHIMMER;
+        else if ("burst".equals(cover)) mode = SpoilerOverlayView.BURST;
         else mode = SpoilerOverlayView.PANEL;
 
-        SpoilerOverlayView overlay = new SpoilerOverlayView(section.getContext(), mode);
+        int transition;
+        String animation = Prefs.revealAnimation();
+        if ("crumble".equals(animation)) transition = SpoilerOverlayView.CRUMBLE;
+        else if ("confetti".equals(animation)) transition = SpoilerOverlayView.CONFETTI;
+        else transition = SpoilerOverlayView.DEFAULT;
+
+        int[] palette = null;
+        if (transition == SpoilerOverlayView.CONFETTI) {
+            String confettiColor = Prefs.confettiColor();
+            if ("letterboxd".equals(confettiColor)) {
+                palette = ConfettiPalette.LETTERBOXD;
+            } else if ("red".equals(confettiColor)) {
+                palette = ConfettiPalette.RED;
+            } else {
+                int accent = AccentPresets.previewColor(wrapper.getContext(),
+                        Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(wrapper.getContext())),
+                        Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
+                palette = ConfettiPalette.forAccent(accent);
+            }
+        }
+
+        SpoilerOverlayView overlay = new SpoilerOverlayView(section.getContext(), mode, transition, palette);
         overlay.setTag(OVERLAY_TAG);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(0, 0);
         lp.addRule(RelativeLayout.ALIGN_TOP, row.getId());
