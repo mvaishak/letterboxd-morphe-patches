@@ -20,6 +20,12 @@ final class OptionCard {
 
     private OptionCard() {}
 
+    /** No preview — just the label + selection dot, for pickers where a preview adds nothing. */
+    static View build(Context ctx, float density, String label, boolean selected, int accent,
+                      final Runnable onPick) {
+        return build(ctx, density, null, 0f, label, selected, accent, onPick);
+    }
+
     static View build(Context ctx, float density, View preview, float previewHeightDp,
                       String label, boolean selected, int accent, final Runnable onPick) {
         LinearLayout card = new LinearLayout(ctx);
@@ -35,16 +41,18 @@ final class OptionCard {
         bg.setStroke(dp(density, selected ? 2f : 1f), selected ? accent : 0xFF2E2E2E);
         card.setBackground(bg);
 
-        LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(density, previewHeightDp));
-        card.addView(preview, plp);
+        if (preview != null) {
+            LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(density, previewHeightDp));
+            card.addView(preview, plp);
+        }
 
         LinearLayout row = new LinearLayout(ctx);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rlp.topMargin = dp(density, 10);
+        if (preview != null) rlp.topMargin = dp(density, 10);
         card.addView(row, rlp);
 
         TextView text = new TextView(ctx);

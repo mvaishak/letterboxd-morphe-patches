@@ -65,7 +65,7 @@ final class RevealStyleDialog extends Dialog {
             boolean sel = value.equals(current);
 
             RevealPreview preview = new RevealPreview(getContext(), value);
-            list.addView(OptionCard.build(getContext(), density, preview, 58f, LABELS[i], sel, accent,
+            list.addView(OptionCard.build(getContext(), density, preview, 40f, LABELS[i], sel, accent,
                     new Runnable() {
                         @Override public void run() {
                             onPick.onPick(value);
@@ -75,18 +75,24 @@ final class RevealStyleDialog extends Dialog {
         }
 
         // A fixed list of options can exceed the screen height on smaller devices (or with system
-        // font scaling up) and silently clip the last item(s) with nothing to scroll — wrap it.
+        // font scaling up) and silently clip the last item(s) with nothing to scroll — wrap it, but
+        // WRAP_CONTENT (not a weight against a fixed-height window) so a short list like this one
+        // stays its natural size instead of always stretching to fill a forced 80%-of-screen window.
         ScrollView scroll = new ScrollView(getContext());
         scroll.addView(list);
         root.addView(scroll, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         setContentView(root);
         if (window != null) {
-            int maxHeight = (int) (getContext().getResources().getDisplayMetrics().heightPixels * 0.8f);
-            window.setLayout(
-                    Math.min(getContext().getResources().getDisplayMetrics().widthPixels - dp(44), dp(420)),
-                    maxHeight);
+            int screenW = getContext().getResources().getDisplayMetrics().widthPixels;
+            int screenH = getContext().getResources().getDisplayMetrics().heightPixels;
+            int width = Math.min(screenW - dp(44), dp(420));
+            int maxHeight = (int) (screenH * 0.8f);
+            root.measure(
+                    View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST));
+            window.setLayout(width, Math.min(root.getMeasuredHeight(), maxHeight));
         }
     }
 

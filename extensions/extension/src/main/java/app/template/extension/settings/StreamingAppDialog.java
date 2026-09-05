@@ -2,12 +2,9 @@ package app.template.extension.settings;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.util.TypedValue;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.LinearLayout;
@@ -22,7 +19,6 @@ final class StreamingAppDialog extends Dialog {
 
     private static final String[] LABELS = { "Stremio", "Nuvio" };
     private static final String[] VALUES = { "stremio", "nuvio" };
-    private static final int[] BADGE_COLOR = { 0xFF6B4EE6, 0xFF1FB6A6 };
 
     private final float density;
     private final int accent;
@@ -59,8 +55,7 @@ final class StreamingAppDialog extends Dialog {
             final String value = VALUES[i];
             boolean sel = value.equals(current);
 
-            Badge badge = new Badge(getContext(), LABELS[i], BADGE_COLOR[i]);
-            root.addView(OptionCard.build(getContext(), density, badge, 40f, LABELS[i], sel, accent,
+            root.addView(OptionCard.build(getContext(), density, LABELS[i], sel, accent,
                     new Runnable() {
                         @Override public void run() {
                             onPick.onPick(value);
@@ -79,30 +74,5 @@ final class StreamingAppDialog extends Dialog {
 
     private int dp(float v) {
         return Math.round(v * density);
-    }
-
-    /** A small rounded, coloured badge with the app's initial — stands in for a real app icon. */
-    private final class Badge extends View {
-        private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final android.graphics.RectF r = new android.graphics.RectF();
-        private final String initial;
-
-        Badge(Context c, String label, int color) {
-            super(c);
-            this.initial = label.substring(0, 1);
-            p.setColor(color);
-            text.setColor(0xFFF2F2F2);
-            text.setTextAlign(Paint.Align.CENTER);
-            text.setTypeface(Typeface.DEFAULT_BOLD);
-        }
-
-        @Override protected void onDraw(Canvas canvas) {
-            int w = getWidth(), h = getHeight();
-            r.set(0, 0, w, h);
-            canvas.drawRoundRect(r, dp(10), dp(10), p);
-            text.setTextSize(h * 0.5f);
-            canvas.drawText(initial, w / 2f, h / 2f - (text.ascent() + text.descent()) / 2f, text);
-        }
     }
 }
