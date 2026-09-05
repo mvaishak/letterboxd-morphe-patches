@@ -28,8 +28,8 @@ import java.util.regex.Pattern;
 
 /**
  * "Open in player" — adds a small, icon-only button next to Trailer on a film's page that opens
- * the film in Stremio, tinted with the current accent colour. Injected at the top of
- * {@code FilmHeaderFragment.onViewCreated}.
+ * the film in Stremio or Nuvio (Mod settings' "Streaming app" choice), tinted with the current
+ * accent colour. Injected at the top of {@code FilmHeaderFragment.onViewCreated}.
  *
  * <p>Deliberately icon-only and compact: an earlier text-labelled version ("STREMIO" as a full
  * pill, matching trailer_button's width) overflowed that row on real devices — the row's width is
@@ -151,8 +151,8 @@ public final class StreamingButton {
     private static void addButton(ViewGroup row, View trailer, final String imdbId) {
         try {
             android.content.Context ctx = row.getContext();
-            int accent = AccentPresets.previewColor(
-                    Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+            int accent = AccentPresets.previewColor(ctx,
+                    Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(ctx)),
                     Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
             int onAccent = AccentPresets.isLight(accent) ? 0xFF141414 : 0xFFFFFFFF;
             float density = ctx.getResources().getDisplayMetrics().density;
@@ -161,7 +161,8 @@ public final class StreamingButton {
 
             MaterialButton button = new MaterialButton(ctx);
             button.setTag(TAG);
-            button.setContentDescription("Open in Stremio");
+            String app = Prefs.streamingApp();
+            button.setContentDescription("nuvio".equals(app) ? "Open in Nuvio" : "Open in Stremio");
             button.setText(null);
             button.setInsetTop(0);
             button.setInsetBottom(0);
@@ -181,7 +182,7 @@ public final class StreamingButton {
 
             button.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) {
-                    launch(v, imdbId);
+                    launch(v, imdbId, app);
                 }
             });
 
@@ -194,9 +195,16 @@ public final class StreamingButton {
         }
     }
 
-    private static void launch(View v, String imdbId) {
+    private static void launch(View v, String imdbId, String app) {
         try {
-            Uri uri = Uri.parse("stremio:///detail/movie/" + imdbId + "/" + imdbId);
+            // Confirmed against each app's own deep-link parsing source:
+            // - Stremio: stremio:///detail/movie/<imdbId>/<imdbId> (id doubled, its own convention).
+            // - Nuvio: nuvio://movie/<imdbId> — its stremio:// filter is for addon installs only
+            //   (host must look like a domain), never meta lookups, so Stremio's own URI silently
+            //   no-ops there (opens the app, does nothing with the link).
+            Uri uri = "nuvio".equals(app)
+                    ? Uri.parse("nuvio://movie/" + imdbId)
+                    : Uri.parse("stremio:///detail/movie/" + imdbId + "/" + imdbId);
             v.getContext().startActivity(new Intent(Intent.ACTION_VIEW, uri));
         } catch (ActivityNotFoundException ignored) {
         } catch (Throwable ignored) {
