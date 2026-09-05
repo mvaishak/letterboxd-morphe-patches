@@ -36,6 +36,20 @@ internal val modSettingsResourcePatch = resourcePatch {
         }
 
         document("AndroidManifest.xml").use { document ->
+            val manifest = document.documentElement
+            val hasVibrate = document.getElementsByTagName("uses-permission").let { nodes ->
+                (0 until nodes.length).any {
+                    (nodes.item(it) as Element).getAttribute("android:name") == "android.permission.VIBRATE"
+                }
+            }
+            if (!hasVibrate) {
+                manifest.appendChild(
+                    document.createElement("uses-permission").apply {
+                        setAttribute("android:name", "android.permission.VIBRATE")
+                    },
+                )
+            }
+
             val application = document.getElementsByTagName("application").item(0) as Element
             application.appendChild(
                 document.createElement("activity").apply {
@@ -193,21 +207,18 @@ val modSettingsPatch = bytecodePatch(
         default = "panel",
         values = mapOf(
             "Frosted panel" to "panel",
-            "Frosted panel (crumble)" to "panel_crumble",
             "Tap-to-show link" to "link",
             "Shimmer (Telegram-style)" to "shimmer",
-            "Shimmer (crumble)" to "shimmer_crumble",
             "Tap to burst" to "burst",
-            "Confetti" to "confetti",
         ),
-        title = "Reveal style",
+        title = "Cover",
         description = "How the hidden rating is covered, before you've changed it from the Mods " +
             "screen. 'Frosted panel' is an opaque panel with an eye glyph; 'Tap-to-show link' is a " +
             "plain text link under the section title; 'Shimmer' is a continuously animating " +
-            "particle field; 'Tap to burst' is a static particle field that scatters when tapped; " +
-            "'Confetti' scatters accent-tinted pieces that pop and fall when tapped. The '(crumble)' " +
-            "variants of Frosted panel and Shimmer look the same until tapped, then dissolve in a " +
-            "staggered grid of blocks instead of their normal reveal.",
+            "particle field; 'Tap to burst' is a static particle field that scatters when tapped. " +
+            "The Mods screen also has a separate \"Reveal animation\" (default / crumble / " +
+            "confetti) that changes how tapping any of the three opaque covers disappears, " +
+            "independent of which one you pick here.",
     )
 
     execute {

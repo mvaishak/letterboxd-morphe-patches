@@ -25,12 +25,14 @@ import java.util.WeakHashMap;
  * the chosen reveal style; tapping it reveals the ratings for the current visit, and leaving and
  * returning to the film hides them again.
  *
- * <p>Reveal styles ({@code style} baked in by the patch):
+ * <p>Cover ({@code style} baked in by the patch, overridable from Mod settings):
  * <ul>
  *   <li>{@code link} — the row is hidden and a plain "Tap to show ratings" text sits below the
  *       section title.</li>
  *   <li>{@code panel} / {@code shimmer} / {@code burst} — the row stays laid out and a
- *       {@link SpoilerOverlayView} is placed over it.</li>
+ *       {@link SpoilerOverlayView} is placed over it. Mod settings' separate "Reveal animation"
+ *       (default / crumble / confetti) and, for confetti, "Confetti color" settings are read fresh
+ *       each time an overlay is built — see {@link Prefs#revealAnimation()}.</li>
  * </ul>
  *
  * <p>The relationship and the rating data load asynchronously in unpredictable order, and a
@@ -186,6 +188,7 @@ public final class HideRatingUntilWatched {
         tv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Haptics.tap(v);
                 REVEALED.put(wrapper, Boolean.TRUE);
                 restore(wrapper);
             }
@@ -193,29 +196,37 @@ public final class HideRatingUntilWatched {
         parent.addView(tv);
     }
 
-    private static void ensureOverlay(final View wrapper, String style) {
+    private static void ensureOverlay(final View wrapper, String cover) {
         View row = ratingRow(wrapper);
         if (row == null || !(row.getParent() instanceof RelativeLayout)) return;
         RelativeLayout section = (RelativeLayout) row.getParent();
         if (section.findViewWithTag(OVERLAY_TAG) != null) return;
         if (row.getId() == View.NO_ID) row.setId(View.generateViewId());
 
-        // "panel"/"shimmer" pick the cover; an optional "_crumble" suffix (Mod settings' "Frosted
-        // panel (crumble)" / "Shimmer (crumble)") swaps just the tap transition, independent of it.
-        boolean crumbleTransition = style != null && style.endsWith("_crumble");
-        String cover = crumbleTransition ? style.substring(0, style.length() - "_crumble".length()) : style;
-
         int mode;
         if ("shimmer".equals(cover)) mode = SpoilerOverlayView.SHIMMER;
         else if ("burst".equals(cover)) mode = SpoilerOverlayView.BURST;
-        else if ("confetti".equals(cover)) mode = SpoilerOverlayView.CONFETTI;
         else mode = SpoilerOverlayView.PANEL;
 
-        int accent = AccentPresets.previewColor(
-                Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
-                Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
-        SpoilerOverlayView overlay = new SpoilerOverlayView(
-                section.getContext(), mode, accent, crumbleTransition);
+        int transition;
+        String animation = Prefs.revealAnimation();
+        if ("crumble".equals(animation)) transition = SpoilerOverlayView.CRUMBLE;
+        else if ("confetti".equals(animation)) transition = SpoilerOverlayView.CONFETTI;
+        else transition = SpoilerOverlayView.DEFAULT;
+
+        int[] palette = null;
+        if (transition == SpoilerOverlayView.CONFETTI) {
+            if ("letterboxd".equals(Prefs.confettiColor())) {
+                palette = ConfettiPalette.LETTERBOXD;
+            } else {
+                int accent = AccentPresets.previewColor(
+                        Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+                        Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
+                palette = ConfettiPalette.forAccent(accent);
+            }
+        }
+
+        SpoilerOverlayView overlay = new SpoilerOverlayView(section.getContext(), mode, transition, palette);
         overlay.setTag(OVERLAY_TAG);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(0, 0);
         lp.addRule(RelativeLayout.ALIGN_TOP, row.getId());

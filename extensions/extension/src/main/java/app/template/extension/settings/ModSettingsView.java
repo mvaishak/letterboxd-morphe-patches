@@ -22,13 +22,14 @@ final class ModSettingsView extends ScrollView {
     };
     private static final String[] NAV_VALUES = { "stock", "nopill", "white", "accent", "accentPill" };
 
-    private static final String[] REVEAL_LABELS = {
-            "Frosted panel", "Frosted panel (crumble)", "Tap-to-show link",
-            "Shimmer", "Shimmer (crumble)", "Tap to burst", "Confetti",
-    };
-    private static final String[] REVEAL_VALUES = {
-            "panel", "panel_crumble", "link", "shimmer", "shimmer_crumble", "burst", "confetti",
-    };
+    private static final String[] REVEAL_LABELS = { "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst" };
+    private static final String[] REVEAL_VALUES = { "panel", "link", "shimmer", "burst" };
+
+    private static final String[] ANIMATION_LABELS = { "Default", "Crumble", "Confetti" };
+    private static final String[] ANIMATION_VALUES = { "default", "crumble", "confetti" };
+
+    private static final String[] CONFETTI_COLOR_LABELS = { "Accent", "Letterboxd colors" };
+    private static final String[] CONFETTI_COLOR_VALUES = { "accent", "letterboxd" };
 
 
     private final Context ctx;
@@ -38,6 +39,10 @@ final class ModSettingsView extends ScrollView {
 
     private View revealRow;
     private TextView revealValue;
+    private View animationRow;
+    private TextView animationValue;
+    private View confettiColorRow;
+    private TextView confettiColorValue;
 
     ModSettingsView(Context context) {
         super(context);
@@ -117,7 +122,7 @@ final class ModSettingsView extends ScrollView {
 
         header("Streaming");
         column.addView(toggleRow("Open in player",
-                "Add a small button beside Trailer that opens the film in Stremio",
+                "Opens the film in streaming apps like Stremio or Nuvio",
                 Prefs.KEY_OPEN_IN_PLAYER, false, false));
 
         header("Ratings");
@@ -125,7 +130,8 @@ final class ModSettingsView extends ScrollView {
         column.addView(toggleRow(hideRatings, "Hide ratings until watched",
                 "Cover a film's community rating until you mark it watched",
                 Prefs.KEY_HIDE_RATINGS_ENABLED, true, false));
-        revealRow = choiceRow("Reveal style", null,
+
+        revealRow = choiceRow("Cover", null,
                 labelFor(REVEAL_LABELS, REVEAL_VALUES, Prefs.getString(Prefs.KEY_HIDE_RATINGS_STYLE, "panel")),
                 new Runnable() {
                     @Override public void run() {
@@ -137,16 +143,58 @@ final class ModSettingsView extends ScrollView {
                                         if (revealValue != null) {
                                             revealValue.setText(labelFor(REVEAL_LABELS, REVEAL_VALUES, value));
                                         }
+                                        refreshRevealRows();
                                     }
                                 }).show();
                     }
                 });
         column.addView(revealRow);
-        setRevealEnabled(Prefs.getBoolean(Prefs.KEY_HIDE_RATINGS_ENABLED, true));
+
+        animationRow = choiceRow("Reveal animation", null,
+                labelFor(ANIMATION_LABELS, ANIMATION_VALUES, Prefs.revealAnimation()),
+                new Runnable() {
+                    @Override public void run() {
+                        new RevealAnimationDialog(ctx, Prefs.revealAnimation(), accent,
+                                new RevealAnimationDialog.OnPick() {
+                                    @Override public void onPick(String value) {
+                                        Prefs.putString(Prefs.KEY_HIDE_RATINGS_ANIMATION, value);
+                                        if (animationValue != null) {
+                                            animationValue.setText(labelFor(ANIMATION_LABELS, ANIMATION_VALUES, value));
+                                        }
+                                        refreshRevealRows();
+                                    }
+                                }).show();
+                    }
+                });
+        column.addView(animationRow);
+
+        confettiColorRow = choiceRow("Confetti color", null,
+                labelFor(CONFETTI_COLOR_LABELS, CONFETTI_COLOR_VALUES, Prefs.confettiColor()),
+                new Runnable() {
+                    @Override public void run() {
+                        new ConfettiColorDialog(ctx, Prefs.confettiColor(), accent,
+                                new ConfettiColorDialog.OnPick() {
+                                    @Override public void onPick(String value) {
+                                        Prefs.putString(Prefs.KEY_HIDE_RATINGS_CONFETTI_COLOR, value);
+                                        if (confettiColorValue != null) {
+                                            confettiColorValue.setText(
+                                                    labelFor(CONFETTI_COLOR_LABELS, CONFETTI_COLOR_VALUES, value));
+                                        }
+                                    }
+                                }).show();
+                    }
+                });
+        column.addView(confettiColorRow);
+
+        column.addView(toggleRow("Reveal haptic feedback",
+                "A short vibration when the rating is revealed",
+                Prefs.KEY_HIDE_RATINGS_HAPTIC, true, false));
+
+        refreshRevealRows();
         hideRatings.setOnToggle(new PillToggle.OnToggle() {
             @Override public void onToggle(boolean checked) {
                 Prefs.putBoolean(Prefs.KEY_HIDE_RATINGS_ENABLED, checked);
-                setRevealEnabled(checked);
+                refreshRevealRows();
             }
         });
     }
@@ -207,7 +255,9 @@ final class ModSettingsView extends ScrollView {
         v.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
         v.setGravity(Gravity.CENTER_VERTICAL);
         row.addView(v);
-        if (title.equals("Reveal style")) revealValue = v;
+        if (title.equals("Cover")) revealValue = v;
+        else if (title.equals("Reveal animation")) animationValue = v;
+        else if (title.equals("Confetti color")) confettiColorValue = v;
 
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { onClick.run(); }
@@ -282,11 +332,25 @@ final class ModSettingsView extends ScrollView {
 
     // --- helpers ------------------------------------------------------
 
-    private void setRevealEnabled(boolean enabled) {
-        if (revealRow != null) {
-            revealRow.setAlpha(enabled ? 1f : 0.4f);
-            revealRow.setClickable(enabled);
-        }
+    /**
+     * The three rating-reveal rows below the master toggle nest: "Reveal animation" is only
+     * meaningful once "Cover" isn't the plain text link, "Confetti color" only once the animation
+     * is actually Confetti, and both collapse if the master toggle is off. Re-run after any of
+     * the three inputs (master toggle, cover, animation) changes.
+     */
+    private void refreshRevealRows() {
+        boolean enabled = Prefs.getBoolean(Prefs.KEY_HIDE_RATINGS_ENABLED, true);
+        boolean animationApplies = enabled && !"link".equals(Prefs.getString(Prefs.KEY_HIDE_RATINGS_STYLE, "panel"));
+        boolean confettiColorApplies = animationApplies && "confetti".equals(Prefs.revealAnimation());
+        setRowEnabled(revealRow, enabled);
+        setRowEnabled(animationRow, animationApplies);
+        setRowEnabled(confettiColorRow, confettiColorApplies);
+    }
+
+    private void setRowEnabled(View row, boolean enabled) {
+        if (row == null) return;
+        row.setAlpha(enabled ? 1f : 0.4f);
+        row.setClickable(enabled);
     }
 
     private void rebuildAndRestart() {

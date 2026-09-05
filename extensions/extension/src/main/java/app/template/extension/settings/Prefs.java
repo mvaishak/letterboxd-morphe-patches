@@ -18,7 +18,10 @@ public final class Prefs {
 
     // "Hide ratings until watched"
     public static final String KEY_HIDE_RATINGS_ENABLED = "hide_ratings_enabled";
-    public static final String KEY_HIDE_RATINGS_STYLE = "hide_ratings_style";
+    public static final String KEY_HIDE_RATINGS_STYLE = "hide_ratings_style"; // cover: panel|link|shimmer|burst
+    public static final String KEY_HIDE_RATINGS_ANIMATION = "hide_ratings_animation"; // default|crumble|confetti
+    public static final String KEY_HIDE_RATINGS_CONFETTI_COLOR = "hide_ratings_confetti_color"; // accent|letterboxd
+    public static final String KEY_HIDE_RATINGS_HAPTIC = "hide_ratings_haptic";
 
     // "Hide Video Store on home" — bundled into "Mod settings" itself, not its own patch.
     public static final String KEY_HIDE_VIDEO_STORE = "hide_video_store";
@@ -118,5 +121,20 @@ public final class Prefs {
     /** Whether the "Open in player" (Stremio) button should be shown. Off by default. */
     public static boolean openInPlayer() {
         return getBoolean(KEY_OPEN_IN_PLAYER, false);
+    }
+
+    /** Tap-to-reveal transition ({@code default}, {@code crumble} or {@code confetti}). */
+    public static String revealAnimation() {
+        return getString(KEY_HIDE_RATINGS_ANIMATION, "default");
+    }
+
+    /** Confetti's palette source ({@code accent} or {@code letterboxd}). */
+    public static String confettiColor() {
+        return getString(KEY_HIDE_RATINGS_CONFETTI_COLOR, "accent");
+    }
+
+    /** Whether a short vibration plays when the rating is revealed. On by default. */
+    public static boolean hapticOnReveal() {
+        return getBoolean(KEY_HIDE_RATINGS_HAPTIC, true);
     }
 }

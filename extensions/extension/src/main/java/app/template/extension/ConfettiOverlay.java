@@ -28,7 +28,7 @@ final class ConfettiOverlay {
 
     private ConfettiOverlay() {}
 
-    static void burst(View anchor, int accent) {
+    static void burst(View anchor, int[] palette) {
         try {
             Activity activity = activityOf(anchor.getContext());
             if (activity == null) return;
@@ -42,7 +42,7 @@ final class ConfettiOverlay {
             float originX = anchorLoc[0] - rootLoc[0] + anchor.getWidth() / 2f;
             float originY = anchorLoc[1] - rootLoc[1] + anchor.getHeight() / 2f;
 
-            final Burst burst = new Burst(root.getContext(), accent, originX, originY);
+            final Burst burst = new Burst(root.getContext(), palette, originX, originY);
             root.addView(burst, new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             burst.start(new Runnable() {
@@ -81,17 +81,13 @@ final class ConfettiOverlay {
 
         private float t;
 
-        Burst(Context c, int accent, float originX, float originY) {
+        Burst(Context c, int[] palette, float originX, float originY) {
             super(c);
             this.density = c.getResources().getDisplayMetrics().density;
             this.originX = originX;
             this.originY = originY;
             setClickable(false);
 
-            int[] palette = {
-                    accent, mix(accent, 0xFFFFFFFF, 0.55f), mix(accent, 0xFF000000, 0.3f),
-                    0xFFFFFFFF, 0xFF1A1A1A,
-            };
             for (int i = 0; i < COUNT; i++) {
                 color[i] = palette[rnd.nextInt(palette.length)];
                 size[i] = dp(2.5f + rnd.nextFloat() * 3f);
@@ -156,15 +152,6 @@ final class ConfettiOverlay {
 
         private static int clamp(int v, int lo, int hi) {
             return v < lo ? lo : (v > hi ? hi : v);
-        }
-
-        private static int mix(int a, int b, float amount) {
-            int ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
-            int br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
-            int r = Math.round(ar + (br - ar) * amount);
-            int g = Math.round(ag + (bg - ag) * amount);
-            int bl = Math.round(ab + (bb - ab) * amount);
-            return 0xFF000000 | (r << 16) | (g << 8) | bl;
         }
     }
 }

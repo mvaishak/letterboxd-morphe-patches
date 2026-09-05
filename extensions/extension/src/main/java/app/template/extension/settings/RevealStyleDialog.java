@@ -12,25 +12,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.Random;
-// (Random used for the deterministic particle layout below)
 
-/** "Reveal style" chooser that draws a mock hidden-ratings section per option. */
+/** "Cover" chooser that draws a mock hidden-ratings section per option. */
 final class RevealStyleDialog extends Dialog {
 
     interface OnPick {
         void onPick(String value);
     }
 
-    private static final String[] LABELS = {
-            "Frosted panel", "Frosted panel (crumble)", "Tap-to-show link",
-            "Shimmer", "Shimmer (crumble)", "Tap to burst", "Confetti",
-    };
-    private static final String[] VALUES = {
-            "panel", "panel_crumble", "link", "shimmer", "shimmer_crumble", "burst", "confetti",
-    };
+    private static final String[] LABELS = { "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst" };
+    private static final String[] VALUES = { "panel", "link", "shimmer", "burst" };
 
     private final float density;
     private final int accent;
@@ -56,19 +51,21 @@ final class RevealStyleDialog extends Dialog {
         root.setPadding(dp(20), dp(20), dp(20), dp(14));
 
         TextView head = new TextView(getContext());
-        head.setText("Reveal style");
+        head.setText("Cover");
         head.setTextColor(0xFFFFFFFF);
         head.setTextSize(TypedValue.COMPLEX_UNIT_SP, 19f);
         head.setTypeface(head.getTypeface(), Typeface.BOLD);
         head.setPadding(0, 0, 0, dp(10));
         root.addView(head);
 
+        LinearLayout list = new LinearLayout(getContext());
+        list.setOrientation(LinearLayout.VERTICAL);
         for (int i = 0; i < LABELS.length; i++) {
             final String value = VALUES[i];
             boolean sel = value.equals(current);
 
             RevealPreview preview = new RevealPreview(getContext(), value);
-            root.addView(OptionCard.build(getContext(), density, preview, 58f, LABELS[i], sel, accent,
+            list.addView(OptionCard.build(getContext(), density, preview, 58f, LABELS[i], sel, accent,
                     new Runnable() {
                         @Override public void run() {
                             onPick.onPick(value);
@@ -77,11 +74,19 @@ final class RevealStyleDialog extends Dialog {
                     }));
         }
 
+        // A fixed list of options can exceed the screen height on smaller devices (or with system
+        // font scaling up) and silently clip the last item(s) with nothing to scroll — wrap it.
+        ScrollView scroll = new ScrollView(getContext());
+        scroll.addView(list);
+        root.addView(scroll, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+
         setContentView(root);
         if (window != null) {
+            int maxHeight = (int) (getContext().getResources().getDisplayMetrics().heightPixels * 0.8f);
             window.setLayout(
                     Math.min(getContext().getResources().getDisplayMetrics().widthPixels - dp(44), dp(420)),
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                    maxHeight);
         }
     }
 
@@ -120,9 +125,6 @@ final class RevealStyleDialog extends Dialog {
                 return;
             }
 
-            boolean crumble = mode.endsWith("_crumble");
-            String base = crumble ? mode.substring(0, mode.length() - "_crumble".length()) : mode;
-
             // opaque panel
             p.setColor(0xFF232323);
             canvas.drawRoundRect(r, rad, rad, p);
@@ -130,7 +132,7 @@ final class RevealStyleDialog extends Dialog {
             float cx = w / 2f;
             float cy = top + (h - top) / 2f;
 
-            if ("panel".equals(base)) {
+            if ("panel".equals(mode)) {
                 // eye glyph
                 p.setStyle(Paint.Style.STROKE);
                 p.setStrokeWidth(dp(1.4f));
@@ -138,37 +140,16 @@ final class RevealStyleDialog extends Dialog {
                 canvas.drawOval(cx - dp(9), cy - dp(5.5f), cx + dp(9), cy + dp(5.5f), p);
                 p.setStyle(Paint.Style.FILL);
                 canvas.drawCircle(cx, cy, dp(2.6f), p);
-                if (crumble) drawGrid(canvas, 0, top, w, h);
-                return;
-            }
-
-            if ("confetti".equals(base)) {
-                p.setStyle(Paint.Style.FILL);
-                int n = 50;
-                Random g = new Random(mode.hashCode());
-                int[] palette = { accent, 0xFFFFFFFF, 0xFF1A1A1A };
-                for (int i = 0; i < n; i++) {
-                    float x = g.nextFloat() * w;
-                    float y = top + g.nextFloat() * (h - top);
-                    float rot = g.nextFloat() * 360f;
-                    float s = dp(1.6f + g.nextFloat() * 1.6f);
-                    p.setColor(palette[g.nextInt(palette.length)]);
-                    p.setAlpha(140 + g.nextInt(100));
-                    canvas.save();
-                    canvas.rotate(rot, x, y);
-                    canvas.drawRect(x - s, y - s * 0.6f, x + s, y + s * 0.6f, p);
-                    canvas.restore();
-                }
                 return;
             }
 
             // shimmer / burst — particle field
             p.setStyle(Paint.Style.FILL);
             int n = 60;
-            Random g = new Random(base.hashCode());
+            Random g = new Random(mode.hashCode());
             for (int i = 0; i < n; i++) {
                 float x, y;
-                if ("burst".equals(base)) {
+                if ("burst".equals(mode)) {
                     double ang = g.nextDouble() * Math.PI * 2;
                     double dist = Math.pow(g.nextDouble(), 0.5); // bias outward
                     x = cx + (float) (Math.cos(ang) * dist * (w / 2f));
@@ -181,22 +162,6 @@ final class RevealStyleDialog extends Dialog {
                 p.setColor((a << 24) | 0x00C6D0DA);
                 canvas.drawCircle(x, y, dp(1f), p);
             }
-            if (crumble) drawGrid(canvas, 0, top, w, h);
-        }
-
-        /** A faint grid overlay hinting at the pixel-block dissolve this style reveals with. */
-        private void drawGrid(Canvas canvas, float left, float top, float right, float bottom) {
-            p.setStyle(Paint.Style.STROKE);
-            p.setStrokeWidth(dp(0.6f));
-            p.setColor(0x22FFFFFF);
-            float cell = dp(7f);
-            for (float x = left + cell; x < right; x += cell) {
-                canvas.drawLine(x, top, x, bottom, p);
-            }
-            for (float y = top + cell; y < bottom; y += cell) {
-                canvas.drawLine(left, y, right, y, p);
-            }
-            p.setStyle(Paint.Style.FILL);
         }
     }
 }
