@@ -11,6 +11,7 @@ import app.template.patches.letterboxd.theme.setStyleItem
 import app.template.patches.letterboxd.theme.styleItemValue
 import app.template.patches.letterboxd.theme.upsertColor
 import app.template.patches.shared.Constants.COMPATIBILITY_LETTERBOXD
+import org.w3c.dom.Element
 
 /**
  * `Widget.Letterboxd.BottomSheet.Modal` (the log/rate/similar action sheets) paints its background
@@ -76,6 +77,18 @@ internal val modThemeResourcePatch = resourcePatch {
             // tag_background_color (film/list tag chips) is its own alias of colorPrimary too —
             // same "slate" problem as the bottom sheet, same fix: repoint it at our indirection.
             upsertColor(document, resources, "tag_background_color", "@color/$BOTTOM_SHEET_BG")
+        }
+        // The tag chip's pointed ends aren't colour-resource-backed at all: tag_tail.xml and
+        // tag_nose.xml hardcode "#445566" as a literal fillColor, so the colors.xml edit above
+        // (which only reaches tag_background_color, the flat middle section) never touched them —
+        // the chip stayed two-tone-broken. Point both at the same indirection colour directly.
+        for (drawable in listOf("res/drawable/tag_tail.xml", "res/drawable/tag_nose.xml")) {
+            document(drawable).use { document ->
+                val paths = document.getElementsByTagName("path")
+                for (i in 0 until paths.length) {
+                    (paths.item(i) as Element).setAttribute("android:fillColor", "@color/$BOTTOM_SHEET_BG")
+                }
+            }
         }
         document("res/values/styles.xml").use { document ->
             val current = styleItemValue(document, "Widget.Letterboxd.BottomSheet.Modal", "backgroundTint")

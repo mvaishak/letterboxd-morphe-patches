@@ -156,8 +156,8 @@ public final class StreamingButton {
                     Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
             int onAccent = AccentPresets.isLight(accent) ? 0xFF141414 : 0xFFFFFFFF;
             float density = ctx.getResources().getDisplayMetrics().density;
-            int size = Math.round(34f * density);
-            int iconSize = Math.round(15f * density);
+            int size = Math.round(40f * density);
+            int iconSize = Math.round(18f * density);
 
             MaterialButton button = new MaterialButton(ctx);
             button.setTag(TAG);
@@ -185,8 +185,10 @@ public final class StreamingButton {
                 }
             });
 
+            int gap = Math.round(10f * density);
             ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(size, size);
-            lp.setMarginStart(Math.round(8f * density));
+            lp.setMarginStart(gap);
+            lp.setMarginEnd(gap);
             row.addView(button, row.indexOfChild(trailer) + 1, lp);
         } catch (Throwable ignored) {
         }
