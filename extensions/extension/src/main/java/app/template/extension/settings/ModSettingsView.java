@@ -31,8 +31,8 @@ final class ModSettingsView extends ScrollView {
     private static final String[] CONFETTI_COLOR_LABELS = { "Accent", "Letterboxd colors", "Classic red" };
     private static final String[] CONFETTI_COLOR_VALUES = { "accent", "letterboxd", "red" };
 
-    private static final String[] STREAMING_APP_LABELS = { "Stremio", "Nuvio" };
-    private static final String[] STREAMING_APP_VALUES = { "stremio", "nuvio" };
+    private static final String[] STREAMING_APP_LABELS = { "Stremio", "Nuvio", "Plex" };
+    private static final String[] STREAMING_APP_VALUES = { "stremio", "nuvio", "plex" };
 
 
     private final Context ctx;

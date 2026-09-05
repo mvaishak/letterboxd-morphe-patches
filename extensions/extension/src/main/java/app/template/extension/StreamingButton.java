@@ -28,8 +28,12 @@ import java.util.regex.Pattern;
 
 /**
  * "Open in player" — adds a small, icon-only button next to Trailer on a film's page that opens
- * the film in Stremio or Nuvio (Mod settings' "Streaming app" choice), tinted with the current
- * accent colour. Injected at the top of {@code FilmHeaderFragment.onViewCreated}.
+ * the film in Stremio, Nuvio or Plex (Mod settings' "Streaming app" choice), tinted with the
+ * current accent colour. Injected at the top of {@code FilmHeaderFragment.onViewCreated}.
+ *
+ * <p>Stremio and Nuvio take a deep link keyed on the IMDb id; Plex has no public IMDb-to-slug
+ * mapping, so it gets a title (+ year) search on {@code watch.plex.tv} instead — best effort,
+ * lands the user on a search result rather than straight on the film.
  *
  * <p>Deliberately icon-only and compact: an earlier text-labelled version ("STREMIO" as a full
  * pill, matching trailer_button's width) overflowed that row on real devices — the row's width is
@@ -56,6 +60,8 @@ public final class StreamingButton {
     private static Method mGetLinks;
     private static Method mGetType;
     private static Method mGetUrl;
+    private static Method mGetName;
+    private static Method mGetReleaseYear;
 
     private StreamingButton() {}
 
@@ -89,8 +95,12 @@ public final class StreamingButton {
                     }
                     if (film == null) return; // still loading — try again next layout pass
 
+                    String app = Prefs.streamingApp();
                     String imdbId = findImdbId(film);
-                    if (imdbId != null) addButton(row, trailer, imdbId);
+                    String query = "plex".equals(app) ? filmSearchQuery(film) : null;
+                    // Stremio/Nuvio need the IMDb id; Plex only needs a title to search.
+                    boolean canOpen = "plex".equals(app) ? query != null : imdbId != null;
+                    if (canOpen) addButton(row, trailer, imdbId, query, app);
                     detach(wrapper, self[0]); // film resolved either way — nothing more to wait for
                 }
             };
@@ -146,9 +156,29 @@ public final class StreamingButton {
         return null;
     }
 
+    /** "Title year" for a Plex search, or null if the film has no readable title. */
+    private static String filmSearchQuery(Object film) {
+        try {
+            if (mGetName == null) mGetName = film.getClass().getMethod("getName");
+            Object name = mGetName.invoke(film);
+            if (!(name instanceof String) || ((String) name).trim().isEmpty()) return null;
+            String query = ((String) name).trim();
+            try {
+                if (mGetReleaseYear == null) mGetReleaseYear = film.getClass().getMethod("getReleaseYear");
+                Object year = mGetReleaseYear.invoke(film);
+                if (year instanceof Integer && (Integer) year > 0) query = query + " " + year;
+            } catch (Throwable ignored) {
+            }
+            return query;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     // --- button --------------------------------------------------------------
 
-    private static void addButton(ViewGroup row, View trailer, final String imdbId) {
+    private static void addButton(ViewGroup row, View trailer, final String imdbId,
+                                  final String query, final String app) {
         try {
             android.content.Context ctx = row.getContext();
             int accent = AccentPresets.previewColor(ctx,
@@ -161,8 +191,10 @@ public final class StreamingButton {
 
             MaterialButton button = new MaterialButton(ctx);
             button.setTag(TAG);
-            String app = Prefs.streamingApp();
-            button.setContentDescription("nuvio".equals(app) ? "Open in Nuvio" : "Open in Stremio");
+            button.setContentDescription(
+                    "nuvio".equals(app) ? "Open in Nuvio"
+                            : "plex".equals(app) ? "Open in Plex"
+                            : "Open in Stremio");
             button.setText(null);
             button.setInsetTop(0);
             button.setInsetBottom(0);
@@ -182,7 +214,7 @@ public final class StreamingButton {
 
             button.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) {
-                    launch(v, imdbId, app);
+                    launch(v, imdbId, query, app);
                 }
             });
 
@@ -195,16 +227,22 @@ public final class StreamingButton {
         }
     }
 
-    private static void launch(View v, String imdbId, String app) {
+    private static void launch(View v, String imdbId, String query, String app) {
         try {
-            // Confirmed against each app's own deep-link parsing source:
             // - Stremio: stremio:///detail/movie/<imdbId>/<imdbId> (id doubled, its own convention).
             // - Nuvio: nuvio://movie/<imdbId> — its stremio:// filter is for addon installs only
             //   (host must look like a domain), never meta lookups, so Stremio's own URI silently
-            //   no-ops there (opens the app, does nothing with the link).
-            Uri uri = "nuvio".equals(app)
-                    ? Uri.parse("nuvio://movie/" + imdbId)
-                    : Uri.parse("stremio:///detail/movie/" + imdbId + "/" + imdbId);
+            //   no-ops there.
+            // - Plex: no public IMDb-to-slug mapping, so a title search on watch.plex.tv, which the
+            //   Plex app claims as an app link. Lands on a search result, not the film directly.
+            Uri uri;
+            if ("nuvio".equals(app)) {
+                uri = Uri.parse("nuvio://movie/" + imdbId);
+            } else if ("plex".equals(app)) {
+                uri = Uri.parse("https://watch.plex.tv/search?query=" + Uri.encode(query));
+            } else {
+                uri = Uri.parse("stremio:///detail/movie/" + imdbId + "/" + imdbId);
+            }
             v.getContext().startActivity(new Intent(Intent.ACTION_VIEW, uri));
         } catch (ActivityNotFoundException ignored) {
         } catch (Throwable ignored) {
