@@ -20,9 +20,10 @@ final class ConfettiColorDialog extends Dialog {
         void onPick(String value);
     }
 
-    private static final String[] LABELS = { "Accent", "Letterboxd colors" };
-    private static final String[] VALUES = { "accent", "letterboxd" };
+    private static final String[] LABELS = { "Accent", "Letterboxd colors", "Classic red" };
+    private static final String[] VALUES = { "accent", "letterboxd", "red" };
     private static final int[] LETTERBOXD_SWATCHES = { 0xFFFF8000, 0xFF00E054, 0xFF40BCF4 };
+    private static final int[] RED_SWATCHES = { 0xFFE63946, 0xFFFFC93C, 0xFFB3122A };
 
     private final float density;
     private final int accent;
@@ -94,11 +95,13 @@ final class ConfettiColorDialog extends Dialog {
             int h = getHeight();
             float r = h / 2.4f;
             float cy = h / 2f;
-            if ("letterboxd".equals(value)) {
+            int[] swatches = "letterboxd".equals(value) ? LETTERBOXD_SWATCHES
+                    : "red".equals(value) ? RED_SWATCHES : null;
+            if (swatches != null) {
                 float gap = r * 2.6f;
                 float startX = r + dp(4);
-                for (int i = 0; i < LETTERBOXD_SWATCHES.length; i++) {
-                    p.setColor(LETTERBOXD_SWATCHES[i]);
+                for (int i = 0; i < swatches.length; i++) {
+                    p.setColor(swatches[i]);
                     canvas.drawCircle(startX + i * gap, cy, r, p);
                 }
             } else {

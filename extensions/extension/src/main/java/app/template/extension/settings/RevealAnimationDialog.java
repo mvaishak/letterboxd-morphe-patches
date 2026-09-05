@@ -23,7 +23,7 @@ final class RevealAnimationDialog extends Dialog {
         void onPick(String value);
     }
 
-    private static final String[] LABELS = { "Default", "Crumble", "Confetti" };
+    private static final String[] LABELS = { "Pop", "Crumble", "Confetti" };
     private static final String[] VALUES = { "default", "crumble", "confetti" };
 
     private final float density;

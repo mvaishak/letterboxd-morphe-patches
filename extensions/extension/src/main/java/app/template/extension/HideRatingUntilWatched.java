@@ -216,11 +216,14 @@ public final class HideRatingUntilWatched {
 
         int[] palette = null;
         if (transition == SpoilerOverlayView.CONFETTI) {
-            if ("letterboxd".equals(Prefs.confettiColor())) {
+            String confettiColor = Prefs.confettiColor();
+            if ("letterboxd".equals(confettiColor)) {
                 palette = ConfettiPalette.LETTERBOXD;
+            } else if ("red".equals(confettiColor)) {
+                palette = ConfettiPalette.RED;
             } else {
-                int accent = AccentPresets.previewColor(
-                        Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+                int accent = AccentPresets.previewColor(wrapper.getContext(),
+                        Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(wrapper.getContext())),
                         Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
                 palette = ConfettiPalette.forAccent(accent);
             }

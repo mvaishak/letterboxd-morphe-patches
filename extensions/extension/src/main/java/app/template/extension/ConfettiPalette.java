@@ -6,6 +6,9 @@ final class ConfettiPalette {
     /** Letterboxd's own three brand hues (orange/green/blue) plus black/white for contrast. */
     static final int[] LETTERBOXD = {0xFFFF8000, 0xFF00E054, 0xFF40BCF4, 0xFFFFFFFF, 0xFF1A1A1A};
 
+    /** A classic party-confetti red/gold, plus black/white for contrast. */
+    static final int[] RED = {0xFFE63946, 0xFFFFC93C, 0xFFB3122A, 0xFFFFFFFF, 0xFF1A1A1A};
+
     private ConfettiPalette() {}
 
     /** The current accent colour, plus a lighter and a darker tone, plus black/white. */
