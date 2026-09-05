@@ -16,10 +16,8 @@ built for [Morphe](https://morphe.software).
 
 ## About
 
-A personal collection of patches for Letterboxd on Android. Theming, layout
-tweaks, a few small conveniences. No unlocking, no ads, no tracking. Nothing
-new talking to a server. Open in player just hands off to an app already on
-your phone.
+A collection of patches for Letterboxd on Android. Theming, layout
+tweaks, a few small conveniences.
 
 Almost everything lives in one in-app screen, **Letterboxd Mods**, instead of
 the patcher. Pick your patches once. Change styling, ratings behaviour, and
@@ -136,10 +134,8 @@ The film's community rating is fully covered until you tap.
 
 | Confetti | Frosted panel | Tap to burst | Tap-to-show link |
 | :---: | :---: | :---: | :---: |
-| <img src="docs/screenshots/spoiler-shimmer-updated.gif" width="220"> | <img src="docs/screenshots/spoiler-panel.jpg" width="220"> | <img src="docs/screenshots/spoiler-burst.jpg" width="220"> | <img src="docs/screenshots/spoiler-link.jpg" width="220"> |
+| <img src="docs/screenshots/confetti.gif" width="220"> | <img src="docs/screenshots/spoiler-panel.jpg" width="220"> | <img src="docs/screenshots/spoiler-burst.jpg" width="220"> | <img src="docs/screenshots/spoiler-link.jpg" width="220"> |
 
-Crumble is a reveal animation on top of any cover, no static shot for that
-one either.
 
 ---
 
@@ -192,10 +188,6 @@ about your APK doesn't match.
 
 <!-- PATCHES_END -->
 
-> The table above, between the `PATCHES_START` / `PATCHES_END` markers, is
-> regenerated on every release and may lag one release behind
-> [The Mods screen](#the-mods-screen) above. That section is the one to
-> trust. Don't hand-edit the table.
 
 ### Patch notes
 
