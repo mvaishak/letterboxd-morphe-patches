@@ -74,19 +74,20 @@ internal val modThemeResourcePatch = resourcePatch {
                 ?: throw PatchException("res/values/colors.xml has no root element")
             // Alias, not a literal hex: tracks colorPrimary's stock tone until OLED overlays it.
             upsertColor(document, resources, BOTTOM_SHEET_BG, "@color/colorPrimary")
-            // tag_background_color (film/list tag chips) is its own alias of colorPrimary too —
-            // same "slate" problem as the bottom sheet, same fix: repoint it at our indirection.
-            upsertColor(document, resources, "tag_background_color", "@color/$BOTTOM_SHEET_BG")
         }
-        // The tag chip's pointed ends aren't colour-resource-backed at all: tag_tail.xml and
-        // tag_nose.xml hardcode "#445566" as a literal fillColor, so the colors.xml edit above
-        // (which only reaches tag_background_color, the flat middle section) never touched them —
-        // the chip stayed two-tone-broken. Point both at the same indirection colour directly.
+        // Tag chips (a-list, re-release, etc.) are deliberately left on plain colorPrimary, not
+        // our indirection: user feedback was to always match whatever colour other colorPrimary
+        // consumers (e.g. the "Film" pill button) use, in every theme, rather than force chips to
+        // full black under OLED and risk a mismatch against everything around them. The pointed
+        // ends aren't colour-resource-backed at all by default — tag_tail.xml and tag_nose.xml
+        // hardcode "#445566" as a literal fillColor — so without this edit they'd silently diverge
+        // from the (already-consistent) middle section under Material You. Point both at
+        // colorPrimary explicitly so all three pieces track the same value everywhere.
         for (drawable in listOf("res/drawable/tag_tail.xml", "res/drawable/tag_nose.xml")) {
             document(drawable).use { document ->
                 val paths = document.getElementsByTagName("path")
                 for (i in 0 until paths.length) {
-                    (paths.item(i) as Element).setAttribute("android:fillColor", "@color/$BOTTOM_SHEET_BG")
+                    (paths.item(i) as Element).setAttribute("android:fillColor", "@color/colorPrimary")
                 }
             }
         }
