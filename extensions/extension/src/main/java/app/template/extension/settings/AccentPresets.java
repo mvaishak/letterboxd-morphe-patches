@@ -93,15 +93,22 @@ public final class AccentPresets {
         return 0;
     }
 
-    /** The device's live Material You accent tone (1/2/3 = accent1/2/3_600), or null if unavailable. */
+    /**
+     * The device's live Material You accent tone (1/2/3 = accent1/2/3), or null if unavailable.
+     * Tone 200, not 600: the system reserves 600 for accents drawn on a *light* surface (that's
+     * the tone a light-themed app's colorAccent would dynamically resolve to). Letterboxd is
+     * always dark, so the tone that actually matches what shows up elsewhere on this device in
+     * dark contexts — Quick Settings tiles, toggles, notification shade — is the lighter one apps
+     * use for colorAccent on a dark theme.
+     */
     static Integer materialYouTone(Context ctx, int family) {
         if (ctx == null || Build.VERSION.SDK_INT < 31) return null;
         try {
             int id;
             switch (family) {
-                case 2: id = android.R.color.system_accent2_600; break;
-                case 3: id = android.R.color.system_accent3_600; break;
-                default: id = android.R.color.system_accent1_600; break;
+                case 2: id = android.R.color.system_accent2_200; break;
+                case 3: id = android.R.color.system_accent3_200; break;
+                default: id = android.R.color.system_accent1_200; break;
             }
             return ctx.getColor(id);
         } catch (Throwable ignored) {
