@@ -29,8 +29,9 @@ public final class Prefs {
     // "Hide Where to Watch"
     public static final String KEY_HIDE_WHERE_TO_WATCH = "hide_where_to_watch";
 
-    // "Open in player" (Stremio)
+    // "Open in player"
     public static final String KEY_OPEN_IN_PLAYER = "open_in_player";
+    public static final String KEY_STREAMING_APP = "streaming_app"; // stremio | nuvio
 
     // "Match bottom nav to top bar color"
     public static final String KEY_MATCH_BOTTOM_NAV = "match_bottom_nav";
@@ -118,19 +119,24 @@ public final class Prefs {
         return getBoolean(KEY_HIDE_WHERE_TO_WATCH, false);
     }
 
-    /** Whether the "Open in player" (Stremio) button should be shown. Off by default. */
+    /** Whether the "Open in player" button should be shown. Off by default. */
     public static boolean openInPlayer() {
         return getBoolean(KEY_OPEN_IN_PLAYER, false);
     }
 
-    /** Tap-to-reveal transition ({@code default}, {@code crumble} or {@code confetti}). */
-    public static String revealAnimation() {
-        return getString(KEY_HIDE_RATINGS_ANIMATION, "default");
+    /** Which app the "Open in player" button targets ({@code stremio} or {@code nuvio}). */
+    public static String streamingApp() {
+        return getString(KEY_STREAMING_APP, "stremio");
     }
 
-    /** Confetti's palette source ({@code accent} or {@code letterboxd}). */
+    /** Tap-to-reveal transition ({@code default}, {@code crumble} or {@code confetti}). */
+    public static String revealAnimation() {
+        return getString(KEY_HIDE_RATINGS_ANIMATION, "confetti");
+    }
+
+    /** Confetti's palette source ({@code accent}, {@code letterboxd} or {@code red}). */
     public static String confettiColor() {
-        return getString(KEY_HIDE_RATINGS_CONFETTI_COLOR, "accent");
+        return getString(KEY_HIDE_RATINGS_CONFETTI_COLOR, "letterboxd");
     }
 
     /** Whether a short vibration plays when the rating is revealed. On by default. */

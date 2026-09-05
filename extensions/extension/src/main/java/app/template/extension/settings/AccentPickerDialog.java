@@ -35,7 +35,7 @@ final class AccentPickerDialog extends Dialog {
         super(context);
         this.density = context.getResources().getDisplayMetrics().density;
         this.callback = cb;
-        this.currentKey = currentKey == null ? "green" : currentKey;
+        this.currentKey = currentKey == null ? AccentPresets.defaultAccent(context) : currentKey;
         this.currentHex = currentHex == null ? "" : currentHex;
         build();
     }
@@ -59,6 +59,20 @@ final class AccentPickerDialog extends Dialog {
 
         LinearLayout list = new LinearLayout(getContext());
         list.setOrientation(LinearLayout.VERTICAL);
+
+        if (AccentPresets.materialYouAccentAvailable(getContext())) {
+            Integer tone = AccentPresets.materialYouTone(getContext());
+            if (tone != null) {
+                list.addView(card("Material You", tone, AccentPresets.MATERIAL_YOU.equals(currentKey),
+                        new View.OnClickListener() {
+                            @Override public void onClick(View v) {
+                                if (callback != null) callback.onChosen(AccentPresets.MATERIAL_YOU, "");
+                                dismiss();
+                            }
+                        }));
+            }
+        }
+
         for (Map.Entry<String, String> e : AccentPresets.LABELS.entrySet()) {
             final String key = e.getKey();
             list.addView(card(e.getValue(), AccentPresets.ARGB.get(key), key.equals(currentKey),
@@ -70,7 +84,7 @@ final class AccentPickerDialog extends Dialog {
                     }));
         }
         int customColor = AccentPresets.CUSTOM.equals(currentKey)
-                ? AccentPresets.previewColor(AccentPresets.CUSTOM, currentHex)
+                ? AccentPresets.previewColor(getContext(), AccentPresets.CUSTOM, currentHex)
                 : 0xFF2E2E2E;
         list.addView(card("Custom colour", customColor, AccentPresets.CUSTOM.equals(currentKey),
                 new View.OnClickListener() {
@@ -111,7 +125,7 @@ final class AccentPickerDialog extends Dialog {
     }
 
     private void openCustom() {
-        int start = AccentPresets.previewColor(currentKey, currentHex);
+        int start = AccentPresets.previewColor(getContext(), currentKey, currentHex);
         new HexPickerDialog(getContext(), start, new HexPickerDialog.OnPicked() {
             @Override public void onPicked(int argb) {
                 if (callback != null) {

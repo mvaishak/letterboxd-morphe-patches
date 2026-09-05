@@ -38,8 +38,9 @@ public final class ModChrome {
         if ("stock".equals(style)) return;
 
         if ("accentPill".equals(style)) {
-            int accent = AccentPresets.previewColor(
-                    Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+            android.content.Context ctx = nav.getContext();
+            int accent = AccentPresets.previewColor(ctx,
+                    Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(ctx)),
                     Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
             // ~22% alpha tint behind the selected icon
             int pill = (0x38 << 24) | (accent & 0xFFFFFF);

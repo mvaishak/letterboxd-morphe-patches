@@ -33,7 +33,7 @@ public final class ModTheme {
                     context.getPackageName()) != 0) {
                 surface = "stock";
             }
-            String accent = Prefs.getString(Prefs.KEY_THEME_ACCENT, "green");
+            String accent = Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(context));
             String navStyle = Prefs.getString(Prefs.KEY_NAV_INDICATOR, "stock");
             boolean hasSurface = "oled".equals(surface);
             boolean hasAccent = accent != null && !accent.isEmpty() && !"green".equals(accent);

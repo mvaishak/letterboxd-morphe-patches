@@ -110,7 +110,8 @@ final class NavStyleDialog extends Dialog {
             float cy = h / 2f;
             float dot = dp(4.5f);
 
-            boolean stockGreen = "green".equals(Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"));
+            boolean stockGreen = "green".equals(
+                    Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(getContext())));
             int selIconColor;
             boolean pill;
             int pillColor;

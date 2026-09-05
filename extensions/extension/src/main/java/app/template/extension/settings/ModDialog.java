@@ -34,8 +34,8 @@ final class ModDialog {
         try {
             Prefs.load(ctx);
             final float d = ctx.getResources().getDisplayMetrics().density;
-            final int accent = 0xFF000000 | AccentPresets.previewColor(
-                    Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+            final int accent = 0xFF000000 | AccentPresets.previewColor(ctx,
+                    Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(ctx)),
                     Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
 
             final Dialog dialog = new Dialog(ctx);

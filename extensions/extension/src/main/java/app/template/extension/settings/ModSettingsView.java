@@ -25,11 +25,14 @@ final class ModSettingsView extends ScrollView {
     private static final String[] REVEAL_LABELS = { "Frosted panel", "Tap-to-show link", "Shimmer", "Tap to burst" };
     private static final String[] REVEAL_VALUES = { "panel", "link", "shimmer", "burst" };
 
-    private static final String[] ANIMATION_LABELS = { "Default", "Crumble", "Confetti" };
+    private static final String[] ANIMATION_LABELS = { "Pop", "Crumble", "Confetti" };
     private static final String[] ANIMATION_VALUES = { "default", "crumble", "confetti" };
 
-    private static final String[] CONFETTI_COLOR_LABELS = { "Accent", "Letterboxd colors" };
-    private static final String[] CONFETTI_COLOR_VALUES = { "accent", "letterboxd" };
+    private static final String[] CONFETTI_COLOR_LABELS = { "Accent", "Letterboxd colors", "Classic red" };
+    private static final String[] CONFETTI_COLOR_VALUES = { "accent", "letterboxd", "red" };
+
+    private static final String[] STREAMING_APP_LABELS = { "Stremio", "Nuvio" };
+    private static final String[] STREAMING_APP_VALUES = { "stremio", "nuvio" };
 
 
     private final Context ctx;
@@ -43,14 +46,16 @@ final class ModSettingsView extends ScrollView {
     private TextView animationValue;
     private View confettiColorRow;
     private TextView confettiColorValue;
+    private View streamingAppRow;
+    private TextView streamingAppValue;
 
     ModSettingsView(Context context) {
         super(context);
         this.ctx = context;
         this.density = context.getResources().getDisplayMetrics().density;
         Prefs.load(context);
-        this.accent = 0xFF000000 | AccentPresets.previewColor(
-                Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+        this.accent = 0xFF000000 | AccentPresets.previewColor(context,
+                Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(context)),
                 Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
 
         column = new LinearLayout(context);
@@ -121,9 +126,34 @@ final class ModSettingsView extends ScrollView {
                 Prefs.KEY_HIDE_WHERE_TO_WATCH, false, false));
 
         header("Streaming");
-        column.addView(toggleRow("Open in player",
+        final PillToggle openInPlayer = new PillToggle(ctx);
+        column.addView(toggleRow(openInPlayer, "Open in player",
                 "Opens the film in streaming apps like Stremio or Nuvio",
                 Prefs.KEY_OPEN_IN_PLAYER, false, false));
+        streamingAppRow = choiceRow("Streaming app", null,
+                labelFor(STREAMING_APP_LABELS, STREAMING_APP_VALUES, Prefs.streamingApp()),
+                new Runnable() {
+                    @Override public void run() {
+                        new StreamingAppDialog(ctx, Prefs.streamingApp(), accent,
+                                new StreamingAppDialog.OnPick() {
+                                    @Override public void onPick(String value) {
+                                        Prefs.putString(Prefs.KEY_STREAMING_APP, value);
+                                        if (streamingAppValue != null) {
+                                            streamingAppValue.setText(
+                                                    labelFor(STREAMING_APP_LABELS, STREAMING_APP_VALUES, value));
+                                        }
+                                    }
+                                }).show();
+                    }
+                });
+        column.addView(streamingAppRow);
+        setRowEnabled(streamingAppRow, Prefs.getBoolean(Prefs.KEY_OPEN_IN_PLAYER, false));
+        openInPlayer.setOnToggle(new PillToggle.OnToggle() {
+            @Override public void onToggle(boolean checked) {
+                Prefs.putBoolean(Prefs.KEY_OPEN_IN_PLAYER, checked);
+                setRowEnabled(streamingAppRow, checked);
+            }
+        });
 
         header("Ratings");
         final PillToggle hideRatings = new PillToggle(ctx);
@@ -258,6 +288,7 @@ final class ModSettingsView extends ScrollView {
         if (title.equals("Cover")) revealValue = v;
         else if (title.equals("Reveal animation")) animationValue = v;
         else if (title.equals("Confetti color")) confettiColorValue = v;
+        else if (title.equals("Streaming app")) streamingAppValue = v;
 
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { onClick.run(); }
@@ -269,8 +300,8 @@ final class ModSettingsView extends ScrollView {
         LinearLayout row = rowBase();
         row.addView(titleBlock("Accent colour", null), textLp());
 
-        final int argb = 0xFF000000 | AccentPresets.previewColor(
-                Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+        final int argb = 0xFF000000 | AccentPresets.previewColor(ctx,
+                Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(ctx)),
                 Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
         View dot = new View(ctx);
         GradientDrawable d = new GradientDrawable();
@@ -285,7 +316,7 @@ final class ModSettingsView extends ScrollView {
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 new AccentPickerDialog(ctx,
-                        Prefs.getString(Prefs.KEY_THEME_ACCENT, "green"),
+                        Prefs.getString(Prefs.KEY_THEME_ACCENT, AccentPresets.defaultAccent(ctx)),
                         Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""),
                         new AccentPickerDialog.OnAccentChosen() {
                             @Override public void onChosen(String accentKey, String customHex) {
