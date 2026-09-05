@@ -9,7 +9,6 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -28,20 +27,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * "Open in player" — adds a button next to Trailer on a film's page that opens the film in
- * Stremio or Nuvio, matching {@code trailer_button}'s Material3 icon-button style but tinted with
- * the current accent colour. Injected at the top of {@code FilmHeaderFragment.onViewCreated}.
+ * "Open in player" — adds a small, icon-only button next to Trailer on a film's page that opens
+ * the film in Stremio, tinted with the current accent colour. Injected at the top of
+ * {@code FilmHeaderFragment.onViewCreated}.
+ *
+ * <p>Deliberately icon-only and compact: an earlier text-labelled version ("STREMIO" as a full
+ * pill, matching trailer_button's width) overflowed that row on real devices — the row's width is
+ * fixed by a `ConstraintLayout` guide (not `wrap_content`), so an extra wide sibling squeezed the
+ * runtime-minutes text into a single-character-per-line wrap. A small icon button leaves that row
+ * as close to its original footprint as possible.
  *
  * <p>The IMDb id comes from {@code FilmViewModel.getFilm()} (a {@code StateFlow<Film>}) — the
  * same model Letterboxd's own "View on IMDb" links use — via {@code Film.getLinks()}, all by
  * reflection since none of it is a stable public API. Film data loads asynchronously, so this is
  * reactive like "Hide ratings until watched": a layout listener retries until the film is loaded
  * (or errors), then gives up either way — no button appears if the title has no IMDb link.
- *
- * <p>Stremio's deep link ({@code stremio:///detail/movie/<imdbId>/<imdbId>}) is documented and
- * confirmed. Nuvio's is not publicly documented; this opens the film's IMDb page instead and lets
- * Nuvio claim it if it is registered as a link handler on the device — best effort until a real
- * scheme is confirmed.
  */
 public final class StreamingButton {
 
@@ -61,8 +61,7 @@ public final class StreamingButton {
 
     public static void enforce(final Fragment fragment) {
         try {
-            final String app = Prefs.streamingApp();
-            if (app == null || "off".equals(app)) return;
+            if (!Prefs.openInPlayer()) return;
 
             final View wrapper = fragment.getView();
             if (wrapper == null || Boolean.TRUE.equals(ATTACHED.get(wrapper))) return;
@@ -91,7 +90,7 @@ public final class StreamingButton {
                     if (film == null) return; // still loading — try again next layout pass
 
                     String imdbId = findImdbId(film);
-                    if (imdbId != null) addButton(row, trailer, imdbId, app);
+                    if (imdbId != null) addButton(row, trailer, imdbId);
                     detach(wrapper, self[0]); // film resolved either way — nothing more to wait for
                 }
             };
@@ -149,7 +148,7 @@ public final class StreamingButton {
 
     // --- button --------------------------------------------------------------
 
-    private static void addButton(ViewGroup row, View trailer, final String imdbId, final String app) {
+    private static void addButton(ViewGroup row, View trailer, final String imdbId) {
         try {
             android.content.Context ctx = row.getContext();
             int accent = AccentPresets.previewColor(
@@ -157,71 +156,49 @@ public final class StreamingButton {
                     Prefs.getString(Prefs.KEY_THEME_ACCENT_HEX, ""));
             int onAccent = AccentPresets.isLight(accent) ? 0xFF141414 : 0xFFFFFFFF;
             float density = ctx.getResources().getDisplayMetrics().density;
+            int size = Math.round(34f * density);
+            int iconSize = Math.round(15f * density);
 
-            // MaterialButton has no 4-arg (Context, AttributeSet, defStyleAttr, defStyleRes)
-            // constructor to force the exact "Widget.Material3.Button.Icon" style by resource id,
-            // but its plain constructor already resolves the app's own default filled-button style
-            // via the `materialButtonStyle` theme attribute — close enough, and icon gravity /
-            // insets below make it read the same as trailer_button (icon-then-text, no extra inset).
             MaterialButton button = new MaterialButton(ctx);
-            button.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);
+            button.setTag(TAG);
+            button.setContentDescription("Open in Stremio");
+            button.setText(null);
             button.setInsetTop(0);
             button.setInsetBottom(0);
-
-            button.setTag(TAG);
-            button.setText("nuvio".equals(app) ? "Nuvio" : "Stremio");
-            button.setAllCaps(true);
-            button.setIncludeFontPadding(false);
-            button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-            button.setLetterSpacing(0.1f);
-            button.setTypeface(AppFont.regular(ctx));
-            button.setMinHeight(0);
-            button.setMinimumHeight(0);
-            int padStart = Math.round(14f * density), padEnd = Math.round(16f * density);
-            button.setPaddingRelative(padStart, button.getPaddingTop(), padEnd, button.getPaddingBottom());
+            button.setPadding(0, 0, 0, 0);
+            button.setIconPadding(0);
+            button.setMinWidth(size);
+            button.setMinimumWidth(size);
+            button.setMinHeight(size);
+            button.setMinimumHeight(size);
+            button.setCornerRadius(size / 2);
 
             button.setBackgroundTintList(ColorStateList.valueOf(accent));
-            button.setTextColor(onAccent);
             button.setIconTint(ColorStateList.valueOf(onAccent));
-            int iconSize = Math.round(14f * density);
             button.setIcon(new PlayGlyph(iconSize, onAccent));
             button.setIconSize(iconSize);
+            button.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);
 
             button.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) {
-                    launch(v, app, imdbId);
+                    launch(v, imdbId);
                 }
             });
 
-            int marginEnd = dimenOrDefault(row.getContext(), "activity_horizontal_margin", 16f, density);
-            ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.setMarginEnd(marginEnd);
+            ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(size, size);
+            lp.setMarginStart(Math.round(8f * density));
             row.addView(button, row.indexOfChild(trailer) + 1, lp);
         } catch (Throwable ignored) {
         }
     }
 
-    private static void launch(View v, String app, String imdbId) {
+    private static void launch(View v, String imdbId) {
         try {
-            Uri uri = "stremio".equals(app)
-                    ? Uri.parse("stremio:///detail/movie/" + imdbId + "/" + imdbId)
-                    // Nuvio's own scheme is unconfirmed; fall back to the film's IMDb page and let
-                    // Nuvio claim it if it's registered as a link handler.
-                    : Uri.parse("https://www.imdb.com/title/" + imdbId + "/");
+            Uri uri = Uri.parse("stremio:///detail/movie/" + imdbId + "/" + imdbId);
             v.getContext().startActivity(new Intent(Intent.ACTION_VIEW, uri));
         } catch (ActivityNotFoundException ignored) {
         } catch (Throwable ignored) {
         }
-    }
-
-    private static int dimenOrDefault(android.content.Context ctx, String name, float fallbackDp, float density) {
-        try {
-            int id = ctx.getResources().getIdentifier(name, "dimen", ctx.getPackageName());
-            if (id != 0) return ctx.getResources().getDimensionPixelSize(id);
-        } catch (Throwable ignored) {
-        }
-        return Math.round(fallbackDp * density);
     }
 
     private static View byId(View root, String name) {

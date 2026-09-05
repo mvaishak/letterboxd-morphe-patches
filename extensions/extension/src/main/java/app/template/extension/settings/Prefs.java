@@ -26,8 +26,8 @@ public final class Prefs {
     // "Hide Where to Watch"
     public static final String KEY_HIDE_WHERE_TO_WATCH = "hide_where_to_watch";
 
-    // "Open in player" — off | stremio | nuvio
-    public static final String KEY_STREAMING_APP = "streaming_app";
+    // "Open in player" (Stremio)
+    public static final String KEY_OPEN_IN_PLAYER = "open_in_player";
 
     // "Match bottom nav to top bar color"
     public static final String KEY_MATCH_BOTTOM_NAV = "match_bottom_nav";
@@ -115,8 +115,8 @@ public final class Prefs {
         return getBoolean(KEY_HIDE_WHERE_TO_WATCH, false);
     }
 
-    /** Which app the "Open in player" button launches ({@code off}, {@code stremio}, {@code nuvio}). */
-    public static String streamingApp() {
-        return getString(KEY_STREAMING_APP, "off");
+    /** Whether the "Open in player" (Stremio) button should be shown. Off by default. */
+    public static boolean openInPlayer() {
+        return getBoolean(KEY_OPEN_IN_PLAYER, false);
     }
 }
