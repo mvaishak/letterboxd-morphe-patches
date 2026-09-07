@@ -2,8 +2,12 @@ package app.template.extension.settings;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.StateListDrawable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -131,11 +135,16 @@ public final class NavItems {
      * navigated to it and the listener should report it selected (so the item highlights and the
      * bottom bar stays), instead of running Letterboxd's own handling which doesn't know the id.
      */
+    /**
+     * From the head of the bar's item-selected listener. When it's the synthetic Watchlist id we
+     * open the watchlist and return {@code false}: {@link WatchlistNav#open} selects the Profile
+     * tab itself (that's the tab whose graph the watchlist lives in), so the bar and the app's
+     * tab state stay in agreement — highlighting our own item instead left tapping Profile broken.
+     */
     public static boolean onMenuSelected(Activity activity, MenuItem item) {
         try {
             if (item != null && item.getItemId() == WATCHLIST_ITEM_ID) {
-                WatchlistNav.navigate(activity);
-                return true;
+                WatchlistNav.open(activity);
             }
         } catch (Throwable ignored) {
         }
@@ -167,12 +176,6 @@ public final class NavItems {
      * style at runtime. So whatever recolours those recolours this too, on the next start.
      */
     private static void setWatchlistIcon(Context ctx, MenuItem item) {
-        int clockId = ctx.getResources().getIdentifier(
-                "ic_clock_black_24dp", "drawable", ctx.getPackageName());
-        if (clockId == 0) return;
-        Drawable base = ctx.getDrawable(clockId);
-        if (base == null || base.getConstantState() == null) return;
-
         int selected = 0xFF40BCF4;
         int blueId = ctx.getResources().getIdentifier("blue40BCF4", "color", ctx.getPackageName());
         if (blueId != 0) {
@@ -181,18 +184,66 @@ public final class NavItems {
             } catch (Throwable ignored) {
             }
         }
+        float d = ctx.getResources().getDisplayMetrics().density;
+        item.setIcon(new ClockIcon(0xFFAABBCC, selected, d));
+    }
 
-        // Two flat-tinted copies swapped by state — same shape as the app's own ic_*_selector,
-        // which is what makes the other icons light up. A single drawable + tint list did not
-        // pick up the checked state from BottomNavigationView.
-        Drawable on = base.getConstantState().newDrawable().mutate();
-        on.setTint(selected);
-        Drawable off = base.getConstantState().newDrawable().mutate();
-        off.setTint(0xFFAABBCC);
+    /**
+     * A clock, drawn on the canvas so nothing can strip its colour: BottomNavigationView clears
+     * the app's icon tint to null, which wipes a tint set on a VectorDrawable. Stateful — grey at
+     * rest, the accent colour when checked, like the app's {@code ic_*_selector} icons.
+     * {@link #getConstantState()} stays null so the bar uses this instance directly.
+     */
+    private static final class ClockIcon extends Drawable {
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final int rest;
+        private final int active;
+        private final float density;
+        private int color;
 
-        StateListDrawable sld = new StateListDrawable();
-        sld.addState(new int[] { android.R.attr.state_checked }, on);
-        sld.addState(new int[0], off);
-        item.setIcon(sld);
+        ClockIcon(int rest, int active, float density) {
+            this.rest = rest;
+            this.active = active;
+            this.density = density;
+            this.color = rest;
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeCap(Paint.Cap.ROUND);
+        }
+
+        @Override public boolean isStateful() {
+            return true;
+        }
+
+        @Override protected boolean onStateChange(int[] states) {
+            boolean checked = false;
+            for (int s : states) {
+                if (s == android.R.attr.state_checked || s == android.R.attr.state_selected) checked = true;
+            }
+            int next = checked ? active : rest;
+            if (next != color) {
+                color = next;
+                invalidateSelf();
+                return true;
+            }
+            return false;
+        }
+
+        @Override public void draw(Canvas c) {
+            Rect b = getBounds();
+            if (b.isEmpty()) return;
+            float cx = b.exactCenterX(), cy = b.exactCenterY();
+            float r = Math.min(b.width(), b.height()) * 0.42f;
+            paint.setColor(color);
+            paint.setStrokeWidth(2f * density);
+            c.drawCircle(cx, cy, r, paint);
+            c.drawLine(cx, cy, cx, cy - r * 0.55f, paint);
+            c.drawLine(cx, cy, cx + r * 0.5f, cy + r * 0.3f, paint);
+        }
+
+        @Override public int getIntrinsicWidth() { return Math.round(24 * density); }
+        @Override public int getIntrinsicHeight() { return Math.round(24 * density); }
+        @Override public void setAlpha(int a) { paint.setAlpha(a); }
+        @Override public void setColorFilter(ColorFilter cf) { paint.setColorFilter(cf); }
+        @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
     }
 }

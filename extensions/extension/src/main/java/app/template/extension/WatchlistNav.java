@@ -1,26 +1,20 @@
 package app.template.extension;
 
 import android.app.Activity;
+import android.util.Log;
 
-import androidx.navigation.NavController;
-import androidx.navigation.NavGraph;
-import androidx.navigation.NavOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
- * Sends the tabs NavController to the member's watchlist — the same destination
- * ({@code Route.MemberWatchlist}) Letterboxd's own {@code handleAppShortcuts} navigates to for
- * {@code letterboxd://shortcut/watchlist}, but called directly and synchronously from the
- * bottom-nav tap rather than through the deep-link coroutine (which also flipped the selected
- * tab to Profile in a second async step, hence an earlier two-tap confusion).
+ * Opens the member's watchlist ({@code Route.MemberWatchlist}).
  *
- * <p>Crucially it navigates with the <em>same</em> {@link NavOptions} the app's own tab switches
- * use — {@code launchSingleTop}, {@code restoreState}, and {@code popUpTo(graph start)} with
- * {@code saveState} — so the watchlist sits in the back stack as a peer of the other tabs. Bare
- * {@code navigate(route)} instead stacked it on top of the current tab, so the next tab tap only
- * popped it and a second tap was needed to actually switch.
- *
- * <p>The bottom bar stays put and the real watchlist screen (its own toolbar and filter chrome
- * included) is what loads; the caller returns {@code true} so the Watchlist item shows selected.
+ * <p>That destination lives inside the Member (profile) tab's nav graph — it is not reachable
+ * from the Popular tab's controller, and navigating to it cross-graph wedged the back stack
+ * (leaving it took a system back and several seconds). So this mirrors what Letterboxd's own
+ * {@code handleAppShortcuts} does for {@code letterboxd://shortcut/watchlist}: select the Profile
+ * tab through the bottom bar (a normal, fast tab switch), then on the next frame — once that
+ * tab's NavController is the active one — navigate to the watchlist within it. Leaving is then a
+ * normal tab switch.
  */
 public final class WatchlistNav {
 
@@ -28,27 +22,42 @@ public final class WatchlistNav {
 
     private WatchlistNav() {}
 
-    public static void navigate(Activity activity) {
+    public static void open(final Activity activity) {
         try {
-            Object ncObj = activity.getClass().getMethod("getNavController").invoke(activity);
-            if (!(ncObj instanceof NavController)) return;
-            NavController nc = (NavController) ncObj;
+            final BottomNavigationView bar = findBar(activity);
+            int profileId = activity.getResources().getIdentifier(
+                    "nav_profile", "id", activity.getPackageName());
+            final String memberId = currentMemberId();
+            if (bar == null || profileId == 0 || memberId == null || memberId.isEmpty()) return;
 
-            String memberId = currentMemberId();
-            if (memberId == null || memberId.isEmpty()) return;
+            bar.setSelectedItemId(profileId);
+            bar.post(new Runnable() {
+                @Override public void run() {
+                    try {
+                        Object nc = activity.getClass().getMethod("getNavController").invoke(activity);
+                        if (nc == null) return;
+                        Object route = Class.forName(PKG + ".ui.navigation.Route$MemberWatchlist")
+                                .getConstructor(String.class, String.class)
+                                .newInstance(memberId, null);
+                        nc.getClass().getMethod("navigate", Object.class).invoke(nc, route);
+                    } catch (Throwable t) {
+                        Log.d("MorpheNav", "watchlist navigate error", t);
+                    }
+                }
+            });
+        } catch (Throwable t) {
+            Log.d("MorpheNav", "watchlist open error", t);
+        }
+    }
 
-            Object route = Class.forName(PKG + ".ui.navigation.Route$MemberWatchlist")
-                    .getConstructor(String.class, String.class)
-                    .newInstance(memberId, null);
-
-            NavGraph graph = nc.getGraph();
-            NavOptions options = new NavOptions.Builder()
-                    .setLaunchSingleTop(true)
-                    .setRestoreState(true)
-                    .setPopUpTo(graph.getStartDestinationId(), false, true)
-                    .build();
-            nc.navigate(route, options);
-        } catch (Throwable ignored) {
+    static BottomNavigationView findBar(Activity activity) {
+        try {
+            int id = activity.getResources().getIdentifier(
+                    "bottom_navigation", "id", activity.getPackageName());
+            android.view.View v = id == 0 ? null : activity.findViewById(id);
+            return v instanceof BottomNavigationView ? (BottomNavigationView) v : null;
+        } catch (Throwable t) {
+            return null;
         }
     }
 
