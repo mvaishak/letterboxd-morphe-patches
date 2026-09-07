@@ -106,19 +106,23 @@ icon, before Profile.
 Hook: after `inflateMenu` in `setup(BottomNavigationView, MainActivity$Tab)V`
 (new `MainActivitySetupFingerprint`).
 
-### Watchlist routing — `setup$lambda$0`
+### Watchlist routing — `setup$lambda$0` → `WatchlistNav.open`
 
-Intercept `item.itemId == morphe_nav_watchlist` early, same shape as the existing
-`nav_log` special-case. Mechanism (decoded, pick at impl):
-- **(B, preferred)** `WatchlistFilmsFragment.Companion.newInstance(false,
-  <currentMemberId>, false, new WatchlistRequester(id))` (member id from
-  `CurrentMemberManager.INSTANCE`) into the app's own `@id/overlay_content`
-  full-screen container (in `activity_tabbed.xml`, ships `visibility=gone` for
-  exactly this); back press clears it. No NavController fight.
-- **(A, fallback)** navigate to `Member` route, then select `MeFragment`'s
-  Watchlist pager tab.
-`newInstance(ZLjava/lang/String;ZL…/requester/Requester;)` confirmed — `MeFragment`
-calls it this way today.
+Intercept the synthetic id early (same shape as the `nav_log` special-case), then
+open the watchlist as a **self-contained overlay screen**:
+`WatchlistFilmsFragment.Companion.newInstance(false, memberId, false,
+new WatchlistRequester(memberId))` (member id from `CurrentMemberManager.INSTANCE`,
+all by reflection) hosted in a `FrameLayout` added to `android.R.id.content`, with
+its own status-bar-inset padding and a back-arrow toolbar, pushed onto the back
+stack so system back / the arrow dismiss it. An `OnBackStackChangedListener`
+removes the overlay when its entry pops.
+
+Rejected: re-firing `letterboxd://shortcut/watchlist` (first tried). That route
+selects the Profile tab and then navigates a nested controller in two async
+steps — the bottom bar and the shown content ended up out of sync (a first tap
+landed on Profile, a second was needed for the watchlist). The fragment
+transaction has none of that coupling. `MainActivity` is an `AppCompatActivity`
+so `getSupportFragmentManager()` is available.
 
 ### Launch tab — `LaunchTab.menuId(int lastUsedId)` in `setup`
 
