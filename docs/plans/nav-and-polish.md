@@ -106,23 +106,35 @@ icon, before Profile.
 Hook: after `inflateMenu` in `setup(BottomNavigationView, MainActivity$Tab)V`
 (new `MainActivitySetupFingerprint`).
 
-### Watchlist routing — `setup$lambda$0` → `WatchlistNav.navigate`
+### Watchlist routing — `setup$lambda$0` → `WatchlistNav` (final)
 
-Intercept the synthetic id at the head of the listener, call
-`MainActivity.getNavController().navigate(new Route$MemberWatchlist(memberId, null))`
-(all by reflection — the same destination `handleAppShortcuts` uses), and
-**return `true`** so the item shows selected. The bottom bar is always present in
-`activity_main`, so it just stays; the real MemberWatchlist screen loads with its
-own toolbar and filter chrome. Icon: `@drawable/ic_clock_black_24dp` (Letterboxd's
-own clock), per-item `ColorStateList` tint grey `#AABBCC` / blue `#40BCF4` on
-`state_checked` to match the other items (the bar clears its global icon tint).
+`Route.MemberWatchlist` lives **inside the Member (Profile) tab's nav graph** — it
+is not a peer of the five tab destinations, and `MainActivity.getNavController()`
+from another tab returns a nested controller that can't resolve it. Navigating to
+it cross-graph wedged the back stack (leaving took a system back + ~8s).
 
-Rejected approaches:
-- **Full-screen overlay hosting `WatchlistFilmsFragment`** — worked, but covered
-  the bottom bar and showed only the bare list, no filters/toolbar.
-- **Re-firing `letterboxd://shortcut/watchlist`** — that route flips to the
-  Profile tab and then navigates in a second async step; bar and content ended
-  up out of sync (needed two taps).
+Final flow (`WatchlistNav`, all reflection):
+- **open**: `bar.setSelectedItemId(nav_profile)` — a normal fast tab switch that
+  brings the Member tab's controller forward — then on `bar.post` navigate
+  `Route$MemberWatchlist` within it; set `WatchlistNav.showing = true`.
+- `onMenuSelected` returns `true` for the synthetic id → the Watchlist item shows
+  selected.
+- **any other bottom-nav tap while `showing`**: `onMenuSelected` calls
+  `WatchlistNav.dismiss` (one `popBackStack` to peel the watchlist off the Profile
+  tab), clears the flag, returns `false` → the app's own tab switch then runs from
+  a clean root, single tap.
+- Watchlist tap while already `showing` → no-op.
+
+Icon: a hand-drawn `ClockIcon` (`Drawable`) in `NavItems`, `getConstantState()`
+null so the bar uses the instance directly; stateful, grey `#AABBCC` at rest and
+a live read of `@color/blue40BCF4` when `state_checked` — a tinted VectorDrawable
+lost its tint to the bar's null `itemIconTint`.
+
+Rejected: full-screen overlay hosting `WatchlistFilmsFragment` (covered the bar,
+no filters); re-firing `letterboxd://shortcut/watchlist` (async two-step, bar/
+content out of sync); navigating the route directly (cross-graph back-stack
+wedge); keeping the Watchlist item highlighted while the app sat on the Profile
+tab (broke the Profile tab tap).
 
 ### Launch tab — `LaunchTab.menuId(int lastUsedId)` in `setup`
 
