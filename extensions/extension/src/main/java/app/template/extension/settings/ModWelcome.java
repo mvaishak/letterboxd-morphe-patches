@@ -2,30 +2,43 @@ package app.template.extension.settings;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.LeadingMarginSpan;
 import android.text.style.StyleSpan;
+import android.view.View;
 
 /**
- * One-time "what's new / how to open Mod settings" dialog, shown once after a patch. Injected into
+ * One-time "what's new" dialog, shown once after each patch. Injected into
  * {@code MainActivity.onResume} (not {@code onCreate}) so it fires after the splash / login flow,
  * and it is only marked seen once the user actually dismisses it.
+ *
+ * <p>Per release: rewrite {@link #BODY} to cover only that release's user-facing changes, then
+ * bump {@link #BUILD}. {@link #FOOTER} (how to open the Mods screen) and the "Full changes" link
+ * are permanent — do not fold release notes into them.
  */
 public final class ModWelcome {
 
     private ModWelcome() {}
 
-    /** Bump when {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 3;
+    /** Bump every time {@link #BODY} changes so returning users see it once more. */
+    private static final int BUILD = 4;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
 
-    // One block per release. Keep it to what changed, short bullets, no wall of text — the full
-    // feature list lives in the Mods screen itself. Bump BUILD above every time this changes.
+    private static final String RELEASES_URL =
+            "https://github.com/mvaishak/letterboxd-morphe-patches/releases";
+
+    // THIS RELEASE ONLY. Short bullets, section name on its own line with bullets under it, blank
+    // line between sections. Group aggressively — aim for six bullets or fewer. Skip internal
+    // churn (refactors, anything added then reverted in the same batch). The full feature list
+    // lives in the Mods screen and the README, not here.
     private static final String BODY =
             "Bottom navigation\n"
           + "•  Choose which tabs the bar shows, up to five\n"
@@ -37,9 +50,12 @@ public final class ModWelcome {
           + "Film pages\n"
           + "•  Runtime can read 1h 47m instead of 107 mins\n\n"
           + "New patch: Hide ads\n"
-          + "•  Stops the banner ads on free accounts from loading\n\n"
-          + "Open the Mods screen by long-pressing the Letterboxd app "
-          + "icon, or the settings gear on your profile tab.";
+          + "•  Stops the banner ads on free accounts from loading";
+
+    /** Permanent closer — every release. New-to-this-version users still need this. */
+    private static final String FOOTER =
+            "Open the Mods screen by long-pressing the Letterboxd app icon, or the settings "
+          + "gear on your profile tab.";
 
     private static volatile boolean shown = false;
     private static volatile boolean scheduled = false;
@@ -65,7 +81,7 @@ public final class ModWelcome {
                             return;
                         }
                         shown = true;
-                        ModDialog.show(activity, TITLE, format(activity, BODY), "Got it", null, null, null,
+                        ModDialog.show(activity, TITLE, format(activity), "Got it", null, null, null,
                                 new Runnable() {
                                     @Override public void run() {
                                         Prefs.putString(KEY, String.valueOf(BUILD));
@@ -81,16 +97,16 @@ public final class ModWelcome {
     }
 
     /**
-     * Turns the plain {@link #BODY} into something readable: a line that has bullets under it is
-     * a section heading (bold, white); bullet lines get a hanging indent so wrapped text lines up
-     * under the first word instead of falling back to the margin. Keeps the source string simple
-     * to edit each release — just section names, "• " bullets, and blank lines between.
+     * Builds the styled dialog text: a line that has bullets under it becomes a bold white
+     * heading; bullet lines get a hanging indent so wrapped text lines up under the first word.
+     * Then the permanent {@link #FOOTER} and a tappable "Full changes on GitHub" link.
      */
-    private static CharSequence format(Context ctx, String raw) {
+    private static CharSequence format(Context ctx) {
         try {
             float d = ctx.getResources().getDisplayMetrics().density;
             int hang = Math.round(16 * d);
-            String[] lines = raw.split("\n", -1);
+
+            String[] lines = (BODY + "\n\n" + FOOTER).split("\n", -1);
             SpannableStringBuilder sb = new SpannableStringBuilder();
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
@@ -106,9 +122,23 @@ public final class ModWelcome {
                     sb.setSpan(new ForegroundColorSpan(0xFFFFFFFF), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
+
+            sb.append("\n\n");
+            int linkStart = sb.length();
+            sb.append("Full changes on GitHub");
+            sb.setSpan(new ClickableSpan() {
+                @Override public void onClick(View widget) {
+                    try {
+                        widget.getContext().startActivity(
+                                new Intent(Intent.ACTION_VIEW, Uri.parse(RELEASES_URL))
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    } catch (Throwable ignored) {
+                    }
+                }
+            }, linkStart, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             return sb;
         } catch (Throwable t) {
-            return raw;
+            return BODY + "\n\n" + FOOTER;
         }
     }
 }

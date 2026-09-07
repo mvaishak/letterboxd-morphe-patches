@@ -1,8 +1,10 @@
 package app.template.extension.settings;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -274,6 +276,34 @@ final class ModSettingsView extends ScrollView {
                 refreshRevealRows();
             }
         });
+
+        header("About");
+        column.addView(linkRow("Source and releases",
+                "github.com/mvaishak/letterboxd-morphe-patches",
+                "https://github.com/mvaishak/letterboxd-morphe-patches"));
+    }
+
+    private View linkRow(String title, String subtitle, final String url) {
+        LinearLayout row = rowBase();
+        row.addView(titleBlock(title, subtitle), textLp());
+
+        TextView open = new TextView(ctx);
+        open.setText("↗");
+        open.setTextColor(accent);
+        open.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+        open.setGravity(Gravity.CENTER_VERTICAL);
+        row.addView(open);
+
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                try {
+                    ctx.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (Throwable ignored) {
+                }
+            }
+        });
+        return row;
     }
 
     // --- rows -----------------------------------------------------------
