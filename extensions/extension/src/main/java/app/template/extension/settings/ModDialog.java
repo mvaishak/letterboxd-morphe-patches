@@ -21,13 +21,13 @@ final class ModDialog {
 
     private ModDialog() {}
 
-    static void show(Context ctx, String title, String message,
+    static void show(Context ctx, String title, CharSequence message,
                      String positiveText, final Runnable onPositive,
                      String negativeText, final Runnable onNegative) {
         show(ctx, title, message, positiveText, onPositive, negativeText, onNegative, null);
     }
 
-    static void show(Context ctx, String title, String message,
+    static void show(Context ctx, String title, CharSequence message,
                      String positiveText, final Runnable onPositive,
                      String negativeText, final Runnable onNegative,
                      final Runnable onDismiss) {
