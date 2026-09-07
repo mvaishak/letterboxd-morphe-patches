@@ -29,6 +29,9 @@ public final class Prefs {
     // "Hide Where to Watch"
     public static final String KEY_HIDE_WHERE_TO_WATCH = "hide_where_to_watch";
 
+    // "Runtime as 1h 47m" on the film page
+    public static final String KEY_RUNTIME_HHMM = "runtime_hhmm";
+
     // "Open in player"
     public static final String KEY_OPEN_IN_PLAYER = "open_in_player";
     public static final String KEY_STREAMING_APP = "streaming_app"; // stremio | nuvio | plex

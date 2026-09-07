@@ -157,6 +157,23 @@ internal object FilmHeaderOnViewCreatedFingerprint : Fingerprint(
 )
 
 /**
+ * `FilmHeaderFragment.configureRuntime(Integer, FragmentFilmHeaderBinding)` sets the runtime line
+ * with `getString(R.string.film_runtime_suffix /* "%d mins" */, minutes)`. For "Runtime as
+ * 1h 47m" the extension writes its own text into the binding's `runtimeView` and the patch
+ * returns early, so the "%d mins" path is skipped entirely.
+ */
+internal object FilmHeaderConfigureRuntimeFingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/ui/fragments/film/FilmHeaderFragment;",
+    name = "configureRuntime",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.FINAL),
+    returnType = "V",
+    parameters = listOf(
+        "Ljava/lang/Integer;",
+        "Lcom/letterboxd/letterboxd/databinding/FragmentFilmHeaderBinding;",
+    ),
+)
+
+/**
  * `FilmRatingsHistogramFragment` hosts the community-ratings section on a film page; its root
  * view is `@id/ratingsViewWrapper`, and it can reach `FilmViewModel` (which exposes the viewing
  * relationship). The extension attaches a layout listener that hides the rating content until the
@@ -271,6 +288,22 @@ val modSettingsPatch = bytecodePatch(
             FilmHeaderOnViewCreatedFingerprint.method.addInstruction(
                 0,
                 "invoke-static { p0 }, Lapp/template/extension/StreamingButton;->enforce(Landroidx/fragment/app/Fragment;)V",
+            )
+        }
+
+        // "Runtime as 1h 47m" — on by default. On a true return the extension has already set the
+        // runtime text, so skip the app's "%d mins" formatting.
+        runCatching {
+            FilmHeaderConfigureRuntimeFingerprint.method.addInstructionsWithLabels(
+                0,
+                """
+                    invoke-static { p1, p2 }, Lapp/template/extension/RuntimeFormat;->applyIfEnabled(Ljava/lang/Integer;Ljava/lang/Object;)Z
+                    move-result v0
+                    if-eqz v0, :lb_runtime_default
+                    return-void
+                    :lb_runtime_default
+                    nop
+                """,
             )
         }
 

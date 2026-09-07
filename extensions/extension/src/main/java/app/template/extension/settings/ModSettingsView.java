@@ -124,6 +124,9 @@ final class ModSettingsView extends ScrollView {
         column.addView(toggleRow("Hide Where to Watch",
                 "Remove the \"Where to watch\" section from a film's page",
                 Prefs.KEY_HIDE_WHERE_TO_WATCH, false, false));
+        column.addView(toggleRow("Runtime as 1h 47m",
+                "Show a film's runtime in hours and minutes instead of \"107 mins\"",
+                Prefs.KEY_RUNTIME_HHMM, true, false));
 
         header("Streaming");
         final PillToggle openInPlayer = new PillToggle(ctx);
