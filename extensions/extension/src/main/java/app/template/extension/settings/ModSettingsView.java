@@ -48,6 +48,8 @@ final class ModSettingsView extends ScrollView {
     private TextView confettiColorValue;
     private View streamingAppRow;
     private TextView streamingAppValue;
+    private TextView navItemsValue;
+    private TextView launchTabValue;
 
     ModSettingsView(Context context) {
         super(context);
@@ -116,6 +118,35 @@ final class ModSettingsView extends ScrollView {
                         }
                     }));
         }
+
+        header("Bottom navigation");
+        column.addView(choiceRow("Shown items", "Which destinations the bottom bar shows",
+                navSummary(),
+                new Runnable() {
+                    @Override public void run() {
+                        new NavItemsDialog(ctx, accent, new NavItemsDialog.OnDone() {
+                            @Override public void onDone() {
+                                if (navItemsValue != null) navItemsValue.setText(navSummary());
+                                if (launchTabValue != null) launchTabValue.setText(launchTabSummary());
+                                RestartHelper.promptRestart(ctx);
+                            }
+                        }).show();
+                    }
+                }));
+        column.addView(choiceRow("Launch tab", "Which tab the app opens on",
+                launchTabSummary(),
+                new Runnable() {
+                    @Override public void run() {
+                        new LaunchTabDialog(ctx, Prefs.getString(Prefs.KEY_LAUNCH_TAB, "last"), accent,
+                                new LaunchTabDialog.OnPick() {
+                                    @Override public void onPick(String value) {
+                                        Prefs.putString(Prefs.KEY_LAUNCH_TAB, value);
+                                        if (launchTabValue != null) launchTabValue.setText(launchTabSummary());
+                                        RestartHelper.promptRestart(ctx);
+                                    }
+                                }).show();
+                    }
+                }));
 
         header("Home");
         column.addView(toggleRow("Hide Video Store",
@@ -292,6 +323,8 @@ final class ModSettingsView extends ScrollView {
         else if (title.equals("Reveal animation")) animationValue = v;
         else if (title.equals("Confetti color")) confettiColorValue = v;
         else if (title.equals("Streaming app")) streamingAppValue = v;
+        else if (title.equals("Shown items")) navItemsValue = v;
+        else if (title.equals("Launch tab")) launchTabValue = v;
 
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { onClick.run(); }
@@ -433,6 +466,28 @@ final class ModSettingsView extends ScrollView {
         lp.rightMargin = dp(14);
         lp.gravity = Gravity.CENTER_VERTICAL;
         return lp;
+    }
+
+    private static String navSummary() {
+        StringBuilder sb = new StringBuilder();
+        for (String key : NavItems.enabled()) {
+            for (int i = 0; i < NavItems.KEYS.length; i++) {
+                if (NavItems.KEYS[i].equals(key)) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(NavItems.LABELS[i]);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    private static String launchTabSummary() {
+        String v = Prefs.getString(Prefs.KEY_LAUNCH_TAB, "last");
+        if ("last".equals(v)) return "Last used";
+        for (int i = 0; i < NavItems.KEYS.length; i++) {
+            if (NavItems.KEYS[i].equals(v)) return NavItems.LABELS[i];
+        }
+        return "Last used";
     }
 
     private static String labelFor(String[] labels, String[] values, String value) {

@@ -7,9 +7,17 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLa
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.template.patches.shared.Constants.COMPATIBILITY_LETTERBOXD
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import org.w3c.dom.Element
+
+/** First index in [this] of an `invoke-*` whose target method is named [methodName]. */
+private fun MutableMethod.indexOfCall(methodName: String): Int =
+    implementation!!.instructions.toList().indexOfFirst {
+        (it as? ReferenceInstruction)?.reference?.toString()?.contains("->$methodName(") == true
+    }
 
 private const val SETTINGS_ACTIVITY = "app.template.extension.settings.ModSettingsActivity"
 private const val LABEL_STRING = "morphe_mod_settings"
@@ -203,6 +211,23 @@ internal object MainActivitySetupBottomNavFingerprint : Fingerprint(
     ),
 )
 
+/**
+ * `MainActivity.setup$lambda$0(MainActivity, BottomNavigationView, MenuItem)` is the bottom bar's
+ * item-selected listener. Letterboxd's own body rejects any menu id its `Tab` enum doesn't know,
+ * so the synthetic "Watchlist" id has to be handled at the head, before that check.
+ */
+internal object MainActivitySetupLambda0Fingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/MainActivity;",
+    name = "setup\$lambda\$0",
+    accessFlags = listOf(AccessFlags.STATIC, AccessFlags.FINAL),
+    returnType = "Z",
+    parameters = listOf(
+        "Lcom/letterboxd/letterboxd/MainActivity;",
+        "Lcom/google/android/material/bottomnavigation/BottomNavigationView;",
+        "Landroid/view/MenuItem;",
+    ),
+)
+
 @Suppress("unused")
 val modSettingsPatch = bytecodePatch(
     name = "Mod settings",
@@ -325,5 +350,43 @@ val modSettingsPatch = bytecodePatch(
             0,
             "invoke-static { p1 }, Lapp/template/extension/settings/ModChrome;->applyBottomNav(Landroid/view/View;)V",
         )
+
+        // "Bottom navigation" — hide/add bar items just after the menu is inflated, and rewrite
+        // the resolved start-tab id just before it's selected. Both positional so they sit at the
+        // right point in `setup`; both fail open in the extension.
+        runCatching {
+            val setup = MainActivitySetupBottomNavFingerprint.method
+
+            val selectIndex = setup.indexOfCall("setSelectedItemId")
+            setup.addInstructions(
+                selectIndex,
+                """
+                    invoke-static { p1, p2 }, Lapp/template/extension/settings/LaunchTab;->menuId(Landroid/view/View;I)I
+                    move-result p2
+                """,
+            )
+
+            val afterInflate = setup.indexOfCall("inflateMenu") + 1
+            setup.addInstruction(
+                afterInflate,
+                "invoke-static { p1 }, Lapp/template/extension/settings/NavItems;->applyMenu(Landroid/view/View;)V",
+            )
+        }
+
+        // "Watchlist" nav item — handle its synthetic id before Letterboxd logs it as unknown.
+        runCatching {
+            MainActivitySetupLambda0Fingerprint.method.addInstructionsWithLabels(
+                0,
+                """
+                    invoke-static { p0, p2 }, Lapp/template/extension/settings/NavItems;->onMenuSelected(Landroid/app/Activity;Landroid/view/MenuItem;)Z
+                    move-result v0
+                    if-eqz v0, :lb_nav_pass
+                    const/4 v0, 0x0
+                    return v0
+                    :lb_nav_pass
+                    nop
+                """,
+            )
+        }
     }
 }

@@ -42,6 +42,10 @@ public final class Prefs {
     // Bottom nav selected style: stock | nopill | white | accent | accentPill
     public static final String KEY_NAV_INDICATOR = "nav_indicator";
 
+    // "Bottom navigation" — which destinations to show (CSV of nav item keys) and which to open on.
+    public static final String KEY_NAV_ITEMS = "nav_items";
+    public static final String KEY_LAUNCH_TAB = "launch_tab"; // last | popular | search | activity | watchlist | profile
+
     // "Mod theme"
     public static final String KEY_THEME_SURFACE = "theme_surface"; // stock | oled
     public static final String KEY_THEME_OLED = "theme_oled";       // boolean mirror of the above
