@@ -2,6 +2,7 @@ package app.template.extension.settings;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -116,8 +117,14 @@ public final class NavItems {
                 menu.removeItem(profileId);
 
                 MenuItem wl = menu.add(0, WATCHLIST_ITEM_ID, Menu.NONE, watchlistTitle(ctx));
-                int wlIcon = ctx.getResources().getIdentifier("film_watchlist", "drawable", ctx.getPackageName());
-                if (wlIcon != 0) wl.setIcon(wlIcon);
+                // A clock, the icon Letterboxd itself uses for the watchlist. The bar clears its
+                // global icon tint, so tint this one per state — grey normally, the app's blue
+                // when selected, matching how every other item lights up.
+                int clock = ctx.getResources().getIdentifier("ic_clock_black_24dp", "drawable", ctx.getPackageName());
+                if (clock != 0) wl.setIcon(clock);
+                wl.setIconTintList(new ColorStateList(
+                        new int[][] { new int[] { android.R.attr.state_checked }, new int[0] },
+                        new int[] { 0xFF40BCF4, 0xFFAABBCC }));
 
                 MenuItem p = menu.add(0, profileId, Menu.NONE, title);
                 p.setIcon(icon);
@@ -126,11 +133,15 @@ public final class NavItems {
         }
     }
 
-    /** From the head of the bar's item-selected listener. True = we handled it, swallow the event. */
+    /**
+     * From the head of the bar's item-selected listener. True = this was the Watchlist item; we
+     * navigated to it and the listener should report it selected (so the item highlights and the
+     * bottom bar stays), instead of running Letterboxd's own handling which doesn't know the id.
+     */
     public static boolean onMenuSelected(Activity activity, MenuItem item) {
         try {
             if (item != null && item.getItemId() == WATCHLIST_ITEM_ID) {
-                WatchlistNav.open(activity);
+                WatchlistNav.navigate(activity);
                 return true;
             }
         } catch (Throwable ignored) {

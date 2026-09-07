@@ -409,7 +409,8 @@ val modSettingsPatch = bytecodePatch(
             )
         }
 
-        // "Watchlist" nav item — handle its synthetic id before Letterboxd logs it as unknown.
+        // "Watchlist" nav item — navigate to it and report the item selected (so it highlights
+        // and the bottom bar stays), before Letterboxd's own handler rejects the unknown id.
         runCatching {
             MainActivitySetupLambda0Fingerprint.method.addInstructionsWithLabels(
                 0,
@@ -417,7 +418,7 @@ val modSettingsPatch = bytecodePatch(
                     invoke-static { p0, p2 }, Lapp/template/extension/settings/NavItems;->onMenuSelected(Landroid/app/Activity;Landroid/view/MenuItem;)Z
                     move-result v0
                     if-eqz v0, :lb_nav_pass
-                    const/4 v0, 0x0
+                    const/4 v0, 0x1
                     return v0
                     :lb_nav_pass
                     nop
