@@ -22,6 +22,9 @@ public final class WatchlistNav {
     /** True while the watchlist has been layered on the Profile tab by {@link #open}. */
     public static volatile boolean showing = false;
 
+    /** Destination the Profile tab was at when {@link #open} pushed the watchlist — the pop target. */
+    private static volatile int memberRootId = 0;
+
     private WatchlistNav() {}
 
     public static void open(final Activity activity) {
@@ -39,6 +42,7 @@ public final class WatchlistNav {
                     try {
                         Object nc = navController(activity);
                         if (nc == null) return;
+                        memberRootId = destinationId(nc);
                         Object route = Class.forName(PKG + ".ui.navigation.Route$MemberWatchlist")
                                 .getConstructor(String.class, String.class)
                                 .newInstance(memberId, null);
@@ -52,13 +56,29 @@ public final class WatchlistNav {
         }
     }
 
-    /** Pop the watchlist back off the Profile tab so a pending tab switch starts from a clean root. */
+    /**
+     * Pop the Profile tab back to where it was before the watchlist was pushed — so a pending tab
+     * tap (Profile included) lands on the real screen, not the watchlist or a film opened from it.
+     * A single {@code popBackStack()} only peeled off one level; {@code popBackStack(id, false)}
+     * clears everything above the captured root in one call, however deep.
+     */
     public static void dismiss(Activity activity) {
-        showing = false;
         try {
             Object nc = navController(activity);
-            if (nc != null) nc.getClass().getMethod("popBackStack").invoke(nc);
+            if (nc == null) return;
+            boolean popped = false;
+            if (memberRootId != 0) {
+                Object r = nc.getClass().getMethod("popBackStack", int.class, boolean.class)
+                        .invoke(nc, memberRootId, Boolean.FALSE);
+                popped = Boolean.TRUE.equals(r);
+            }
+            if (!popped) {
+                nc.getClass().getMethod("popBackStack").invoke(nc);
+            }
         } catch (Throwable ignored) {
+        } finally {
+            showing = false;
+            memberRootId = 0;
         }
     }
 
@@ -75,6 +95,16 @@ public final class WatchlistNav {
 
     private static Object navController(Activity activity) throws Exception {
         return activity.getClass().getMethod("getNavController").invoke(activity);
+    }
+
+    private static int destinationId(Object nc) {
+        try {
+            Object d = nc.getClass().getMethod("getCurrentDestination").invoke(nc);
+            Object id = d.getClass().getMethod("getId").invoke(d);
+            return id instanceof Integer ? (Integer) id : 0;
+        } catch (Throwable t) {
+            return 0;
+        }
     }
 
     private static String currentMemberId() {
