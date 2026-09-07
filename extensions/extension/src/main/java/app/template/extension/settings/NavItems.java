@@ -117,14 +117,7 @@ public final class NavItems {
                 menu.removeItem(profileId);
 
                 MenuItem wl = menu.add(0, WATCHLIST_ITEM_ID, Menu.NONE, watchlistTitle(ctx));
-                // A clock, the icon Letterboxd itself uses for the watchlist. The bar clears its
-                // global icon tint, so tint this one per state — grey normally, the app's blue
-                // when selected, matching how every other item lights up.
-                int clock = ctx.getResources().getIdentifier("ic_clock_black_24dp", "drawable", ctx.getPackageName());
-                if (clock != 0) wl.setIcon(clock);
-                wl.setIconTintList(new ColorStateList(
-                        new int[][] { new int[] { android.R.attr.state_checked }, new int[0] },
-                        new int[] { 0xFF40BCF4, 0xFFAABBCC }));
+                setWatchlistIcon(ctx, wl);
 
                 MenuItem p = menu.add(0, profileId, Menu.NONE, title);
                 p.setIcon(icon);
@@ -164,5 +157,35 @@ public final class NavItems {
     private static CharSequence watchlistTitle(Context ctx) {
         int s = ctx.getResources().getIdentifier("watchlist", "string", ctx.getPackageName());
         return s != 0 ? ctx.getString(s) : "Watchlist";
+    }
+
+    /**
+     * A clock (Letterboxd's own watchlist glyph), tinted per state so it lights up with the rest
+     * of the bar: unselected grey {@code #AABBCC} (the literal the app's own icons use), selected
+     * = a live read of {@code @color/blue40BCF4} — the exact colour resource the other four
+     * "filled" icons reference, which {@link ModThemeApi31} re-points at the chosen accent / nav
+     * style at runtime. So whatever recolours those recolours this too, on the next start.
+     */
+    private static void setWatchlistIcon(Context ctx, MenuItem item) {
+        int clockId = ctx.getResources().getIdentifier(
+                "ic_clock_black_24dp", "drawable", ctx.getPackageName());
+        if (clockId == 0) return;
+        Drawable clock = ctx.getDrawable(clockId);
+        if (clock == null) return;
+
+        int selected = 0xFF40BCF4;
+        int blueId = ctx.getResources().getIdentifier("blue40BCF4", "color", ctx.getPackageName());
+        if (blueId != 0) {
+            try {
+                selected = ctx.getColor(blueId);
+            } catch (Throwable ignored) {
+            }
+        }
+
+        clock = clock.mutate();
+        clock.setTintList(new ColorStateList(
+                new int[][] { new int[] { android.R.attr.state_checked }, new int[0] },
+                new int[] { selected, 0xFFAABBCC }));
+        item.setIcon(clock);
     }
 }

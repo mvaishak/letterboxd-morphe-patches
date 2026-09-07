@@ -123,12 +123,11 @@ final class HomeTabsDialog extends Dialog {
         row.setPadding(dp(4), dp(10), dp(4), dp(10));
 
         final boolean on = shown.contains(key);
-        TextView check = new TextView(getContext());
-        check.setText(on ? "☑" : "☐");
-        check.setTextColor(on ? accent : 0xFF9AA0A6);
-        check.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
-        check.setPadding(0, 0, dp(12), 0);
-        row.addView(check);
+        View check = new View(getContext());
+        check.setBackground(Glyphs.checkbox(on ? accent : 0xFF9AA0A6, density, on));
+        LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(dp(20), dp(20));
+        clp.rightMargin = dp(14);
+        row.addView(check, clp);
 
         TextView label = new TextView(getContext());
         label.setText(HomeTabs.LABELS[indexOfKey(key)]);
@@ -138,10 +137,10 @@ final class HomeTabsDialog extends Dialog {
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         row.addView(label, llp);
 
-        row.addView(arrow("▲", index > 0, new Runnable() {
+        row.addView(arrow(true, index > 0, new Runnable() {
             @Override public void run() { swap(index, index - 1); }
         }));
-        row.addView(arrow("▼", index < ordered.size() - 1, new Runnable() {
+        row.addView(arrow(false, index < ordered.size() - 1, new Runnable() {
             @Override public void run() { swap(index, index + 1); }
         }));
 
@@ -158,12 +157,12 @@ final class HomeTabsDialog extends Dialog {
         return row;
     }
 
-    private TextView arrow(String glyph, boolean enabled, final Runnable onTap) {
-        TextView a = new TextView(getContext());
-        a.setText(glyph);
-        a.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-        a.setTextColor(enabled ? 0xFFCDCDCD : 0xFF44484C);
-        a.setPadding(dp(10), dp(6), dp(10), dp(6));
+    private View arrow(boolean up, boolean enabled, final Runnable onTap) {
+        View a = new View(getContext());
+        a.setBackground(Glyphs.chevron(enabled ? 0xFFCDCDCD : 0xFF44484C, density, up));
+        int box = dp(34);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(box, box);
+        a.setLayoutParams(lp);
         if (enabled) {
             a.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) { onTap.run(); }
