@@ -2,8 +2,8 @@ package app.template.extension.settings;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.StateListDrawable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -170,8 +170,8 @@ public final class NavItems {
         int clockId = ctx.getResources().getIdentifier(
                 "ic_clock_black_24dp", "drawable", ctx.getPackageName());
         if (clockId == 0) return;
-        Drawable clock = ctx.getDrawable(clockId);
-        if (clock == null) return;
+        Drawable base = ctx.getDrawable(clockId);
+        if (base == null || base.getConstantState() == null) return;
 
         int selected = 0xFF40BCF4;
         int blueId = ctx.getResources().getIdentifier("blue40BCF4", "color", ctx.getPackageName());
@@ -182,10 +182,17 @@ public final class NavItems {
             }
         }
 
-        clock = clock.mutate();
-        clock.setTintList(new ColorStateList(
-                new int[][] { new int[] { android.R.attr.state_checked }, new int[0] },
-                new int[] { selected, 0xFFAABBCC }));
-        item.setIcon(clock);
+        // Two flat-tinted copies swapped by state — same shape as the app's own ic_*_selector,
+        // which is what makes the other icons light up. A single drawable + tint list did not
+        // pick up the checked state from BottomNavigationView.
+        Drawable on = base.getConstantState().newDrawable().mutate();
+        on.setTint(selected);
+        Drawable off = base.getConstantState().newDrawable().mutate();
+        off.setTint(0xFFAABBCC);
+
+        StateListDrawable sld = new StateListDrawable();
+        sld.addState(new int[] { android.R.attr.state_checked }, on);
+        sld.addState(new int[0], off);
+        item.setIcon(sld);
     }
 }
