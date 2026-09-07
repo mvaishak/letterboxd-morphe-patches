@@ -228,6 +228,42 @@ internal object MainActivitySetupLambda0Fingerprint : Fingerprint(
     ),
 )
 
+/**
+ * The home screen's four section tabs (Films / Reviews / Lists / Journal) are driven by
+ * `PopularFragment$SectionsPagerAdapter`: `getItemCount` is a hard-coded 4 and
+ * `createFragment(position)` does `PopularFragment$Tab.valueOf(position)` — a plain ordinal
+ * lookup. For "Home tabs" the extension reports a shorter count and translates a visible slot
+ * index back to the real ordinal.
+ */
+internal object PopularSectionsAdapterCountFingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/ui/fragments/popular/PopularFragment\$SectionsPagerAdapter;",
+    name = "getItemCount",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "I",
+    parameters = emptyList(),
+)
+
+internal object PopularSectionsAdapterCreateFingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/ui/fragments/popular/PopularFragment\$SectionsPagerAdapter;",
+    name = "createFragment",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "Landroidx/fragment/app/Fragment;",
+    parameters = listOf("I"),
+)
+
+/** `PopularFragment.configureTabs$lambda$0(PopularFragment, TabLayout.Tab, position)` titles each tab. */
+internal object PopularConfigureTabsLambdaFingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/ui/fragments/popular/PopularFragment;",
+    name = "configureTabs\$lambda\$0",
+    accessFlags = listOf(AccessFlags.STATIC, AccessFlags.FINAL),
+    returnType = "V",
+    parameters = listOf(
+        "Lcom/letterboxd/letterboxd/ui/fragments/popular/PopularFragment;",
+        "Lcom/google/android/material/tabs/TabLayout\$Tab;",
+        "I",
+    ),
+)
+
 @Suppress("unused")
 val modSettingsPatch = bytecodePatch(
     name = "Mod settings",
@@ -385,6 +421,38 @@ val modSettingsPatch = bytecodePatch(
                     return v0
                     :lb_nav_pass
                     nop
+                """,
+            )
+        }
+
+        // "Home tabs" — hide/reorder the home section tabs. The adapter and the tab strip both
+        // address sections by position; the extension shortens the count and maps each visible
+        // slot to the real section ordinal. Fails open to the stock four tabs.
+        runCatching {
+            PopularSectionsAdapterCountFingerprint.method.addInstructions(
+                0,
+                """
+                    invoke-static {}, Lapp/template/extension/settings/HomeTabs;->count()I
+                    move-result v0
+                    return v0
+                """,
+            )
+        }
+        runCatching {
+            PopularSectionsAdapterCreateFingerprint.method.addInstructions(
+                0,
+                """
+                    invoke-static { p1 }, Lapp/template/extension/settings/HomeTabs;->realOrdinal(I)I
+                    move-result p1
+                """,
+            )
+        }
+        runCatching {
+            PopularConfigureTabsLambdaFingerprint.method.addInstructions(
+                0,
+                """
+                    invoke-static { p2 }, Lapp/template/extension/settings/HomeTabs;->realOrdinal(I)I
+                    move-result p2
                 """,
             )
         }

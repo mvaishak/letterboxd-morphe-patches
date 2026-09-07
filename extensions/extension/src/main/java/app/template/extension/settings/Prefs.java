@@ -26,6 +26,9 @@ public final class Prefs {
     // "Hide Video Store on home" — bundled into "Mod settings" itself, not its own patch.
     public static final String KEY_HIDE_VIDEO_STORE = "hide_video_store";
 
+    // "Home tabs" — CSV of visible home section keys in order (films,reviews,lists,journal).
+    public static final String KEY_HOME_TABS = "home_tabs";
+
     // "Hide Where to Watch"
     public static final String KEY_HIDE_WHERE_TO_WATCH = "hide_where_to_watch";
 

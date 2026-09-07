@@ -50,6 +50,7 @@ final class ModSettingsView extends ScrollView {
     private TextView streamingAppValue;
     private TextView navItemsValue;
     private TextView launchTabValue;
+    private TextView homeTabsValue;
 
     ModSettingsView(Context context) {
         super(context);
@@ -149,6 +150,18 @@ final class ModSettingsView extends ScrollView {
                 }));
 
         header("Home");
+        column.addView(choiceRow("Home tabs", "Which section tabs the home screen shows, and their order",
+                homeTabsSummary(),
+                new Runnable() {
+                    @Override public void run() {
+                        new HomeTabsDialog(ctx, accent, new HomeTabsDialog.OnDone() {
+                            @Override public void onDone() {
+                                if (homeTabsValue != null) homeTabsValue.setText(homeTabsSummary());
+                                RestartHelper.promptRestart(ctx);
+                            }
+                        }).show();
+                    }
+                }));
         column.addView(toggleRow("Hide Video Store",
                 "Remove the Video Store promo row from the Films tab",
                 Prefs.KEY_HIDE_VIDEO_STORE, false, true));
@@ -325,6 +338,7 @@ final class ModSettingsView extends ScrollView {
         else if (title.equals("Streaming app")) streamingAppValue = v;
         else if (title.equals("Shown items")) navItemsValue = v;
         else if (title.equals("Launch tab")) launchTabValue = v;
+        else if (title.equals("Home tabs")) homeTabsValue = v;
 
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { onClick.run(); }
@@ -475,6 +489,19 @@ final class ModSettingsView extends ScrollView {
                 if (NavItems.KEYS[i].equals(key)) {
                     if (sb.length() > 0) sb.append(", ");
                     sb.append(NavItems.LABELS[i]);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    private static String homeTabsSummary() {
+        StringBuilder sb = new StringBuilder();
+        for (String key : HomeTabs.order()) {
+            for (int i = 0; i < HomeTabs.KEYS.length; i++) {
+                if (HomeTabs.KEYS[i].equals(key)) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(HomeTabs.LABELS[i]);
                 }
             }
         }
