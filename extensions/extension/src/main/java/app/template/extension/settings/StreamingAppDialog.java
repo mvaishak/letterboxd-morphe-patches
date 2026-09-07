@@ -17,8 +17,8 @@ final class StreamingAppDialog extends Dialog {
         void onPick(String value);
     }
 
-    private static final String[] LABELS = { "Stremio", "Nuvio", "Plex" };
-    private static final String[] VALUES = { "stremio", "nuvio", "plex" };
+    private static final String[] LABELS = { "Stremio", "Nuvio" };
+    private static final String[] VALUES = { "stremio", "nuvio" };
 
     private final float density;
     private final int accent;

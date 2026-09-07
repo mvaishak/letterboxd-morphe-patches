@@ -37,7 +37,7 @@ public final class Prefs {
 
     // "Open in player"
     public static final String KEY_OPEN_IN_PLAYER = "open_in_player";
-    public static final String KEY_STREAMING_APP = "streaming_app"; // stremio | nuvio | plex
+    public static final String KEY_STREAMING_APP = "streaming_app"; // stremio | nuvio
 
     // "Match bottom nav to top bar color"
     public static final String KEY_MATCH_BOTTOM_NAV = "match_bottom_nav";
@@ -134,7 +134,7 @@ public final class Prefs {
         return getBoolean(KEY_OPEN_IN_PLAYER, false);
     }
 
-    /** Which app the "Open in player" button targets ({@code stremio}, {@code nuvio} or {@code plex}). */
+    /** Which app the "Open in player" button targets ({@code stremio} or {@code nuvio}). */
     public static String streamingApp() {
         return getString(KEY_STREAMING_APP, "stremio");
     }
