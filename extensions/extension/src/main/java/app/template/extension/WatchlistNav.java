@@ -80,18 +80,22 @@ public final class WatchlistNav {
             content.addView(overlay, new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-            final FragmentManager.OnBackStackChangedListener[] cleanup =
-                    new FragmentManager.OnBackStackChangedListener[1];
-            cleanup[0] = new FragmentManager.OnBackStackChangedListener() {
-                @Override public void onBackStackChanged() {
-                    if (fm.findFragmentByTag(TAG) == null) {
-                        ViewParent p = overlay.getParent();
-                        if (p instanceof ViewGroup) ((ViewGroup) p).removeView(overlay);
-                        fm.removeOnBackStackChangedListener(cleanup[0]);
-                    }
+            // Clean up the overlay once the fragment is really gone. A FragmentLifecycleCallbacks
+            // (an abstract class) is used rather than OnBackStackChangedListener — the latter's
+            // Java-8 default methods pull in a `$-CC` desugar class that isn't present in the
+            // target APK's fragment library, which crashes with NoClassDefFoundError.
+            final FragmentManager.FragmentLifecycleCallbacks[] cleanup =
+                    new FragmentManager.FragmentLifecycleCallbacks[1];
+            cleanup[0] = new FragmentManager.FragmentLifecycleCallbacks() {
+                @Override public void onFragmentViewDestroyed(FragmentManager fmgr, Fragment f) {
+                    if (!TAG.equals(f.getTag())) return;
+                    if (fmgr.findFragmentByTag(TAG) != null) return; // config change, not a pop
+                    ViewParent p = overlay.getParent();
+                    if (p instanceof ViewGroup) ((ViewGroup) p).removeView(overlay);
+                    fmgr.unregisterFragmentLifecycleCallbacks(cleanup[0]);
                 }
             };
-            fm.addOnBackStackChangedListener(cleanup[0]);
+            fm.registerFragmentLifecycleCallbacks(cleanup[0], false);
 
             fm.beginTransaction()
                     .replace(container.getId(), listFragment, TAG)
