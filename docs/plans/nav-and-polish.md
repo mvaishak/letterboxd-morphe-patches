@@ -106,23 +106,23 @@ icon, before Profile.
 Hook: after `inflateMenu` in `setup(BottomNavigationView, MainActivity$Tab)V`
 (new `MainActivitySetupFingerprint`).
 
-### Watchlist routing — `setup$lambda$0` → `WatchlistNav.open`
+### Watchlist routing — `setup$lambda$0` → `WatchlistNav.navigate`
 
-Intercept the synthetic id early (same shape as the `nav_log` special-case), then
-open the watchlist as a **self-contained overlay screen**:
-`WatchlistFilmsFragment.Companion.newInstance(false, memberId, false,
-new WatchlistRequester(memberId))` (member id from `CurrentMemberManager.INSTANCE`,
-all by reflection) hosted in a `FrameLayout` added to `android.R.id.content`, with
-its own status-bar-inset padding and a back-arrow toolbar, pushed onto the back
-stack so system back / the arrow dismiss it. An `OnBackStackChangedListener`
-removes the overlay when its entry pops.
+Intercept the synthetic id at the head of the listener, call
+`MainActivity.getNavController().navigate(new Route$MemberWatchlist(memberId, null))`
+(all by reflection — the same destination `handleAppShortcuts` uses), and
+**return `true`** so the item shows selected. The bottom bar is always present in
+`activity_main`, so it just stays; the real MemberWatchlist screen loads with its
+own toolbar and filter chrome. Icon: `@drawable/ic_clock_black_24dp` (Letterboxd's
+own clock), per-item `ColorStateList` tint grey `#AABBCC` / blue `#40BCF4` on
+`state_checked` to match the other items (the bar clears its global icon tint).
 
-Rejected: re-firing `letterboxd://shortcut/watchlist` (first tried). That route
-selects the Profile tab and then navigates a nested controller in two async
-steps — the bottom bar and the shown content ended up out of sync (a first tap
-landed on Profile, a second was needed for the watchlist). The fragment
-transaction has none of that coupling. `MainActivity` is an `AppCompatActivity`
-so `getSupportFragmentManager()` is available.
+Rejected approaches:
+- **Full-screen overlay hosting `WatchlistFilmsFragment`** — worked, but covered
+  the bottom bar and showed only the bare list, no filters/toolbar.
+- **Re-firing `letterboxd://shortcut/watchlist`** — that route flips to the
+  Profile tab and then navigates in a second async step; bar and content ended
+  up out of sync (needed two taps).
 
 ### Launch tab — `LaunchTab.menuId(int lastUsedId)` in `setup`
 
