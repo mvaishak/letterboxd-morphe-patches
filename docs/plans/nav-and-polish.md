@@ -3,7 +3,21 @@
 Six workstreams from the brainstorm. Base APK: Letterboxd 3.5.4-496, decoded to
 `scratchpad/lb/decoded`. All findings below are from that decode.
 
-Status: **awaiting approval** — no code written yet.
+Status: **implemented** (#1–#5), verified at the smali level, pending on-device test.
+#6 paused by the user. Commits `40e94f1`, `8425584`, `70f8bc0`, `af13174` on `dev`.
+
+## On-device test checklist
+
+1. **Hide ads** — free account: no AdMob banner on a film page or elsewhere.
+2. **Runtime as 1h 47m** — film page shows e.g. "1h 47m"; toggle off in Mods → back to "107 mins".
+3. **Bottom navigation → Shown items** — uncheck Log + Activity, check Watchlist → bar becomes
+   Films · Search · Watchlist · Profile; tapping Watchlist opens your watchlist (via Profile tab).
+   Re-check everything → blocked at 5 with a toast.
+4. **Launch tab** — set to Watchlist, cold-start → opens on the watchlist; then hide Watchlist →
+   cold-start falls to the first remaining tab.
+5. **Home tabs** — hide Reviews/Lists/Journal, move Films to top → home shows only Films and
+   opens on it; reorder so Reviews is first → home opens on Reviews.
+6. Regression: default (no Mods changes) → bar and home tabs behave exactly as stock.
 
 ---
 
