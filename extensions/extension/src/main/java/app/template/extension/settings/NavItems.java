@@ -141,10 +141,23 @@ public final class NavItems {
      * tab itself (that's the tab whose graph the watchlist lives in), so the bar and the app's
      * tab state stay in agreement — highlighting our own item instead left tapping Profile broken.
      */
+    /**
+     * From the head of the bar's item-selected listener.
+     * <ul>
+     *   <li>Watchlist tapped → open it and return {@code true}, so our item shows selected.</li>
+     *   <li>Any other item tapped while the watchlist is up → pop it first, then return
+     *       {@code false} so the app's normal tab switch runs and lands in one tap.</li>
+     * </ul>
+     */
     public static boolean onMenuSelected(Activity activity, MenuItem item) {
         try {
-            if (item != null && item.getItemId() == WATCHLIST_ITEM_ID) {
+            int tapped = item == null ? 0 : item.getItemId();
+            if (tapped == WATCHLIST_ITEM_ID) {
                 WatchlistNav.open(activity);
+                return true;
+            }
+            if (WatchlistNav.showing) {
+                WatchlistNav.dismiss(activity);
             }
         } catch (Throwable ignored) {
         }

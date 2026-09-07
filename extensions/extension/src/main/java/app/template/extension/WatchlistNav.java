@@ -1,29 +1,32 @@
 package app.template.extension;
 
 import android.app.Activity;
-import android.util.Log;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
- * Opens the member's watchlist ({@code Route.MemberWatchlist}).
+ * Opens (and closes) the member's watchlist for the synthetic Watchlist bottom-nav item.
  *
- * <p>That destination lives inside the Member (profile) tab's nav graph — it is not reachable
- * from the Popular tab's controller, and navigating to it cross-graph wedged the back stack
- * (leaving it took a system back and several seconds). So this mirrors what Letterboxd's own
- * {@code handleAppShortcuts} does for {@code letterboxd://shortcut/watchlist}: select the Profile
- * tab through the bottom bar (a normal, fast tab switch), then on the next frame — once that
- * tab's NavController is the active one — navigate to the watchlist within it. Leaving is then a
- * normal tab switch.
+ * <p>{@code Route.MemberWatchlist} lives inside the Member (profile) tab's nav graph — it isn't a
+ * peer of the five tab destinations. Navigating to it cross-graph wedged the back stack, so this
+ * mirrors Letterboxd's own {@code handleAppShortcuts}: select the Profile tab through the bottom
+ * bar (a normal, fast tab switch that brings its NavController to the front), then on the next
+ * frame navigate to the watchlist inside it. {@link #showing} tracks that state; when the user
+ * taps any other bottom-nav item, {@link NavItems#onMenuSelected} calls {@link #dismiss} first so
+ * that tab switch lands clean in a single tap.
  */
 public final class WatchlistNav {
 
     private static final String PKG = "com.letterboxd.letterboxd";
 
+    /** True while the watchlist has been layered on the Profile tab by {@link #open}. */
+    public static volatile boolean showing = false;
+
     private WatchlistNav() {}
 
     public static void open(final Activity activity) {
         try {
+            if (showing) return;
             final BottomNavigationView bar = findBar(activity);
             int profileId = activity.getResources().getIdentifier(
                     "nav_profile", "id", activity.getPackageName());
@@ -34,23 +37,32 @@ public final class WatchlistNav {
             bar.post(new Runnable() {
                 @Override public void run() {
                     try {
-                        Object nc = activity.getClass().getMethod("getNavController").invoke(activity);
+                        Object nc = navController(activity);
                         if (nc == null) return;
                         Object route = Class.forName(PKG + ".ui.navigation.Route$MemberWatchlist")
                                 .getConstructor(String.class, String.class)
                                 .newInstance(memberId, null);
                         nc.getClass().getMethod("navigate", Object.class).invoke(nc, route);
-                    } catch (Throwable t) {
-                        Log.d("MorpheNav", "watchlist navigate error", t);
+                        showing = true;
+                    } catch (Throwable ignored) {
                     }
                 }
             });
-        } catch (Throwable t) {
-            Log.d("MorpheNav", "watchlist open error", t);
+        } catch (Throwable ignored) {
         }
     }
 
-    static BottomNavigationView findBar(Activity activity) {
+    /** Pop the watchlist back off the Profile tab so a pending tab switch starts from a clean root. */
+    public static void dismiss(Activity activity) {
+        showing = false;
+        try {
+            Object nc = navController(activity);
+            if (nc != null) nc.getClass().getMethod("popBackStack").invoke(nc);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    public static BottomNavigationView findBar(Activity activity) {
         try {
             int id = activity.getResources().getIdentifier(
                     "bottom_navigation", "id", activity.getPackageName());
@@ -59,6 +71,10 @@ public final class WatchlistNav {
         } catch (Throwable t) {
             return null;
         }
+    }
+
+    private static Object navController(Activity activity) throws Exception {
+        return activity.getClass().getMethod("getNavController").invoke(activity);
     }
 
     private static String currentMemberId() {
