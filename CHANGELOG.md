@@ -1,3 +1,9 @@
+## [2.1.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.1.0-dev.1...v2.1.0-dev.2) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Leaving the watchlist pops the whole Profile-tab stack, not one level ([d879a71](https://github.com/mvaishak/letterboxd-morphe-patches/commit/d879a71dcb7918043aec055af5719339441821fe))
+
 ## [2.1.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.0.0...v2.1.0-dev.1) (2026-09-07)
 
 ### 🐛 Bug Fixes
