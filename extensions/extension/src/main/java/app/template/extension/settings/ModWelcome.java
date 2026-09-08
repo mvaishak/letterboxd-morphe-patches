@@ -27,7 +27,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump every time {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 4;
+    private static final int BUILD = 5;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
@@ -50,7 +50,9 @@ public final class ModWelcome {
           + "Film pages\n"
           + "•  Runtime can read 1h 47m instead of 107 mins\n\n"
           + "New patch: Hide ads\n"
-          + "•  Stops the banner ads on free accounts from loading";
+          + "•  Stops the banner ads on free accounts from loading\n\n"
+          + "Backup\n"
+          + "•  Export and import your mod config as a file, to share or restore";
 
     /** Permanent closer — every release. New-to-this-version users still need this. */
     private static final String FOOTER =

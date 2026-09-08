@@ -277,10 +277,35 @@ final class ModSettingsView extends ScrollView {
             }
         });
 
+        header("Backup");
+        column.addView(actionRow("Export settings",
+                "Save your mod config to a file to share or keep",
+                new Runnable() {
+                    @Override public void run() {
+                        if (ctx instanceof ModSettingsActivity) ((ModSettingsActivity) ctx).pickExport();
+                    }
+                }));
+        column.addView(actionRow("Import settings",
+                "Load a config file. Merges over your current settings",
+                new Runnable() {
+                    @Override public void run() {
+                        if (ctx instanceof ModSettingsActivity) ((ModSettingsActivity) ctx).pickImport();
+                    }
+                }));
+
         header("About");
         column.addView(linkRow("Source and releases",
                 "github.com/mvaishak/letterboxd-morphe-patches",
                 "https://github.com/mvaishak/letterboxd-morphe-patches"));
+    }
+
+    private View actionRow(String title, String subtitle, final Runnable onClick) {
+        LinearLayout row = rowBase();
+        row.addView(titleBlock(title, subtitle), textLp());
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { onClick.run(); }
+        });
+        return row;
     }
 
     private View linkRow(String title, String subtitle, final String url) {
