@@ -2,7 +2,13 @@ package app.template.extension;
 
 import android.app.Activity;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import android.os.Bundle;
 
 /**
  * Opens (and closes) the member's watchlist for the synthetic Watchlist bottom-nav item.
@@ -14,6 +20,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * frame navigate to the watchlist inside it. {@link #showing} tracks that state; when the user
  * taps any other bottom-nav item, {@link NavItems#onMenuSelected} calls {@link #dismiss} first so
  * that tab switch lands clean in a single tap.
+ *
+ * <p>Because the watchlist sits on the Profile tab's stack, a plain back / back-swipe from it
+ * would pop to the Profile screen (with the Watchlist item still lit). {@link #installBackHandling}
+ * intercepts that: back from the watchlist goes to the Films tab instead. Back from a film opened
+ * inside the watchlist still just returns to the watchlist — the interceptor is only armed while
+ * the current destination is the watchlist itself.
  */
 public final class WatchlistNav {
 
@@ -24,6 +36,10 @@ public final class WatchlistNav {
 
     /** Destination the Profile tab was at when {@link #open} pushed the watchlist — the pop target. */
     private static volatile int memberRootId = 0;
+
+    private static OnBackPressedCallback backCallback;
+    private static NavController.OnDestinationChangedListener destListener;
+    private static NavController watchedController;
 
     private WatchlistNav() {}
 
@@ -40,14 +56,16 @@ public final class WatchlistNav {
             bar.post(new Runnable() {
                 @Override public void run() {
                     try {
-                        Object nc = navController(activity);
-                        if (nc == null) return;
+                        Object ncObj = navController(activity);
+                        if (!(ncObj instanceof NavController)) return;
+                        NavController nc = (NavController) ncObj;
                         memberRootId = destinationId(nc);
                         Object route = Class.forName(PKG + ".ui.navigation.Route$MemberWatchlist")
                                 .getConstructor(String.class, String.class)
                                 .newInstance(memberId, null);
                         nc.getClass().getMethod("navigate", Object.class).invoke(nc, route);
                         showing = true;
+                        installBackHandling(activity, nc);
                     } catch (Throwable ignored) {
                     }
                 }
@@ -59,28 +77,94 @@ public final class WatchlistNav {
     /**
      * Pop the Profile tab back to where it was before the watchlist was pushed — so a pending tab
      * tap (Profile included) lands on the real screen, not the watchlist or a film opened from it.
-     * A single {@code popBackStack()} only peeled off one level; {@code popBackStack(id, false)}
-     * clears everything above the captured root in one call, however deep.
      */
     public static void dismiss(Activity activity) {
         try {
             Object nc = navController(activity);
-            if (nc == null) return;
-            boolean popped = false;
-            if (memberRootId != 0) {
-                Object r = nc.getClass().getMethod("popBackStack", int.class, boolean.class)
-                        .invoke(nc, memberRootId, Boolean.FALSE);
-                popped = Boolean.TRUE.equals(r);
-            }
-            if (!popped) {
-                nc.getClass().getMethod("popBackStack").invoke(nc);
+            if (nc != null) {
+                boolean popped = false;
+                if (memberRootId != 0) {
+                    Object r = nc.getClass().getMethod("popBackStack", int.class, boolean.class)
+                            .invoke(nc, memberRootId, Boolean.FALSE);
+                    popped = Boolean.TRUE.equals(r);
+                }
+                if (!popped) {
+                    nc.getClass().getMethod("popBackStack").invoke(nc);
+                }
             }
         } catch (Throwable ignored) {
         } finally {
             showing = false;
             memberRootId = 0;
+            teardownBackHandling();
         }
     }
+
+    // --- back handling ---------------------------------------------------
+
+    private static void installBackHandling(final Activity activity, NavController nc) {
+        try {
+            teardownBackHandling();
+
+            backCallback = new OnBackPressedCallback(true) {
+                @Override public void handleOnBackPressed() {
+                    goHome(activity);
+                }
+            };
+            Object dispatcher = activity.getClass()
+                    .getMethod("getOnBackPressedDispatcher").invoke(activity);
+            dispatcher.getClass()
+                    .getMethod("addCallback", OnBackPressedCallback.class)
+                    .invoke(dispatcher, backCallback);
+
+            watchedController = nc;
+            destListener = new NavController.OnDestinationChangedListener() {
+                @Override public void onDestinationChanged(NavController controller,
+                                                          NavDestination destination, Bundle arguments) {
+                    // Only steer back to Films while the watchlist itself is on screen; from a
+                    // film opened inside it, let a normal back return to the watchlist.
+                    if (backCallback != null) {
+                        backCallback.setEnabled(isWatchlist(destination));
+                    }
+                }
+            };
+            nc.addOnDestinationChangedListener(destListener);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void teardownBackHandling() {
+        try {
+            if (backCallback != null) backCallback.remove();
+        } catch (Throwable ignored) {
+        }
+        try {
+            if (watchedController != null && destListener != null) {
+                watchedController.removeOnDestinationChangedListener(destListener);
+            }
+        } catch (Throwable ignored) {
+        }
+        backCallback = null;
+        destListener = null;
+        watchedController = null;
+    }
+
+    private static void goHome(Activity activity) {
+        dismiss(activity); // pop the watchlist (and any film) off the Profile tab; clears state
+        try {
+            BottomNavigationView bar = findBar(activity);
+            int popularId = activity.getResources().getIdentifier(
+                    "nav_popular", "id", activity.getPackageName());
+            if (bar != null && popularId != 0) bar.setSelectedItemId(popularId);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static boolean isWatchlist(NavDestination destination) {
+        return destination != null && String.valueOf(destination).contains("MemberWatchlist");
+    }
+
+    // --- helpers -------------------------------------------------------
 
     public static BottomNavigationView findBar(Activity activity) {
         try {
