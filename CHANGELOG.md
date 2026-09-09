@@ -1,3 +1,9 @@
+## [2.1.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.1.0-dev.2...v2.1.0-dev.3) (2026-09-09)
+
+### ✨ New Features
+
+* Export and import Mod settings as a JSON config file ([5570da4](https://github.com/mvaishak/letterboxd-morphe-patches/commit/5570da42e0b5c1f4053e304ad7a06818b4b118b0))
+
 ## [2.1.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.1.0-dev.1...v2.1.0-dev.2) (2026-09-08)
 
 ### 🐛 Bug Fixes
