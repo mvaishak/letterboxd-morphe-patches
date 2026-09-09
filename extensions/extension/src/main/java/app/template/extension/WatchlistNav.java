@@ -3,12 +3,15 @@ package app.template.extension;
 import android.app.Activity;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 
 /**
  * Opens (and closes) the member's watchlist for the synthetic Watchlist bottom-nav item.
@@ -162,6 +165,38 @@ public final class WatchlistNav {
 
     private static boolean isWatchlist(NavDestination destination) {
         return destination != null && String.valueOf(destination).contains("MemberWatchlist");
+    }
+
+    /**
+     * Injected at the end of {@code MemberWatchlistFragment.onViewCreated}. When the watchlist was
+     * opened as a bottom-nav tab (not reached through the app's own Profile screen), drop the
+     * toolbar's back arrow — it went to Profile, which makes no sense for a tab. Back-swipe still
+     * works and goes to Films via {@link #installBackHandling}.
+     */
+    public static void tidyToolbar(Object fragment) {
+        try {
+            if (!showing) return;
+            Object root = fragment.getClass().getMethod("getView").invoke(fragment);
+            if (!(root instanceof ViewGroup)) return;
+            Toolbar toolbar = findToolbar((ViewGroup) root);
+            if (toolbar != null) {
+                toolbar.setNavigationIcon((android.graphics.drawable.Drawable) null);
+                toolbar.setNavigationOnClickListener(null);
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static Toolbar findToolbar(ViewGroup group) {
+        for (int i = 0; i < group.getChildCount(); i++) {
+            View child = group.getChildAt(i);
+            if (child instanceof Toolbar) return (Toolbar) child;
+            if (child instanceof ViewGroup) {
+                Toolbar found = findToolbar((ViewGroup) child);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     // --- helpers -------------------------------------------------------

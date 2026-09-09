@@ -165,6 +165,19 @@ internal object FilmHeaderOnViewCreatedFingerprint : Fingerprint(
 )
 
 /**
+ * `MemberWatchlistFragment.onViewCreated` sets up the screen's toolbar (back arrow + menu). When
+ * the Watchlist bottom-nav item opened this screen, the extension strips the back arrow — it
+ * navigates to Profile, which is wrong for something presented as a tab.
+ */
+internal object MemberWatchlistOnViewCreatedFingerprint : Fingerprint(
+    definingClass = "Lcom/letterboxd/letterboxd/ui/fragments/member/MemberWatchlistFragment;",
+    name = "onViewCreated",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "V",
+    parameters = listOf("Landroid/view/View;", "Landroid/os/Bundle;"),
+)
+
+/**
  * `FilmHeaderFragment.configureRuntime(Integer, FragmentFilmHeaderBinding)` sets the runtime line
  * with `getString(R.string.film_runtime_suffix /* "%d mins" */, minutes)`. For "Runtime as
  * 1h 47m" the extension writes its own text into the binding's `runtimeView` and the patch
@@ -455,6 +468,15 @@ val modSettingsPatch = bytecodePatch(
                     invoke-static { p2 }, Lapp/template/extension/settings/HomeTabs;->realOrdinal(I)I
                     move-result p2
                 """,
+            )
+        }
+
+        // Watchlist opened as a bottom-nav tab — drop its toolbar back arrow (it goes to Profile).
+        runCatching {
+            val ovc = MemberWatchlistOnViewCreatedFingerprint.method
+            ovc.addInstruction(
+                ovc.indexOfCall("setOnMenuItemClickListener") + 1,
+                "invoke-static { p0 }, Lapp/template/extension/WatchlistNav;->tidyToolbar(Ljava/lang/Object;)V",
             )
         }
     }
