@@ -1,3 +1,13 @@
+## [2.1.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.1.0-dev.3...v2.1.0-dev.4) (2026-09-10)
+
+### 🐛 Bug Fixes
+
+* Back / back-swipe on the watchlist goes to the Films tab ([e32b38f](https://github.com/mvaishak/letterboxd-morphe-patches/commit/e32b38fedb3f575b5a87b7b6dcf8848897caedd6))
+
+### ✨ New Features
+
+* Hide the Watchlist screen's toolbar back arrow when it's a nav tab ([69d52cc](https://github.com/mvaishak/letterboxd-morphe-patches/commit/69d52cc0853f7a79492c8b77b3c42631938afaca))
+
 ## [2.1.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.1.0-dev.2...v2.1.0-dev.3) (2026-09-09)
 
 ### ✨ New Features
