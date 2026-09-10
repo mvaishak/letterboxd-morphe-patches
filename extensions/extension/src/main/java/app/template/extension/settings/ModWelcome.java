@@ -27,7 +27,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump every time {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 5;
+    private static final int BUILD = 6;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
@@ -42,7 +42,7 @@ public final class ModWelcome {
     private static final String BODY =
             "Bottom navigation\n"
           + "•  Choose which tabs the bar shows, up to five\n"
-          + "•  New Watchlist tab, with the usual filters and sort\n"
+          + "•  New Watchlist tab — its own filters and sort, back goes to Films\n"
           + "•  Set which tab the app opens on at launch\n\n"
           + "Home tabs\n"
           + "•  Show, hide or reorder Films / Reviews / Lists / Journal\n"
