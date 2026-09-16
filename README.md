@@ -169,7 +169,7 @@ about your APK doesn't match.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.1.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v2.1.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
+> **[v2.1.0](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v2.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
 <details open>
 <summary>Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
