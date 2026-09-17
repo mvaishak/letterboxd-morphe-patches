@@ -1,3 +1,9 @@
+## [2.2.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.1.1...v2.2.0) (2026-09-17)
+
+### ✨ New Features
+
+* Add "Report an issue" and "Full changelog" links to Mod settings ([1bbef53](https://github.com/mvaishak/letterboxd-morphe-patches/commit/1bbef5323fc70acee84419b1400c139080935182))
+
 ## [2.2.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.1.1...v2.2.0-dev.1) (2026-09-17)
 
 ### ✨ New Features
