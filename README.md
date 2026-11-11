@@ -8,6 +8,9 @@ built for [Morphe](https://morphe.software).
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
 [![Built for Morphe](https://img.shields.io/badge/Built%20for-Morphe-1E5AA8?style=flat-square)](https://morphe.software)
 [![Platform: Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android)](https://android.com)
+[![GitHub Stars](https://img.shields.io/github/stars/mvaishak/letterboxd-morphe-patches?style=flat-square&logo=github)](https://github.com/mvaishak/letterboxd-morphe-patches/stargazers)
+[![Total Downloads](https://img.shields.io/github/downloads/mvaishak/letterboxd-morphe-patches/total?style=flat-square&color=orange&label=total%20downloads)](https://github.com/mvaishak/letterboxd-morphe-patches/releases)
+[![Latest Release Downloads](https://img.shields.io/github/downloads/mvaishak/letterboxd-morphe-patches/latest/total?style=flat-square&color=green&label=latest%20downloads)](https://github.com/mvaishak/letterboxd-morphe-patches/releases/latest)
 
 
 </div>
