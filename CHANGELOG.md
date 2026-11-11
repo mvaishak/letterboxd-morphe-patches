@@ -1,3 +1,9 @@
+## [2.3.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.2.0...v2.3.0-dev.1) (2026-11-11)
+
+### ✨ New Features
+
+* hide sponsored Spotlight cards on home ([d9e3244](https://github.com/mvaishak/letterboxd-morphe-patches/commit/d9e3244a545a4451bf3c8940b140bb00d7b547ff)), closes [#12](https://github.com/mvaishak/letterboxd-morphe-patches/issues/12)
+
 ## [2.2.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.1.1...v2.2.0) (2026-09-17)
 
 ### ✨ New Features
