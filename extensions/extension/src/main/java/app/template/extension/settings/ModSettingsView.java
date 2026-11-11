@@ -192,25 +192,8 @@ final class ModSettingsView extends ScrollView {
                 "Remove the \"Where to watch\" section from a film's page",
                 Prefs.KEY_HIDE_WHERE_TO_WATCH, false, false));
         if (app.template.extension.trivia.ImdbTrivia.available()) {
-            PillToggle trivia = new PillToggle(ctx);
-            column.addView(toggleRow(trivia, "IMDb trivia", "Show a Trivia tab on film pages",
+            column.addView(toggleRow("IMDb trivia", "Show a Trivia tab on film pages",
                     Prefs.KEY_IMDB_TRIVIA, true, false));
-
-            PillToggle preloadToggle = new PillToggle(ctx);
-            View preload = toggleRow(preloadToggle, "Preload trivia on film pages",
-                    "Start loading the first entries when you open a film",
-                    Prefs.KEY_PRELOAD_TRIVIA, false, false);
-            preload.setOnClickListener(view -> preloadToggle.toggle());
-            column.addView(preload);
-
-            boolean triviaEnabled = Prefs.getBoolean(Prefs.KEY_IMDB_TRIVIA, true);
-            setRowEnabled(preload, triviaEnabled);
-            preloadToggle.setEnabledLook(triviaEnabled);
-            trivia.setOnToggle(checked -> {
-                Prefs.putBoolean(Prefs.KEY_IMDB_TRIVIA, checked);
-                setRowEnabled(preload, checked);
-                preloadToggle.setEnabledLook(checked);
-            });
         }
         column.addView(toggleRow("Runtime as 1h 47m",
                 "Show a film's runtime in hours and minutes instead of \"107 mins\"",

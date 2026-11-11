@@ -74,9 +74,8 @@ a film page past **Releases** to reach **Trivia**. Use the filters to pick a
 category, **Load more** to see more entries, and tap a spoiler to reveal it.
 Films need an IMDb link.
 
-**Preload trivia on film pages** is off by default. Turn it on under **Film Pages**
-to load the first few entries early. Open **Help & About → Feature Guide** for
-patch requirements and more instructions.
+The first few entries can load while you browse the film page. Open
+**Help & About → Feature Guide** for patch requirements and more instructions.
 
 ### Appearance
 

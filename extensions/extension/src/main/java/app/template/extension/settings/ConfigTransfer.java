@@ -38,7 +38,6 @@ public final class ConfigTransfer {
         KEYS.put(Prefs.KEY_HIDE_SPONSORED_SPOTLIGHT, BOOL);
         KEYS.put(Prefs.KEY_ARTWORK_MODE, STR);
         KEYS.put(Prefs.KEY_IMDB_TRIVIA, BOOL);
-        KEYS.put(Prefs.KEY_PRELOAD_TRIVIA, BOOL);
         KEYS.put(Prefs.KEY_HIDE_WHERE_TO_WATCH, BOOL);
         KEYS.put(Prefs.KEY_RUNTIME_HHMM, BOOL);
         KEYS.put(Prefs.KEY_OPEN_IN_PLAYER, BOOL);

@@ -44,7 +44,7 @@ public final class ModWelcome {
           + "•  With Custom artwork installed, open a film’s More menu to change its poster or backdrop. "
           + "Use Change backdrop on your own profile.\n"
           + "•  With the IMDb trivia patch installed, swipe the film’s tabs past Releases to find Trivia. "
-          + "You can enable preloading under Film Pages.\n"
+          + "The first entries can load while you browse.\n"
           + "•  Use Backup & Reset to export or restore settings and artwork, or reset Mods.\n"
           + "•  Open Help & About → Feature Guide for instructions and common questions.";
 

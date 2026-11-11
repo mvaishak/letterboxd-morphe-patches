@@ -32,7 +32,7 @@ final class FeatureGuide {
         view.guideEntry("IMDb trivia",
                 "With IMDb trivia (personal) installed on Letterboxd 3.6.7, swipe the film tabs past Releases. "
                 + "Tap Trivia, use the category filters or Load more, and tap a spoiler to reveal it. "
-                + "The film needs an IMDb link and a connection. To load the first entries early, turn on Preload trivia on film pages under Film Pages.");
+                + "The film needs an IMDb link and a connection. The first entries can load while you browse the film page.");
         view.guideEntry("Runtime and Where to Watch",
                 "Use Runtime as 1h 47m to show hours and minutes. Turn on Hide Where to Watch to remove the film’s streaming list.");
         view.guideEntry("Open in player",

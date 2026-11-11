@@ -16,13 +16,13 @@ Each IMDb ID has at most one active loader, owned by the film details view lifec
 
 A speculative request reads up to 3 entries from the initial document and pauses. It gives the user 5 seconds to open Trivia and resume pagination in the same WebView. After that, the WebView closes and the entries stay in a 4-title, 60-second memory cache. Opening Trivia from that cache displays those entries immediately and starts a request to complete the result. The app still keeps up to 4 completed or explicitly empty results for 10 minutes. The source link and any entries already displayed stay visible if later pages fail.
 
-This is a personal-use patch for Letterboxd 3.6.7. The [feasibility report](trivia-feasibility.md) records the scope of IMDb permission reported by the user. Trivia results live in memory. Preload is off by default and can be enabled under Film Pages. A markup change on IMDb can break extraction. The loader retains the 24-click and 35-second limits from the popup, plus a separate 3-second extraction deadline.
+This is a personal-use patch for Letterboxd 3.6.7. The [feasibility report](trivia-feasibility.md) records the scope of IMDb permission reported by the user. Trivia results live in memory. Preload runs whenever IMDb trivia is enabled. A markup change on IMDb can break extraction. The loader retains the 24-click and 35-second limits from the popup, plus a separate 3-second extraction deadline.
 
 ## How to verify
 
 Run `node --test extensions/extension/src/testHost/js/ImdbTriviaPageTest.cjs` for the DOM fixtures. Build the bundle with `./gradlew buildAndroid`. Patch the original Letterboxd 3.6.7 (515) split bundle with the [recorded patch selection](../build/trivia-tab/patch-result.json).
 
-On the USB phone, run `python3 extensions/extension/src/testHost/device/trivia_tab.py build/trivia-tab primer the-dark-knight --detail`. The runner opens the films, uses the native tabs, checks Load more and spoiler reveal on Primer, filters Cameo on The Dark Knight, and measures cache hits across repeated tab switches.
+On the USB phone, run `python3 extensions/extension/src/testHost/device/trivia_tab.py build/trivia-tab primer the-dark-knight --detail --preload`. The runner opens the films, uses the native tabs, checks Load more and spoiler reveal on Primer, filters Cameo on The Dark Knight, and measures cache hits across repeated tab switches.
 
 ## Original tab benchmark
 
@@ -104,8 +104,8 @@ WebView closed after its five-second hold without requesting any additional
 pages. Opening Trivia after that point started a second WebView. This smoke
 test did not measure scrolling or peak memory.
 
-Enable preload in Mods before running the device script with `--preload`.
-Preload remains off by default. The available tests did not measure idle
+Run the device script with `--preload` on builds with automatic preload.
+The available tests did not measure idle
 battery or network use, renderer memory, or scroll responsiveness. The
 [preload results](trivia-preload-results.json) record the measured runs and
 WebView diagnostics.

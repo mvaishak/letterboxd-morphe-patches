@@ -218,7 +218,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('output', type=Path)
     parser.add_argument('films', nargs='+', choices=FILMS)
-    parser.add_argument('--preload', action='store_true', help='Expect preload enabled in Letterboxd Mods')
+    parser.add_argument('--preload', action='store_true', help='Expect automatic preload in the installed build')
     parser.add_argument('--detail', action='store_true')
     parser.add_argument('--warm-runs', type=int, default=3)
     args = parser.parse_args()

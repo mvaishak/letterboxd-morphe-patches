@@ -167,7 +167,6 @@ public final class ImdbTrivia {
         void maybePreload() {
             if (!started || !drawn || attempted || !root.isAttachedToWindow()
                     || !Prefs.getBoolean(Prefs.KEY_IMDB_TRIVIA, true)
-                    || !Prefs.getBoolean(Prefs.KEY_PRELOAD_TRIVIA, false)
                     || cached(id) != null || partial(id) != null) return;
             // Allow one speculative WebView at a time.
             if (!ACTIVE.isEmpty() && !ACTIVE.containsKey(id)) return;
