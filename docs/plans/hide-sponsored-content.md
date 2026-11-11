@@ -101,3 +101,18 @@ Proof command: `JAVA_HOME=/opt/homebrew/opt/openjdk@21 ./gradlew buildAndroid --
   the release link. Do not merge dev to main or publish a stable release.
 - Preserve the test limitation: the earlier phone run did not establish that
   a sponsored card was served, so it is not an A/B confirmation of blocking.
+
+### Pre-push verification
+
+- Combined build passed with JDK 21. An initial offline attempt lacked the
+  ARSCLib cache; the online build resolved it without source changes.
+- `npm ci` passed. All configured semantic-release plugins imported, and
+  the new ESM changelog plugin generated the expected version, download URL,
+  empty signature URL, and changelog in an isolated temporary directory.
+- Fresh exclusive patch application and bytecode inspection passed on clean
+  3.5.4 and 3.5.6 APKs; both getters return null before the original field read.
+- Dependency review found no compatibility blockers. npm audit also reports
+  existing tooling vulnerabilities; affected high/critical package entries
+  are unchanged by these three PRs. No unrelated dependency updates added.
+- Formal approval reviews were attempted for all three exact PR heads;
+  the GitHub connector returned 403 (review-write permission unavailable).
