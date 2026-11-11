@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-11T06:33:42",
-  "description": "## [2.3.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.1...v2.3.0-dev.2) (2026-11-11)\n\n### 🐛 Bug Fixes\n\n* keep cast and crew visible when switching tabs ([a768486](https://github.com/mvaishak/letterboxd-morphe-patches/commit/a768486ac2a0f59b8b2c48505c044b0d44fdef60)), closes [#15](https://github.com/mvaishak/letterboxd-morphe-patches/issues/15)\n\n### ✨ New Features\n\n* add local custom artwork and a Spotlight toggle ([bc39f6b](https://github.com/mvaishak/letterboxd-morphe-patches/commit/bc39f6b01c30079276c3492bebb6edde52451e3a))",
-  "download_url": "https://github.com/mvaishak/letterboxd-morphe-patches/releases/download/v2.3.0-dev.2/patches-2.3.0-dev.2.mpp",
+  "created_at": "2026-11-11T07:10:46",
+  "description": "## [2.3.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.2...v2.3.0-dev.3) (2026-11-11)\n\n### 🐛 Bug Fixes\n\n* support Letterboxd 3.6.7 and clarify Morphe updates ([2ad3220](https://github.com/mvaishak/letterboxd-morphe-patches/commit/2ad3220d0257e5c85cd9301795536f221c8e3c77))",
+  "download_url": "https://github.com/mvaishak/letterboxd-morphe-patches/releases/download/v2.3.0-dev.3/patches-2.3.0-dev.3.mpp",
   "signature_download_url": "",
-  "version": "2.3.0-dev.2"
+  "version": "2.3.0-dev.3"
 }

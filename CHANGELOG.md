@@ -1,3 +1,9 @@
+## [2.3.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.2...v2.3.0-dev.3) (2026-11-11)
+
+### 🐛 Bug Fixes
+
+* support Letterboxd 3.6.7 and clarify Morphe updates ([2ad3220](https://github.com/mvaishak/letterboxd-morphe-patches/commit/2ad3220d0257e5c85cd9301795536f221c8e3c77))
+
 ## [2.3.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.1...v2.3.0-dev.2) (2026-11-11)
 
 ### 🐛 Bug Fixes
