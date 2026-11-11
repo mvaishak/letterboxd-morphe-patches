@@ -1,3 +1,13 @@
+## [2.3.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.1...v2.3.0-dev.2) (2026-11-11)
+
+### 🐛 Bug Fixes
+
+* keep cast and crew visible when switching tabs ([a768486](https://github.com/mvaishak/letterboxd-morphe-patches/commit/a768486ac2a0f59b8b2c48505c044b0d44fdef60)), closes [#15](https://github.com/mvaishak/letterboxd-morphe-patches/issues/15)
+
+### ✨ New Features
+
+* add local custom artwork and a Spotlight toggle ([bc39f6b](https://github.com/mvaishak/letterboxd-morphe-patches/commit/bc39f6b01c30079276c3492bebb6edde52451e3a))
+
 ## [2.3.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.2.0...v2.3.0-dev.1) (2026-11-11)
 
 ### ✨ New Features
