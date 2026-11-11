@@ -190,6 +190,12 @@ about your APK doesn't match.
 
 ### Patch notes
 
+**Hide sponsored content** (*on by default*): removes the sponsored Spotlight /
+featured-trailer card and its space from the Films home tab. This is separate
+from **Hide ads**, which blocks Google AdMob banners. Regular film trailers
+and other home sections stay available. Disable this patch before patching
+to keep sponsored cards.
+
 **Mod settings** bundles a few behaviours that used to be separate patches:
 hiding the Video Store row, hiding Where to Watch, Open in player, hiding
 ratings until watched, matching the bottom nav. All of it lives in
