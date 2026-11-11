@@ -36,6 +36,8 @@ public final class ConfigTransfer {
         KEYS.put(Prefs.KEY_LAUNCH_TAB, STR);
         KEYS.put(Prefs.KEY_HOME_TABS, STR);
         KEYS.put(Prefs.KEY_HIDE_VIDEO_STORE, BOOL);
+        KEYS.put(Prefs.KEY_HIDE_SPONSORED_SPOTLIGHT, BOOL);
+        KEYS.put(Prefs.KEY_ARTWORK_MODE, STR);
         KEYS.put(Prefs.KEY_HIDE_WHERE_TO_WATCH, BOOL);
         KEYS.put(Prefs.KEY_RUNTIME_HHMM, BOOL);
         KEYS.put(Prefs.KEY_OPEN_IN_PLAYER, BOOL);
@@ -114,6 +116,8 @@ public final class ConfigTransfer {
     /** Light per-key checks. CSV / free-form keys pass through — their readers already ignore junk. */
     private static boolean validString(String key, String v) {
         switch (key) {
+            case Prefs.KEY_ARTWORK_MODE:
+                return oneOf(v, "automatic", "local", "off");
             case Prefs.KEY_THEME_SURFACE:
                 return v.isEmpty() || v.equals("stock") || v.equals("oled");
             case Prefs.KEY_NAV_INDICATOR:

@@ -74,6 +74,11 @@ final class ModSettingsView extends ScrollView {
         boolean materialYouActive = ctx.getResources().getIdentifier(
                 "morphe_my_surface", "color", ctx.getPackageName()) != 0;
 
+        if (app.template.extension.artwork.ArtworkHooks.available() && ctx instanceof ModSettingsActivity) {
+            column.addView(actionRow("Artwork & appearance", "Posters, backdrops, and TMDB connection",
+                    () -> ArtworkUi.settings((ModSettingsActivity) ctx)));
+        }
+
         header("Theme");
         if (!themeAvailable) {
             column.addView(disabledRow("Pure black (OLED)", "Needs Android 12 or newer", null));
@@ -164,6 +169,11 @@ final class ModSettingsView extends ScrollView {
                         }).show();
                     }
                 }));
+        if (Prefs.hasSponsoredSpotlightControl()) {
+            column.addView(toggleRow("Hide sponsored Spotlight",
+                    "Hide the sponsored featured trailer on the Films tab",
+                    Prefs.KEY_HIDE_SPONSORED_SPOTLIGHT, true, true));
+        }
         column.addView(toggleRow("Hide Video Store",
                 "Remove the Video Store promo row from the Films tab",
                 Prefs.KEY_HIDE_VIDEO_STORE, false, true));

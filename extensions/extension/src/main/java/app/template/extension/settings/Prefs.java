@@ -26,6 +26,9 @@ public final class Prefs {
     // "Hide Video Store on home" — bundled into "Mod settings" itself, not its own patch.
     public static final String KEY_HIDE_VIDEO_STORE = "hide_video_store";
 
+    public static final String KEY_HIDE_SPONSORED_SPOTLIGHT = "hide_sponsored_spotlight";
+    public static final String KEY_ARTWORK_MODE = "artwork_mode";
+
     // "Home tabs" — CSV of visible home section keys in order (films,reviews,lists,journal).
     public static final String KEY_HOME_TABS = "home_tabs";
 
@@ -64,6 +67,7 @@ public final class Prefs {
     }
 
     private static SharedPreferences sp;
+    private static boolean sponsoredSpotlightControl;
 
     private Prefs() {}
 
@@ -122,6 +126,19 @@ public final class Prefs {
     /** Whether the "Video Store on home" row should be hidden. Off by default. */
     public static boolean hideVideoStore() {
         return getBoolean(KEY_HIDE_VIDEO_STORE, false);
+    }
+
+    /** Called only when the optional Spotlight hook is installed. */
+    public static void enableSponsoredSpotlightControl() {
+        sponsoredSpotlightControl = true;
+    }
+
+    public static boolean hasSponsoredSpotlightControl() {
+        return sponsoredSpotlightControl;
+    }
+
+    public static boolean hideSponsoredSpotlight() {
+        return getBoolean(KEY_HIDE_SPONSORED_SPOTLIGHT, true);
     }
 
     /** Whether the film page's "Where to watch" section should be hidden. Off by default. */

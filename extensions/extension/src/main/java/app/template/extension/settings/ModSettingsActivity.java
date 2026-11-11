@@ -13,6 +13,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import app.template.extension.artwork.ArtworkHooks;
+import app.template.extension.artwork.ArtworkStore;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -89,6 +92,43 @@ public class ModSettingsActivity extends Activity {
 
     private static final int REQ_EXPORT = 0x4011;
     private static final int REQ_IMPORT = 0x4012;
+    private static final int REQ_ARTWORK_EXPORT = 0x4013;
+    private static final int REQ_ARTWORK_IMPORT = 0x4014;
+
+    void pickArtworkBackup(boolean export) {
+        try {
+            Intent intent = new Intent(export ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType(export ? "application/json" : "*/*");
+            if (export) intent.putExtra(Intent.EXTRA_TITLE, "letterboxd-custom-artwork.json");
+            startActivityForResult(intent, export ? REQ_ARTWORK_EXPORT : REQ_ARTWORK_IMPORT);
+        } catch (android.content.ActivityNotFoundException e) {
+            toast("No file picker available");
+        }
+    }
+
+    private void transferArtwork(int requestCode, Uri uri) {
+        ArtworkStore store = new ArtworkStore(this);
+        String member = ArtworkHooks.account();
+        if (requestCode == REQ_ARTWORK_EXPORT) {
+            try (OutputStream out = getContentResolver().openOutputStream(uri, "wt")) {
+                if (out == null) throw new java.io.IOException();
+                out.write(store.exportJson(member).getBytes(StandardCharsets.UTF_8));
+                toast("Custom artwork exported");
+            } catch (Exception e) {
+                toast("Couldn't write the artwork backup");
+            }
+        } else {
+            try (InputStream in = getContentResolver().openInputStream(uri)) {
+                if (in == null) throw new java.io.IOException();
+                int count = store.importJson(readAll(in), member);
+                toast(count == 0 ? "No empty artwork slots to import"
+                        : "Imported " + count + (count == 1 ? " artwork choice" : " artwork choices"));
+            } catch (Exception e) {
+                toast("Couldn't read the artwork backup");
+            }
+        }
+    }
 
     void pickExport() {
         try {
@@ -118,7 +158,9 @@ public class ModSettingsActivity extends Activity {
         if (resultCode != RESULT_OK || data == null || data.getData() == null) return;
         Uri uri = data.getData();
 
-        if (requestCode == REQ_EXPORT) {
+        if (requestCode == REQ_ARTWORK_EXPORT || requestCode == REQ_ARTWORK_IMPORT) {
+            transferArtwork(requestCode, uri);
+        } else if (requestCode == REQ_EXPORT) {
             try (OutputStream out = getContentResolver().openOutputStream(uri, "wt")) {
                 if (out == null) throw new Exception("no stream");
                 out.write(ConfigTransfer.export(this).getBytes(StandardCharsets.UTF_8));
