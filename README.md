@@ -222,9 +222,9 @@ install the new patched build over your current one.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.3.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v2.3.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
+> **[v2.3.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v2.3.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;10 patches total
 <details open>
-<summary>Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
+<summary>Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
 <br>
 
 | Patch | Description | Options |
@@ -235,6 +235,7 @@ install the new patched build over your current one.
 | [Denser poster grid](#denser-poster-grid) | Tightens the spacing around posters in grids so they render larger and closer together. Does not change the number of columns. | • Grid density |
 | [Hide ads](#hide-ads) | Stops the Google AdMob banners shown to free accounts from loading anywhere in the app. On by default. |  |
 | [Hide sponsored content](#hide-sponsored-content) | Hides Letterboxd's sponsored Spotlight / featured-trailer card on the Films home tab, including its space. Toggle it in Mod settings. On by default. |  |
+| [IMDb trivia (personal)](#imdb-trivia-personal) | Shows categorized IMDb trivia for the current film. Enable only for authorized personal use. |  |
 | [Material You theme](#material-you-theme) | Repaints Letterboxd's dark chrome — window background, surfaces, cards, the top bar, tab strip, bottom nav and sheets — from the device's Material You palette on Android 12+ (no effect below). No accent or OLED options here; those live in the "Mod settings" screen — but that screen's "Pure black (OLED)" and "Match bottom nav" switches turn themselves off while this patch is applied, since it already repaints those surfaces on its own. No effect on Jetpack Compose screens. |  |
 | [Mod settings](#mod-settings) | HOW TO OPEN: long-press the settings gear on your profile tab. — This adds a "Letterboxd Mods" screen that collects the other patches' options (theme, accent, hide ratings, hide video store, hide where to watch, open in player, match bottom nav, etc.) so you can change them inside the app instead of re-patching. Some changes apply immediately, others after a restart, and you'll be prompted either way. | • Cover |
 | [Smooth film credits tabs](#smooth-film-credits-tabs) | Shows already-loaded cast and crew credits immediately when switching film detail tabs. |  |

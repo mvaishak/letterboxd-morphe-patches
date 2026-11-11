@@ -1,3 +1,14 @@
+## [2.3.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.3...v2.3.0-dev.4) (2026-11-11)
+
+### 🐛 Bug Fixes
+
+* preload trivia automatically when enabled ([161c380](https://github.com/mvaishak/letterboxd-morphe-patches/commit/161c380625af1b63d018e1e87f288d06ae93e7d3))
+* reuse Letterboxd loading and improve Mods controls ([bb74a1d](https://github.com/mvaishak/letterboxd-morphe-patches/commit/bb74a1df95f8621d8b236212fd7afef1b8127970))
+
+### ✨ New Features
+
+* add film trivia and expand Mods backup and settings ([022af2f](https://github.com/mvaishak/letterboxd-morphe-patches/commit/022af2ff7614c783dc1766593de29977a5b235aa))
+
 ## [2.3.0-dev.3](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.2...v2.3.0-dev.3) (2026-11-11)
 
 ### 🐛 Bug Fixes
