@@ -147,77 +147,151 @@ public final class ArtworkStore {
     }
 
     public String exportJson(String account) throws JSONException {
+        return backup(account, false).toString(2);
+    }
+
+    public JSONObject backup() throws JSONException {
+        return backup(null, true);
+    }
+
+    private JSONObject backup(String account, boolean allProfiles) throws JSONException {
         JSONObject root = new JSONObject();
         root.put("app", "letterboxd-morphe-artwork");
-        root.put("format", 1);
+        root.put("format", allProfiles ? 2 : 1);
         JSONArray films = new JSONArray();
-        for (Film film : films()) {
-            JSONObject data = entry(film.id);
-            data.put("id", film.id);
-            films.put(data);
+        JSONArray profiles = new JSONArray();
+        for (Map.Entry<String, ?> row : preferences.getAll().entrySet()) {
+            String key = row.getKey();
+            if (key.startsWith(FILM)) {
+                JSONObject source = new JSONObject((String) row.getValue());
+                String id = key.substring(FILM.length());
+                JSONObject film = new JSONObject().put("id", checkedId(id));
+                for (Type type : Type.values()) {
+                    if (source.has(type.label)) film.put(type.label, checkedUrl(source, type.label));
+                }
+                copyMetadata(film, source, id);
+                if (hasArtwork(film)) films.put(film);
+            } else if (key.startsWith(PROFILE)) {
+                String member = key.substring(PROFILE.length());
+                if (!allProfiles && !ArtworkRules.ownsProfile(member, account)) continue;
+                JSONObject profile = new JSONObject().put("member", checkedId(member))
+                        .put("backdrop", checkedUrl(new JSONObject().put("backdrop", row.getValue()), "backdrop"));
+                if (allProfiles) profiles.put(profile);
+                else root.put("profile", profile);
+            }
         }
         root.put("films", films);
-        String profile = profile(account);
-        if (profile != null && ArtworkRules.ownsProfile(account, ArtworkHooks.account())) {
-            JSONObject data = new JSONObject();
-            data.put("member", account);
-            data.put("backdrop", profile);
-            root.put("profile", data);
-        }
-        return root.toString(2);
+        if (allProfiles) root.put("profiles", profiles);
+        return root;
     }
 
     /** Merges valid entries into unused slots. Explicit replacement stays in the picker. */
     public int importJson(String text, String account) throws JSONException {
-        JSONObject root = new JSONObject(text);
+        return merge(new JSONObject(text), account, false).imported;
+    }
+
+    public Merge mergeBackup(JSONObject root) throws JSONException {
+        return merge(root, null, true);
+    }
+
+    public static final class Merge {
+        public int imported;
+        public int occupied;
+    }
+
+    private Merge merge(JSONObject root, String account, boolean allProfiles) throws JSONException {
         if (!"letterboxd-morphe-artwork".equals(root.optString("app"))
-                || root.optInt("format") != 1) throw new JSONException("Unknown artwork format");
+                || root.optInt("format") != (allProfiles ? 2 : 1)) {
+            throw new JSONException("Unknown artwork format");
+        }
         JSONArray rows = root.getJSONArray("films");
         SharedPreferences.Editor editor = preferences.edit();
-        int count = 0;
+        Merge result = new Merge();
         java.util.Set<String> seen = new java.util.HashSet<>();
         for (int i = 0; i < rows.length(); i++) {
-            JSONObject source = rows.optJSONObject(i);
-            if (source == null) continue;
-            String id = source.optString("id");
-            if (!ArtworkRules.validId(id) || !seen.add(id)) continue;
+            JSONObject source = rows.getJSONObject(i);
+            String id = checkedId(source.opt("id"));
+            if (!seen.add(id)) throw new JSONException("Duplicate film in artwork backup");
             JSONObject target = entry(id);
             boolean changed = false;
             for (Type type : Type.values()) {
-                String url = ArtworkRules.imageUrl(source.optString(type.label, null));
-                if (url == null || target.has(type.label)) continue;
+                if (!source.has(type.label)) continue;
+                String url = checkedUrl(source, type.label);
+                if (target.has(type.label)) {
+                    result.occupied++;
+                    continue;
+                }
                 target.put(type.label, url);
                 changed = true;
-                count++;
+                result.imported++;
             }
             if (changed) {
-                Film film = film(id, source);
-                if (!target.has("title") && !film.title.isEmpty()) target.put("title", film.title);
-                if (!target.has("year") && film.year > 0) target.put("year", film.year);
-                if (!target.has("imdb") && film.imdb != null) target.put("imdb", film.imdb);
-                if (!target.has("tmdb") && film.tmdb != null) target.put("tmdb", film.tmdb);
-                if (!target.has("language") && film.language != null) target.put("language", film.language);
-                if (!target.has("originalBackdrop") && film.originalBackdrop != null) {
-                    target.put("originalBackdrop", film.originalBackdrop);
-                }
+                copyMetadata(target, source, id);
                 write(editor, id, target);
             }
         }
-        JSONObject profile = root.optJSONObject("profile");
-        if (profile != null && ArtworkRules.ownsProfile(profile.optString("member"), account)
-                && ArtworkRules.ownsProfile(account, ArtworkHooks.account()) && profile(account) == null) {
-            String url = ArtworkRules.imageUrl(profile.optString("backdrop"));
-            if (url != null) {
-                editor.putString(PROFILE + account, url);
-                count++;
+        if (allProfiles) {
+            JSONArray profiles = root.getJSONArray("profiles");
+            seen.clear();
+            for (int i = 0; i < profiles.length(); i++) {
+                JSONObject row = profiles.getJSONObject(i);
+                String id = checkedId(row.opt("member"));
+                if (!seen.add(id)) throw new JSONException("Duplicate profile in artwork backup");
+                mergeProfile(editor, result, id, checkedUrl(row, "backdrop"));
+            }
+        } else {
+            JSONObject row = root.optJSONObject("profile");
+            if (row != null && ArtworkRules.ownsProfile(row.optString("member"), account)
+                    && ArtworkRules.ownsProfile(account, ArtworkHooks.account())) {
+                mergeProfile(editor, result, account, checkedUrl(row, "backdrop"));
             }
         }
-        editor.apply();
-        if (count > 0) {
+        if (result.imported > 0) {
+            if (!editor.commit()) throw new IllegalStateException("Couldn't save artwork");
             ArtworkHooks.refreshFilm(null, null);
             ArtworkHooks.refreshProfiles();
         }
-        return count;
+        return result;
+    }
+
+    public boolean reset() {
+        boolean saved = preferences.edit().clear().commit();
+        ArtworkHooks.refreshFilm(null, null);
+        ArtworkHooks.refreshProfiles();
+        return saved;
+    }
+
+    private void mergeProfile(SharedPreferences.Editor editor, Merge result, String id, String url) {
+        if (preferences.contains(PROFILE + id)) {
+            result.occupied++;
+        } else {
+            editor.putString(PROFILE + id, url);
+            result.imported++;
+        }
+    }
+
+    private static String checkedId(Object value) throws JSONException {
+        if (value instanceof String && ArtworkRules.validId((String) value)) return (String) value;
+        throw new JSONException("Invalid ID in artwork backup");
+    }
+
+    private static String checkedUrl(JSONObject source, String key) throws JSONException {
+        Object value = source.get(key);
+        String url = value instanceof String ? ArtworkRules.imageUrl((String) value) : null;
+        if (url == null) throw new JSONException("Invalid image URL in artwork backup");
+        return url;
+    }
+
+    private static void copyMetadata(JSONObject target, JSONObject source, String id) throws JSONException {
+        Film film = film(id, source);
+        if (!target.has("title") && !film.title.isEmpty()) target.put("title", film.title);
+        if (!target.has("year") && film.year > 0) target.put("year", film.year);
+        if (!target.has("imdb") && film.imdb != null) target.put("imdb", film.imdb);
+        if (!target.has("tmdb") && film.tmdb != null) target.put("tmdb", film.tmdb);
+        if (!target.has("language") && film.language != null) target.put("language", film.language);
+        if (!target.has("originalBackdrop") && film.originalBackdrop != null) {
+            target.put("originalBackdrop", film.originalBackdrop);
+        }
     }
 
     private JSONObject entry(String id) {

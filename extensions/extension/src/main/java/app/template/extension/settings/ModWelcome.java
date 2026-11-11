@@ -27,7 +27,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump every time {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 10;
+    private static final int BUILD = 11;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
@@ -40,15 +40,18 @@ public final class ModWelcome {
     // churn (refactors, anything added then reverted in the same batch). The full feature list
     // lives in the Mods screen and the README, not here.
     private static final String BODY =
-            "Letterboxd 3.6.7\n"
-          + "•  The full patch set now supports 3.6.7, including custom artwork and smoother Cast and Crew tabs.\n\n"
-          + "Updating with Morphe\n"
-          + "•  Start with a clean Letterboxd APK or APK bundle, then install the patched build over your current one.";
+            "Letterboxd Mods\n"
+          + "•  With Custom artwork installed, open a film’s More menu to change its poster or backdrop. "
+          + "Use Change backdrop on your own profile.\n"
+          + "•  With the IMDb trivia patch installed, swipe the film’s tabs past Releases to find Trivia. "
+          + "You can enable preloading under Film Pages.\n"
+          + "•  Use Backup & Reset to export or restore settings and artwork, or reset Mods.\n"
+          + "•  Open Help & About → Feature Guide for instructions and common questions.";
 
     /** Permanent closer — every release. New-to-this-version users still need this. */
     private static final String FOOTER =
-            "Open the Mods screen by long-pressing the Letterboxd app icon, or the settings "
-          + "gear on your profile tab.";
+            "To open Mods, long-press the settings gear on your profile. "
+          + "You can also long-press the app icon and tap Letterboxd Mods.";
 
     private static volatile boolean shown = false;
     private static volatile boolean scheduled = false;

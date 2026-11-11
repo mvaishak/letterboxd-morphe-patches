@@ -49,19 +49,41 @@ Open a film's **More** menu and tap **Change poster and backdrop**. The
    and tap **Restore original poster** or **Restore original backdrop**.
 
 On your own profile, use **Change backdrop**. Open **Letterboxd Mods →
-Artwork & appearance** to manage backups, your TMDB connection, and **Artwork
-mode**. **Automatic** uses the native controls when your account has access to
+Appearance → Artwork & appearance** to manage your TMDB connection and
+**Artwork mode**. **Automatic** uses the native controls when your account has access to
 them. **Always use local artwork** gives you the local picker, and **Off**
 turns off local overrides. Local changes stay on this device.
 
-### Theme
+### Backup and reset
+
+Open **Letterboxd Mods → Backup & Reset** to export settings and all local artwork
+assignments. Import accepts older settings backups and fills empty artwork slots.
+The backup stores image links, so they still need to be reachable. Keep your
+TMDB API key separately and re-enter it when you need to browse TMDB on a new device.
+
+**Reset settings** restores the Mods defaults and keeps your artwork and key.
+**Reset all Morphe data** also clears local artwork, the key, and Mods caches.
+Both leave your Letterboxd account and app data in place. The all-data reset
+clears caches owned by Mods. Letterboxd's shared image and WebView caches
+follow the app's normal retention.
+
+### IMDb trivia
+
+With the **IMDb trivia (personal)** patch on Letterboxd 3.6.7, swipe the tabs on
+a film page past **Releases** to reach **Trivia**. Use the filters to pick a
+category, **Load more** to see more entries, and tap a spoiler to reveal it.
+Films need an IMDb link.
+
+**Preload trivia on film pages** is off by default. Turn it on under **Film Pages**
+to load the first few entries early. Open **Help & About → Feature Guide** for
+patch requirements and more instructions.
+
+### Appearance
 
 - **Pure black (OLED)**: true-black surfaces. Elevated bits like cards and
   sheets stay a faint grey so the ratings histogram doesn't disappear into
   it. Needs Android 12+. Locked off while the separate **Material You theme**
   patch is on.
-- **Match bottom nav to top bar**: paints the bottom nav bar black, matching
-  the top bar.
 - **Accent colour**: recolours the stars, rating indicators, and the
   selected bottom-nav icon:
   - Nine presets (Letterboxd green, amber, orange, coral, pink, violet, blue,
@@ -69,25 +91,34 @@ turns off local overrides. Local changes stay on this device.
   - **Material You** (Android 12+, only shows up once **Material You theme**
     is on): your wallpaper's own palette, as three tones: Material You,
     Material You 2, Material You 3. Picked automatically once it's available.
+
+### Navigation
+
+- **Shown items**: choose and arrange the bottom bar destinations.
+- **Launch tab**: choose where Letterboxd opens.
+- **Match bottom nav to top bar**: paints the bottom nav bar black, matching
+  the top bar.
 - **Bottom nav selected style**: *Stock*, *No pill*, *No pill + white icon*,
   *No pill + accent icon*, or *Accent pill*. The green **+** is never touched.
 
-### Home
+### Home Screen
 
+- **Home tabs**: choose and reorder the sections on Home.
 - **Hide sponsored Spotlight**: hides the sponsored card on the Films tab.
   On by default when **Hide sponsored content** is patched in.
 - **Hide Video Store**: removes the "Letterboxd Video Store" promo row from
   the Films tab. Off by default.
+
+### Film Pages
+
 - **Hide Where to Watch**: removes the "Where to watch" section from a
   film's page. Off by default.
-
-### Streaming
-
+- **Runtime as 1h 47m**: shows hours and minutes on film pages.
 - **Open in player**: adds a small icon-only button beside Trailer on a
   film's page that opens it directly in **Stremio** or **Nuvio**, your pick.
   Off by default.
 
-### Ratings
+### Ratings & Spoilers
 
 - **Hide ratings until watched**: covers a film's community rating (average
   + histogram) until you mark it watched. Resets every visit. Only the film
@@ -95,7 +126,7 @@ turns off local overrides. Local changes stay on this device.
   - **Cover**: what it looks like while hidden: *Frosted panel* (default),
     *Tap-to-show link*, *Shimmer*, or *Tap to burst*.
   - **Reveal animation**: how it disappears on tap, separate from the cover:
-    *Pop* (default), *Crumble*, or *Confetti*.
+    *Pop*, *Crumble*, or *Confetti* (default).
   - **Confetti color**: only shows up once Confetti is picked: *Accent*,
     *Letterboxd colors* (default), or *Classic red*.
   - **Reveal haptic feedback**: a short vibration on reveal. On by default.

@@ -108,7 +108,7 @@ final class PillToggle extends View {
         return super.onTouchEvent(event);
     }
 
-    private void toggle() {
+    void toggle() {
         checked = !checked;
         animateTo(checked ? 1f : 0f);
         if (listener != null) listener.onToggle(checked);

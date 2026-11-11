@@ -176,11 +176,7 @@ public final class ArtworkHooks {
 
     public static void filmAction(DialogFragment fragment) {
         if (!localEnabled()) return;
-        Object summary = call(fragment, "getFilmSummary");
-        String id = id(summary);
-        if (id == null) return;
-        Film cached = RECENT.get(id);
-        Film film = cached != null ? cached : metadata(summary, null);
+        Film film = filmForActions(fragment);
         Button button = actionButton(fragment, "buttonChangePoster");
         if (film == null || button == null) return;
 
@@ -195,6 +191,19 @@ public final class ArtworkHooks {
             ArtworkUi.openFilm(context, film);
         });
         button.setVisibility(View.VISIBLE);
+    }
+
+    public static String imdbIdForFilm(Object film) {
+        Film metadata = metadata(film, null);
+        return metadata == null ? null : metadata.imdb;
+    }
+
+    private static Film filmForActions(DialogFragment fragment) {
+        Object summary = call(fragment, "getFilmSummary");
+        String id = id(summary);
+        if (id == null) return null;
+        Film cached = RECENT.get(id);
+        return cached != null ? cached : metadata(summary, null);
     }
 
     public static void profileAction(DialogFragment fragment) {
@@ -214,6 +223,10 @@ public final class ArtworkHooks {
             ArtworkUi.openProfile(context, viewed);
         });
         button.setVisibility(View.VISIBLE);
+    }
+
+    public static void clearCache() {
+        RECENT.clear();
     }
 
     public static String account() {

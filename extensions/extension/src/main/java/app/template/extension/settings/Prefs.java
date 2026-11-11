@@ -27,6 +27,8 @@ public final class Prefs {
     public static final String KEY_HIDE_VIDEO_STORE = "hide_video_store";
 
     public static final String KEY_HIDE_SPONSORED_SPOTLIGHT = "hide_sponsored_spotlight";
+    public static final String KEY_IMDB_TRIVIA = "imdb_trivia";
+    public static final String KEY_PRELOAD_TRIVIA = "preload_trivia";
     public static final String KEY_ARTWORK_MODE = "artwork_mode";
 
     // "Home tabs" — CSV of visible home section keys in order (films,reviews,lists,journal).

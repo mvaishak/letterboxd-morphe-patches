@@ -102,7 +102,7 @@ private fun MutableMethod.replaceImageGetter(target: String, hook: String, argum
 }
 
 /** Keep any branch targeting the original return routed through the final UI update. */
-private fun MutableMethod.beforeReturns(instruction: String) {
+internal fun MutableMethod.beforeReturns(instruction: String) {
     val returns = implementation!!.instructions.withIndex()
         .filter { it.value.opcode == Opcode.RETURN_VOID }.map { it.index }
     check(returns.isNotEmpty()) { "Missing return in $name" }

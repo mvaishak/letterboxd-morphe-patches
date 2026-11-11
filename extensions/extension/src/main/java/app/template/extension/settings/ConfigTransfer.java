@@ -1,22 +1,21 @@
 package app.template.extension.settings;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+
+import app.template.extension.artwork.ArtworkStore;
+
+import org.json.JSONException;
 
 import org.json.JSONObject;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Export / import of the Mod-settings config as a small JSON file, so a setup can be shared or
- * backed up. Only the keys in {@link #KEYS} travel — never internal state like the what's-new
- * dialog's seen-version. Import merges: a recognised key in the file is written, everything else
- * is left alone, so a config from an older build can't wipe newer settings. Values are sanity-
- * checked; a bad one is skipped rather than aborting the whole import.
- */
+/** Versioned backup of user preferences and local artwork assignments. */
 public final class ConfigTransfer {
 
-    public static final int FORMAT = 1;
+    public static final int FORMAT = 2;
     private static final String APP = "letterboxd-morphe-patches";
 
     private static final boolean STR = false;
@@ -38,6 +37,8 @@ public final class ConfigTransfer {
         KEYS.put(Prefs.KEY_HIDE_VIDEO_STORE, BOOL);
         KEYS.put(Prefs.KEY_HIDE_SPONSORED_SPOTLIGHT, BOOL);
         KEYS.put(Prefs.KEY_ARTWORK_MODE, STR);
+        KEYS.put(Prefs.KEY_IMDB_TRIVIA, BOOL);
+        KEYS.put(Prefs.KEY_PRELOAD_TRIVIA, BOOL);
         KEYS.put(Prefs.KEY_HIDE_WHERE_TO_WATCH, BOOL);
         KEYS.put(Prefs.KEY_RUNTIME_HHMM, BOOL);
         KEYS.put(Prefs.KEY_OPEN_IN_PLAYER, BOOL);
@@ -51,66 +52,82 @@ public final class ConfigTransfer {
 
     private ConfigTransfer() {}
 
-    // --- export ------------------------------------------------------------
-
-    public static String export(Context ctx) {
-        Prefs.load(ctx);
-        try {
-            JSONObject settings = new JSONObject();
-            for (Map.Entry<String, Boolean> e : KEYS.entrySet()) {
-                String key = e.getKey();
-                if (!Prefs.has(key)) continue; // only what the user actually set
-                if (e.getValue() == BOOL) {
-                    settings.put(key, Prefs.getBoolean(key, false));
-                } else {
-                    settings.put(key, Prefs.getString(key, ""));
-                }
+    public static String export(Context ctx) throws JSONException {
+        JSONObject settings = new JSONObject();
+        Map<String, ?> values = preferences(ctx).getAll();
+        for (Map.Entry<String, Boolean> entry : KEYS.entrySet()) {
+            String key = entry.getKey();
+            if (!values.containsKey(key)) continue;
+            Object value = values.get(key);
+            if (!validValue(key, entry.getValue(), value)) {
+                throw new JSONException("Invalid saved preference: " + key);
             }
-            JSONObject root = new JSONObject();
-            root.put("format", FORMAT);
-            root.put("app", APP);
-            root.put("settings", settings);
-            return root.toString(2);
-        } catch (Throwable t) {
-            return "{\"format\":" + FORMAT + ",\"app\":\"" + APP + "\",\"settings\":{}}";
+            settings.put(key, value);
+        }
+        JSONObject root = new JSONObject();
+        root.put("format", FORMAT);
+        root.put("app", APP);
+        root.put("settings", settings);
+        root.put("artwork", new ArtworkStore(ctx).backup());
+        return root.toString(2);
+    }
+
+    public static final class ImportResult {
+        public final int settings;
+        public final int skippedSettings;
+        public final ArtworkStore.Merge artwork;
+
+        ImportResult(int settings, int skippedSettings, ArtworkStore.Merge artwork) {
+            this.settings = settings;
+            this.skippedSettings = skippedSettings;
+            this.artwork = artwork;
         }
     }
 
-    // --- import ----------------------------------------------------------
-
-    /** @return number of settings applied, or -1 if the text isn't a config file we understand. */
-    public static int importJson(Context ctx, String text) {
-        Prefs.load(ctx);
-        JSONObject settings;
-        try {
-            JSONObject root = new JSONObject(text);
-            if (root.optInt("format", 0) != FORMAT) return -1;
-            settings = root.optJSONObject("settings");
-            if (settings == null) return -1;
-        } catch (Throwable t) {
-            return -1;
+    public static ImportResult importJson(Context ctx, String text) throws JSONException {
+        JSONObject root = new JSONObject(text);
+        Object version = root.opt("format");
+        if (!APP.equals(root.opt("app")) || !(version instanceof Integer)
+                || ((Integer) version != 1 && (Integer) version != FORMAT)) {
+            throw new JSONException("Unknown Mods backup format");
         }
-
+        JSONObject settings = root.getJSONObject("settings");
+        SharedPreferences.Editor editor = preferences(ctx).edit();
         int applied = 0;
-        for (Map.Entry<String, Boolean> e : KEYS.entrySet()) {
-            String key = e.getKey();
+        int skipped = 0;
+        for (Map.Entry<String, Boolean> entry : KEYS.entrySet()) {
+            String key = entry.getKey();
             if (!settings.has(key)) continue;
-            try {
-                if (e.getValue() == BOOL) {
-                    Object v = settings.get(key);
-                    if (!(v instanceof Boolean)) continue;
-                    Prefs.putBoolean(key, (Boolean) v);
-                    applied++;
-                } else {
-                    String v = settings.optString(key, null);
-                    if (v == null || !validString(key, v)) continue;
-                    Prefs.putString(key, v);
-                    applied++;
-                }
-            } catch (Throwable ignored) {
+            Object value = settings.get(key);
+            if (!validValue(key, entry.getValue(), value)) {
+                skipped++;
+                continue;
             }
+            if (value instanceof Boolean) editor.putBoolean(key, (Boolean) value);
+            else editor.putString(key, (String) value);
+            applied++;
         }
-        return applied;
+        ArtworkStore.Merge artwork = (Integer) version == FORMAT
+                ? new ArtworkStore(ctx).mergeBackup(root.getJSONObject("artwork"))
+                : new ArtworkStore.Merge();
+        if (applied > 0 && !editor.commit()) {
+            throw new IllegalStateException("Couldn't save settings. Some artwork may have been restored.");
+        }
+        return new ImportResult(applied, skipped, artwork);
+    }
+
+    static boolean resetSettings(Context ctx) {
+        SharedPreferences.Editor editor = preferences(ctx).edit();
+        for (String key : KEYS.keySet()) editor.remove(key);
+        return editor.commit();
+    }
+
+    static SharedPreferences preferences(Context ctx) {
+        return ctx.getSharedPreferences(Prefs.NAME, Context.MODE_PRIVATE);
+    }
+
+    private static boolean validValue(String key, boolean bool, Object value) {
+        return bool ? value instanceof Boolean : value instanceof String && validString(key, (String) value);
     }
 
     /** Light per-key checks. CSV / free-form keys pass through — their readers already ignore junk. */

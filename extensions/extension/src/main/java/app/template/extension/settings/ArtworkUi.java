@@ -1100,7 +1100,8 @@ public final class ArtworkUi {
                     android.graphics.Rect bounds = new android.graphics.Rect(metrics.getBounds());
                     android.graphics.Insets bars = metrics.getWindowInsets().getInsetsIgnoringVisibility(
                             android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout());
-                    bounds.inset(bars.left, bars.top, bars.right, bars.bottom);
+                    bounds.set(bounds.left + bars.left, bounds.top + bars.top,
+                            bounds.right - bars.right, bounds.bottom - bars.bottom);
                     return bounds;
                 }
             }
