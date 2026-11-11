@@ -7,6 +7,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.ApkFileType
 import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -32,6 +33,8 @@ private const val DIALOG = "Landroidx/fragment/app/DialogFragment;"
 private const val OBJECT = "Ljava/lang/Object;"
 private const val IMAGE_VIEW = "Landroid/widget/ImageView;"
 private const val STRING = "Ljava/lang/String;"
+private const val SUMMARY_POSTER = "$SUMMARY->getPoster()$IMAGE"
+private const val VIEWER_BUILDER = "Lcom/stfalcon/imageviewer/StfalconImageViewer\$Builder;"
 
 private fun artworkMethod(owner: String, method: String, vararg parameters: String) =
     Fingerprint(definingClass = owner, name = method, returnType = "V", parameters = parameters.toList())
@@ -51,16 +54,25 @@ private val accountState = artworkMethod(
     "${APP}services/CurrentMemberManager;", "updateState", "${APP}services/CurrentMemberManager\$State;",
 )
 private val tappedPoster = artworkMethod(FILM_HEADER, "showPoster", SUMMARY)
-private val sheetPoster = artworkMethod(FILM_ACTIONS, "onViewCreated\$lambda\$14", FILM_ACTIONS, "Landroid/view/View;")
-private val tappedPosterLoader = artworkMethod(FILM_HEADER, "showPoster\$lambda\$0", FILM_HEADER, IMAGE_VIEW, "Ljava/net/URL;")
-private val sheetPosterLoader = artworkMethod(
-    FILM_ACTIONS, "onViewCreated\$lambda\$14\$0", "Landroidx/fragment/app/FragmentActivity;", IMAGE_VIEW, STRING,
+private val sheetPoster = Fingerprint(
+    definingClass = FILM_ACTIONS,
+    returnType = "V",
+    parameters = listOf(FILM_ACTIONS, "Landroid/view/View;"),
+    custom = { method, _ ->
+        val references = (method.implementation?.instructions ?: emptyList())
+            .mapNotNull { (it as? ReferenceInstruction)?.reference?.toString() }
+        SUMMARY_POSTER in references &&
+            "${VIEWER_BUILDER}->show()Lcom/stfalcon/imageviewer/StfalconImageViewer;" in references
+    },
 )
+private val tappedPosterLoader = artworkMethod(FILM_HEADER, "showPoster\$lambda\$0", FILM_HEADER, IMAGE_VIEW, "Ljava/net/URL;")
 
-private fun MutableMethod.callIndex(target: String): Int =
-    implementation!!.instructions.withIndex()
+private fun MutableMethod.callIndex(target: String): Int {
+    val matches = implementation!!.instructions.withIndex()
         .filter { (_, instruction) -> (instruction as? ReferenceInstruction)?.reference?.toString() == target }
-        .single().index
+    return matches.singleOrNull()?.index
+        ?: throw PatchException("Expected one call to $target in $definingClass->$name, found ${matches.size}.")
+}
 
 private fun MutableMethod.imageResult(index: Int): String {
     val move = implementation!!.instructions.elementAt(index + 1)
@@ -124,12 +136,19 @@ val customArtworkPatch = bytecodePatch(
             packageName = "com.letterboxd.letterboxd",
             apkFileType = ApkFileType.APK,
             appIconColor = 0xFF8000,
-            targets = listOf(AppTarget(version = "3.5.4"), AppTarget(version = "3.5.6")),
+            targets = listOf(AppTarget(version = "3.5.4"), AppTarget(version = "3.5.6"), AppTarget(version = "3.6.7")),
         ),
     )
     dependsOn(modSettingsPatch, artworkResources)
 
     execute {
+        val poster = posterState.method
+        if (poster.implementation!!.instructions.any {
+                (it as? ReferenceInstruction)?.reference?.toString() == "$HOOK->boundPoster(Landroid/view/View;$OBJECT)$OBJECT"
+            }) {
+            throw PatchException("Custom artwork is already applied. Select a clean, unpatched Letterboxd APK in Morphe.")
+        }
+
         LetterboxdApplicationOnCreateFingerprint.method.addInstruction(
             0, "invoke-static { p0 }, $HOOK->initialize(Landroid/content/Context;)V",
         )
@@ -140,7 +159,7 @@ val customArtworkPatch = bytecodePatch(
         posterRebind.method.addInstruction(
             0, "invoke-static { p0, p1 }, $HOOK->rebindPoster(Landroid/view/View;$OBJECT)V",
         )
-        posterState.method.replaceImageGetter(
+        poster.replaceImageGetter(
             "${APP}ui/views/PosterView\$State;->getPoster()$IMAGE",
             "boundPoster", { "p0, p1" }, "Landroid/view/View;$OBJECT",
         )
@@ -156,10 +175,14 @@ val customArtworkPatch = bytecodePatch(
         )
 
         // The viewer obtains its own URL from FilmSummary, bypassing PosterView entirely.
-        for (viewer in listOf(tappedPoster, sheetPoster)) {
-            viewer.method.replaceImageGetter("${SUMMARY}->getPoster()$IMAGE", "viewerPoster", { it }, OBJECT)
+        val sheetViewer = sheetPoster.matchAll().single().method
+        val sheetLoader = artworkMethod(
+            FILM_ACTIONS, sheetViewer.name + "\$0", "Landroidx/fragment/app/FragmentActivity;", IMAGE_VIEW, STRING,
+        )
+        for (viewer in listOf(tappedPoster.method, sheetViewer)) {
+            viewer.replaceImageGetter(SUMMARY_POSTER, "viewerPoster", { it }, OBJECT)
         }
-        for (loader in listOf(tappedPosterLoader, sheetPosterLoader)) {
+        for (loader in listOf(tappedPosterLoader, sheetLoader)) {
             val method = loader.method
             val index = method.callIndex("Lcom/bumptech/glide/RequestBuilder;->into($IMAGE_VIEW)Lcom/bumptech/glide/request/target/ViewTarget;")
             val registers = method.implementation!!.instructions.elementAt(index) as FiveRegisterInstruction

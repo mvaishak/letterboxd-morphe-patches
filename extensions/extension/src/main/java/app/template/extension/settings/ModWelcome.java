@@ -27,7 +27,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump every time {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 9;
+    private static final int BUILD = 10;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
@@ -40,14 +40,10 @@ public final class ModWelcome {
     // churn (refactors, anything added then reverted in the same batch). The full feature list
     // lives in the Mods screen and the README, not here.
     private static final String BODY =
-            "Custom artwork\n"
-          + "•  Pick a poster or backdrop from TMDB or use an image URL. Your choices stay on this device.\n"
-          + "•  Change your profile backdrop and manage saved artwork from Mods.\n"
-          + "•  Automatic mode keeps Letterboxd’s artwork controls when your account has them.\n\n"
-          + "Home\n"
-          + "•  You can turn off sponsored Spotlight hiding in Mods.\n\n"
-          + "Film details\n"
-          + "•  Cast and Crew reuse loaded credits when you switch tabs.";
+            "Letterboxd 3.6.7\n"
+          + "•  The full patch set now supports 3.6.7, including custom artwork and smoother Cast and Crew tabs.\n\n"
+          + "Updating with Morphe\n"
+          + "•  Start with a clean Letterboxd APK or APK bundle, then install the patched build over your current one.";
 
     /** Permanent closer — every release. New-to-this-version users still need this. */
     private static final String FOOTER =

@@ -37,6 +37,23 @@ Mods** (needs the **Mod settings** patch, on by default). A one-time note
 points this out the first time you launch after patching. Some changes apply
 right away, others need a restart, and you'll be prompted either way.
 
+### Custom artwork
+
+Open a film's **More** menu and tap **Change poster and backdrop**. The
+**LOCAL** badge marks the picker added by the patch.
+
+1. Choose **Posters** or **Backdrops**. Connect TMDB with your **API Key (v3
+   auth)** to browse artwork, or tap **Use image URL** and paste a direct HTTPS
+   image link.
+2. Preview the image and tap **Apply artwork**. To undo it, open the same tab
+   and tap **Restore original poster** or **Restore original backdrop**.
+
+On your own profile, use **Change backdrop**. Open **Letterboxd Mods →
+Artwork & appearance** to manage backups, your TMDB connection, and **Artwork
+mode**. **Automatic** uses the native controls when your account has access to
+them. **Always use local artwork** gives you the local picker, and **Off**
+turns off local overrides. Local changes stay on this device.
+
 ### Theme
 
 - **Pure black (OLED)**: true-black surfaces. Elevated bits like cards and
@@ -57,6 +74,8 @@ right away, others need a restart, and you'll be prompted either way.
 
 ### Home
 
+- **Hide sponsored Spotlight**: hides the sponsored card on the Films tab.
+  On by default when **Hide sponsored content** is patched in.
 - **Hide Video Store**: removes the "Letterboxd Video Store" promo row from
   the Films tab. Off by default.
 - **Hide Where to Watch**: removes the "Where to watch" section from a
@@ -164,8 +183,9 @@ The film's community rating is fully covered until you tap.
 > in-app screen. Long-press the **settings gear on your profile tab** to open
 > it. A one-time note also shows on first launch after patching.
 
-Any Letterboxd version should work. Morphe will warn you if something else
-about your APK doesn't match.
+Use Letterboxd **3.6.7**, **3.5.6**, or **3.5.4** for the full patch set.
+For updates, give Morphe a clean Letterboxd APK or APK bundle as input, then
+install the new patched build over your current one.
 
 ---
 
@@ -199,8 +219,8 @@ about your APK doesn't match.
 **Hide sponsored content** (*on by default*): removes the sponsored Spotlight /
 featured-trailer card and its space from the Films home tab. This is separate
 from **Hide ads**, which blocks Google AdMob banners. Regular film trailers
-and other home sections stay available. Disable this patch before patching
-to keep sponsored cards.
+and other home sections stay available. Use **Hide sponsored Spotlight** in
+**Letterboxd Mods → Home** to show or hide the card after patching.
 
 **Mod settings** bundles a few behaviours that used to be separate patches:
 hiding the Video Store row, hiding Where to Watch, Open in player, hiding
