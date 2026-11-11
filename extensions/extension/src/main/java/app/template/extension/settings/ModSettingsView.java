@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -364,7 +365,7 @@ final class ModSettingsView extends ScrollView {
 
         TextView open = new TextView(ctx);
         open.setText("↗");
-        open.setTextColor(accent);
+        open.setTextColor(AccentPresets.readableText(accent, SurfaceColors.background(ctx)));
         open.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
         open.setGravity(Gravity.CENTER_VERTICAL);
         row.addView(open);
@@ -386,7 +387,7 @@ final class ModSettingsView extends ScrollView {
     void header(String text) {
         TextView tv = new TextView(ctx);
         tv.setText(text.toUpperCase());
-        tv.setTextColor(accent);
+        tv.setTextColor(AccentPresets.readableText(accent, SurfaceColors.background(ctx)));
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
         tv.setTypeface(tv.getTypeface(), Typeface.BOLD);
         tv.setLetterSpacing(0.08f);
@@ -409,6 +410,7 @@ final class ModSettingsView extends ScrollView {
         row.addView(titleBlock(title, subtitle), textLp());
 
         toggle.setAccent(accent);
+        toggle.setContentDescription(title);
         toggle.setChecked(Prefs.getBoolean(key, def), false);
         LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -435,7 +437,10 @@ final class ModSettingsView extends ScrollView {
         v.setText(value);
         v.setTextColor(0xFFB0B0B0);
         v.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-        v.setGravity(Gravity.CENTER_VERTICAL);
+        v.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        v.setMaxWidth((ctx.getResources().getDisplayMetrics().widthPixels - dp(40)) * 2 / 5);
+        v.setMaxLines(2);
+        v.setEllipsize(TextUtils.TruncateAt.END);
         row.addView(v);
         if (title.equals("Cover")) revealValue = v;
         else if (title.equals("Reveal animation")) animationValue = v;

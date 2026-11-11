@@ -277,6 +277,9 @@ the app already uses. Always on.
 
 ## Building
 
+Use the [Morphe UI design playbook](docs/design/MORPHE_DESIGN_PLAYBOOK.md)
+when adding or changing UI.
+
 Requires a JDK 21 and the Android SDK (platform 36, build-tools 36).
 
 ```bash

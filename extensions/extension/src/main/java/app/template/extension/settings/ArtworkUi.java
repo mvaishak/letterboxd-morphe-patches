@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,6 +36,7 @@ import app.template.extension.artwork.ArtworkStore.Film;
 import app.template.extension.artwork.ArtworkStore.Type;
 import app.template.extension.artwork.TmdbClient;
 import app.template.extension.artwork.TmdbCredential;
+import app.template.extension.ui.LoadingIndicator;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -295,7 +297,7 @@ public final class ArtworkUi {
             if (clip != null && clip.getItemCount() > 0) input.setText(clip.getItemAt(0).getText());
         });
         TextView status = screen.note(body, "");
-        Job job = new Job(screen);
+        Job job = new Job(screen, body);
         TextView connect = screen.button("Connect & continue", true, null);
         connect.setOnClickListener(view -> {
             String key = input.getText().toString().trim();
@@ -397,6 +399,9 @@ public final class ArtworkUi {
         sampleSize.gravity = Gravity.CENTER_HORIZONTAL;
         body.addView(sample, sampleSize);
         TextView status = screen.note(body, "Loading image…");
+        LoadingIndicator loading = new LoadingIndicator(context, false);
+        body.addView(loading, new LinearLayout.LayoutParams(-1, -2));
+        loading.setLoading(true);
         TextView confirm = screen.button("Apply artwork", true, () -> {
             if (member != null && !member.equals(ArtworkHooks.account())) {
                 status.setText("The signed-in profile has changed.");
@@ -417,9 +422,14 @@ public final class ArtworkUi {
         });
         shortcut.setEnabled(false);
         if (useOnProfile != null) screen.root.addView(shortcut);
-        screen.onDismiss = () -> ArtworkImages.clear(image);
+        screen.onDismiss = () -> {
+            loading.setLoading(false);
+            ArtworkImages.clear(image);
+        };
         screen.show(false);
         ArtworkImages.load(image, url, loaded -> {
+            loading.setLoading(false);
+            sample.setVisibility(loaded ? View.VISIBLE : View.GONE);
             status.setText(loaded ? "" : "Couldn't load this image. Check the link or try again.");
             status.setVisibility(loaded ? View.GONE : View.VISIBLE);
             confirm.setEnabled(loaded);
@@ -460,7 +470,6 @@ public final class ArtworkUi {
             this.after = after;
             store = new ArtworkStore(context);
             screen = new Screen(context, member == null ? "Customize artwork" : "Choose profile backdrop", film.label());
-            job = new Job(screen);
 
             if (member != null) {
                 type = Type.BACKDROP;
@@ -486,6 +495,7 @@ public final class ArtworkUi {
                 }
             }
             status = screen.note(screen.root, "");
+            job = new Job(screen, screen.root);
             browseAction = screen.button("", true, () -> {
                 if (browseClick != null) browseClick.run();
             });
@@ -784,26 +794,36 @@ public final class ArtworkUi {
 
     private static final class Job {
         final Screen screen;
+        final LoadingIndicator loading;
         Future<?> request;
         int generation;
 
-        Job(Screen screen) {
+        Job(Screen screen, LinearLayout container) {
             this.screen = screen;
+            loading = new LoadingIndicator(screen.context, true);
+            container.addView(loading, new LinearLayout.LayoutParams(-1, -2));
         }
 
         <T> void run(Callable<T> work, Callback<T> success, Callback<String> failure) {
             cancel();
             int ticket = generation;
+            loading.setLoading(true);
             request = NETWORK.submit(() -> {
                 try {
                     T result = work.call();
                     MAIN.post(() -> {
-                        if (ticket == generation && screen.open) success.accept(result);
+                        if (ticket == generation && screen.open) {
+                            loading.setLoading(false);
+                            success.accept(result);
+                        }
                     });
                 } catch (Exception e) {
                     String message = e instanceof TmdbClient.Failure ? e.getMessage() : "Couldn't complete this request.";
                     MAIN.post(() -> {
-                        if (ticket == generation && screen.open) failure.accept(message);
+                        if (ticket == generation && screen.open) {
+                            loading.setLoading(false);
+                            failure.accept(message);
+                        }
                     });
                 }
             });
@@ -811,6 +831,7 @@ public final class ArtworkUi {
 
         void cancel() {
             generation++;
+            loading.setLoading(false);
             if (request != null) {
                 request.cancel(true);
                 request = null;
@@ -846,8 +867,15 @@ public final class ArtworkUi {
             TextView titleView = text(title, 20, Color.WHITE);
             titleView.setTypeface(titleView.getTypeface(), Typeface.BOLD);
             heading.addView(titleView, new LinearLayout.LayoutParams(0, -2, 1));
-            TextView close = button("×", false, this::dismiss);
+            ImageButton close = new ImageButton(context);
+            int icon = context.getResources().getIdentifier("close", "drawable", context.getPackageName());
+            close.setImageResource(icon != 0 ? icon : android.R.drawable.ic_menu_close_clear_cancel);
+            close.setImageTintList(ColorStateList.valueOf(AccentPresets.readableText(Color.WHITE, surface)));
+            close.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            close.setPadding(dp(8), dp(8), dp(8), dp(8));
+            close.setBackground(ripple(Color.TRANSPARENT, 24));
             close.setContentDescription("Close");
+            close.setOnClickListener(view -> dismiss());
             heading.addView(close, new LinearLayout.LayoutParams(dp(48), dp(48)));
             root.addView(heading);
             if (subtitle != null) note(root, subtitle);
@@ -975,7 +1003,7 @@ public final class ArtworkUi {
         }
 
         void section(LinearLayout container, String title) {
-            TextView text = text(title.toUpperCase(java.util.Locale.ROOT), 12, accent);
+            TextView text = text(title.toUpperCase(java.util.Locale.ROOT), 12, AccentPresets.readableText(accent, surface));
             text.setTypeface(text.getTypeface(), Typeface.BOLD);
             text.setLetterSpacing(0.08f);
             text.setPadding(0, dp(16), 0, dp(4));
@@ -1026,7 +1054,7 @@ public final class ArtworkUi {
             TextView button = outlineButton(label, click);
             button.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
             button.setPaddingRelative(dp(12), dp(5), dp(10), dp(5));
-            android.graphics.drawable.Drawable chevron = Glyphs.chevron(accent,
+            android.graphics.drawable.Drawable chevron = Glyphs.chevron(AccentPresets.readableText(accent, surface),
                     context.getResources().getDisplayMetrics().density, false);
             chevron.setBounds(0, 0, dp(20), dp(20));
             button.setCompoundDrawablePadding(dp(8));
@@ -1035,7 +1063,8 @@ public final class ArtworkUi {
         }
 
         void paint(TextView button, boolean primary) {
-            int enabled = primary ? (AccentPresets.isLight(accent) ? 0xFF141414 : Color.WHITE) : accent;
+            int enabled = primary ? AccentPresets.readableText(Color.WHITE, accent)
+                    : AccentPresets.readableText(accent, surface);
             button.setTextColor(new ColorStateList(
                     new int[][]{new int[]{-android.R.attr.state_enabled}, new int[]{}},
                     new int[]{0xFF999999, enabled}));

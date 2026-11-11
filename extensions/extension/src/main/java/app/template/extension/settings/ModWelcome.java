@@ -27,7 +27,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump every time {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 11;
+    private static final int BUILD = 12;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
@@ -40,11 +40,12 @@ public final class ModWelcome {
     // churn (refactors, anything added then reverted in the same batch). The full feature list
     // lives in the Mods screen and the README, not here.
     private static final String BODY =
-            "Letterboxd Mods\n"
+            "Film pages\n"
+          + "•  With IMDb trivia installed, swipe past Releases to find Trivia. "
+          + "The first entries can load while you browse, and loading uses Letterboxd’s spinner.\n"
           + "•  With Custom artwork installed, open a film’s More menu to change its poster or backdrop. "
-          + "Use Change backdrop on your own profile.\n"
-          + "•  With the IMDb trivia patch installed, swipe the film’s tabs past Releases to find Trivia. "
-          + "The first entries can load while you browse.\n"
+          + "Use Change backdrop on your own profile.\n\n"
+          + "Letterboxd Mods\n"
           + "•  Use Backup & Reset to export or restore settings and artwork, or reset Mods.\n"
           + "•  Open Help & About → Feature Guide for instructions and common questions.";
 

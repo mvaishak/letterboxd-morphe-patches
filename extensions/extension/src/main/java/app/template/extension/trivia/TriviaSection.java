@@ -17,6 +17,7 @@ import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.style.URLSpan;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,11 +26,12 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.divider.MaterialDivider;
+import app.template.extension.ui.LoadingIndicator;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -58,7 +60,9 @@ public final class TriviaSection extends Fragment {
     private View empty;
     private Button more;
     private Button retry;
-    private ProgressBar progress;
+    private LoadingIndicator progress;
+    private LoadingIndicator moreProgress;
+    private LinearLayout moreRow;
     private ImdbTriviaPage.Result current;
     private Runnable unsubscribe;
 
@@ -110,15 +114,19 @@ public final class TriviaSection extends Fragment {
         empty = emptyView(inflater);
         empty.setVisibility(View.GONE);
         root.addView(empty, new LinearLayout.LayoutParams(-1, -2));
-        progress = new ProgressBar(context, null, android.R.attr.progressBarStyleSmall);
-        progress.setContentDescription("Loading IMDb trivia");
-        root.addView(progress, new LinearLayout.LayoutParams(dp(context, 24), dp(context, 24)));
+        progress = new LoadingIndicator(context, false);
+        root.addView(progress, new LinearLayout.LayoutParams(-1, -2));
+        moreRow = new LinearLayout(context);
+        moreRow.setGravity(Gravity.CENTER_VERTICAL);
         more = action(context, "Load more", () -> {
             limit += MORE;
             render();
         });
-        root.addView(more);
-        more.setVisibility(View.GONE);
+        moreRow.addView(more);
+        moreProgress = new LoadingIndicator(context, true);
+        moreRow.addView(moreProgress, new LinearLayout.LayoutParams(-2, -2));
+        root.addView(moreRow);
+        moreRow.setVisibility(View.GONE);
         retry = action(context, "Retry", this::load);
         root.addView(retry);
         retry.setVisibility(View.GONE);
@@ -133,6 +141,8 @@ public final class TriviaSection extends Fragment {
     @Override public void onStop() {
         if (unsubscribe != null) unsubscribe.run();
         unsubscribe = null;
+        progress.setLoading(false);
+        moreProgress.setLoading(false);
         super.onStop();
     }
 
@@ -150,7 +160,8 @@ public final class TriviaSection extends Fragment {
         status = null;
         empty = null;
         more = retry = null;
-        progress = null;
+        progress = moreProgress = null;
+        moreRow = null;
         current = null;
         categories.clear();
         renderedIds.clear();
@@ -165,7 +176,7 @@ public final class TriviaSection extends Fragment {
         status.setVisibility(View.VISIBLE);
         if (imdbId == null) {
             status.setText("This film has no IMDb link.");
-            progress.setVisibility(View.GONE);
+            progress.setLoading(false);
             return;
         }
         ImdbTriviaPage.Result cached = ImdbTrivia.cached(imdbId);
@@ -175,7 +186,7 @@ public final class TriviaSection extends Fragment {
             return;
         }
         status.setText("Loading trivia…");
-        progress.setVisibility(View.VISIBLE);
+        progress.setLoading(current == null || current.items.isEmpty());
         unsubscribe = ImdbTrivia.subscribe(requireParentFragment(), imdbId, this::update);
     }
 
@@ -194,7 +205,7 @@ public final class TriviaSection extends Fragment {
         if (current == null) return;
         boolean loading = "loading".equals(current.status);
         boolean complete = "observed".equals(current.status) || "empty".equals(current.status);
-        progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        progress.setLoading(loading && current.items.isEmpty());
         boolean sourceLimited = current.status.endsWith("http_403") || current.status.endsWith("http_429");
         boolean mayRetry = !sourceLimited && !current.status.equals("http_404");
         retry.setVisibility(!loading && !complete && mayRetry ? View.VISIBLE : View.GONE);
@@ -234,7 +245,8 @@ public final class TriviaSection extends Fragment {
         // A tap raises the limit by five. Bind any local rows now and fill the remaining slots on completion.
         more.setEnabled(hasLocalRows);
         more.setText(hasLocalRows ? "Load more" : "Loading more…");
-        more.setVisibility(hasLocalRows || waitingForRows ? View.VISIBLE : View.GONE);
+        moreRow.setVisibility(hasLocalRows || waitingForRows ? View.VISIBLE : View.GONE);
+        moreProgress.setLoading(waitingForRows && !hasLocalRows);
         String count = matching.size() == 1 ? "1 entry" : matching.size() + " entries";
         boolean isEmpty = complete && current.items.isEmpty();
         empty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);

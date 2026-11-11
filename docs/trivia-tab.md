@@ -8,6 +8,11 @@ Letterboxd 3.6.7 creates its details tabs in a Material TabLayout. A coroutine r
 
 The film page gets its IMDb ID through the link resolver used by custom artwork. Opening Trivia starts the public IMDb page in a hidden WebView. With preloading enabled, the loader can start after the film details first draw. The first recognizable trivia section goes to the native view before pagination finishes. Pagination uses the site's own buttons and waits for each group's item count to grow. The loader gives the buttons time to mount and checks for a stable final snapshot before it caches the result. Image requests are disabled, and Java parsing of article payloads runs off the UI thread. The final snapshot keeps source order within spoiler and non-spoiler groups.
 
+Trivia uses Letterboxd’s native `item_loading_indicator` when no entries are
+ready and the same animation at 20 dp beside the waiting Load more action.
+Cached and partial entries appear immediately. The indicator detaches when
+loading ends or the tab stops. See the [UI design playbook](design/MORPHE_DESIGN_PLAYBOOK.md).
+
 The film page keeps its vertical scroll. Trivia adds 3 native rows first and appends up to 5 more when you tap Load more. The button shows available entries immediately and fills the rest of its 5 slots when retrieval finishes. IMDb pagination runs separately, and the control shows a loading state when it has no more local rows to display. Entries reuse Letterboxd's text appearance and line spacing, release metadata styling, and Material dividers. Basic inline formatting and HTTPS links are supported.
 
 Category filters appear when the result has multiple categories and use the groups IMDb returned for that film. The app formats category identifiers into labels; exact source capitalization and localization can differ. Spoilers follow non-spoilers and each gets its own reveal button. Hidden spoiler text doesn't enter the view or its accessibility label. When the view is recreated, spoilers start concealed again.

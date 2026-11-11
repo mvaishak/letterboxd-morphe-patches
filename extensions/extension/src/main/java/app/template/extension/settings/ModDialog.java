@@ -65,7 +65,7 @@ final class ModDialog {
             body.setTextColor(0xFFC7C7C7);
             body.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.5f);
             body.setLineSpacing(Math.round(3 * d), 1f);
-            body.setLinkTextColor(accent);
+            body.setLinkTextColor(AccentPresets.readableText(accent, SurfaceColors.elevated(ctx)));
             body.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
             ScrollView scroll = new ScrollView(ctx);
             scroll.addView(body);
@@ -97,7 +97,7 @@ final class ModDialog {
                 buttons.addView(neg, lp);
             }
 
-            int onAccent = AccentPresets.isLight(accent) ? 0xFF141414 : 0xFFFFFFFF;
+            int onAccent = AccentPresets.readableText(0xFFFFFFFF, accent);
             TextView pos = pill(ctx, d, positiveText, accent, accent, onAccent);
             pos.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) {
