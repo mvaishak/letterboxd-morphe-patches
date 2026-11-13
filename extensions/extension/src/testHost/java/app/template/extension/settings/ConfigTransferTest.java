@@ -47,6 +47,24 @@ public final class ConfigTransferTest {
         require(artwork.size() == 4, "legacy import preserved artwork");
         require(!target.store(Prefs.NAME).containsKey("tmdb_api_key"), "import only allows known settings");
 
+        JSONObject both = ConfigTransfer.readBackup(exported);
+        for (boolean settingsOnly : new boolean[]{true, false}) {
+            TestContext selected = new TestContext();
+            result = ConfigTransfer.importJson(selected, both, settingsOnly, !settingsOnly);
+            require(result.settings == (settingsOnly ? 1 : 0), "selected settings only");
+            require(result.artwork.imported == (settingsOnly ? 0 : 4), "selected artwork only");
+
+            JSONObject partial = ConfigTransfer.readBackup(
+                    ConfigTransfer.export(source, settingsOnly, !settingsOnly));
+            require(partial.has("settings") == settingsOnly && partial.has("artwork") != settingsOnly,
+                    "export includes only the selected section");
+            ConfigTransfer.importJson(new TestContext(), partial, true, true);
+        }
+
+        both.put("format", 2);
+        result = ConfigTransfer.importJson(new TestContext(), both.toString());
+        require(result.settings == 1 && result.artwork.imported == 4, "version 2 backup still restores");
+
         JSONObject corrupt = new JSONObject(exported);
         corrupt.getJSONObject("artwork").getJSONArray("films")
                 .put(new JSONObject().put("id", "2").put("poster", "file:///not-an-image"));

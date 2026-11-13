@@ -15,7 +15,7 @@ import java.util.Map;
 /** Versioned backup of user preferences and local artwork assignments. */
 public final class ConfigTransfer {
 
-    public static final int FORMAT = 2;
+    public static final int FORMAT = 3;
     private static final String APP = "letterboxd-morphe-patches";
 
     private static final boolean STR = false;
@@ -52,6 +52,19 @@ public final class ConfigTransfer {
     private ConfigTransfer() {}
 
     public static String export(Context ctx) throws JSONException {
+        return export(ctx, true, true);
+    }
+
+    static String export(Context ctx, boolean includeSettings, boolean includeArtwork) throws JSONException {
+        JSONObject root = new JSONObject();
+        root.put("format", FORMAT);
+        root.put("app", APP);
+        if (includeSettings) root.put("settings", exportSettings(ctx));
+        if (includeArtwork) root.put("artwork", new ArtworkStore(ctx).backup());
+        return root.toString(2);
+    }
+
+    private static JSONObject exportSettings(Context ctx) throws JSONException {
         JSONObject settings = new JSONObject();
         Map<String, ?> values = preferences(ctx).getAll();
         for (Map.Entry<String, Boolean> entry : KEYS.entrySet()) {
@@ -63,12 +76,7 @@ public final class ConfigTransfer {
             }
             settings.put(key, value);
         }
-        JSONObject root = new JSONObject();
-        root.put("format", FORMAT);
-        root.put("app", APP);
-        root.put("settings", settings);
-        root.put("artwork", new ArtworkStore(ctx).backup());
-        return root.toString(2);
+        return settings;
     }
 
     public static final class ImportResult {
@@ -84,19 +92,33 @@ public final class ConfigTransfer {
     }
 
     public static ImportResult importJson(Context ctx, String text) throws JSONException {
+        return importJson(ctx, readBackup(text), true, true);
+    }
+
+    static JSONObject readBackup(String text) throws JSONException {
         JSONObject root = new JSONObject(text);
         Object version = root.opt("format");
         if (!APP.equals(root.opt("app")) || !(version instanceof Integer)
-                || ((Integer) version != 1 && (Integer) version != FORMAT)) {
+                || (Integer) version < 1 || (Integer) version > FORMAT) {
             throw new JSONException("Unknown Mods backup format");
         }
-        JSONObject settings = root.getJSONObject("settings");
+        if ((Integer) version < FORMAT || root.has("settings")) root.getJSONObject("settings");
+        if ((Integer) version == 2 || root.has("artwork")) root.getJSONObject("artwork");
+        if (!root.has("settings") && !root.has("artwork")) {
+            throw new JSONException("Backup contains no settings or artwork");
+        }
+        return root;
+    }
+
+    static ImportResult importJson(Context ctx, JSONObject root, boolean includeSettings,
+                                   boolean includeArtwork) throws JSONException {
+        JSONObject settings = includeSettings ? root.optJSONObject("settings") : null;
         SharedPreferences.Editor editor = preferences(ctx).edit();
         int applied = 0;
         int skipped = 0;
         for (Map.Entry<String, Boolean> entry : KEYS.entrySet()) {
             String key = entry.getKey();
-            if (!settings.has(key)) continue;
+            if (settings == null || !settings.has(key)) continue;
             Object value = settings.get(key);
             if (!validValue(key, entry.getValue(), value)) {
                 skipped++;
@@ -106,7 +128,7 @@ public final class ConfigTransfer {
             else editor.putString(key, (String) value);
             applied++;
         }
-        ArtworkStore.Merge artwork = (Integer) version == FORMAT
+        ArtworkStore.Merge artwork = includeArtwork && root.has("artwork")
                 ? new ArtworkStore(ctx).mergeBackup(root.getJSONObject("artwork"))
                 : new ArtworkStore.Merge();
         if (applied > 0 && !editor.commit()) {

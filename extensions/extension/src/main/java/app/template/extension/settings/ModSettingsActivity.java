@@ -1,6 +1,7 @@
 package app.template.extension.settings;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -19,6 +20,7 @@ import app.template.extension.artwork.TmdbCredential;
 import app.template.extension.trivia.ImdbTrivia;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -26,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Standalone host for {@link ModSettingsView}. Added to the Letterboxd manifest by the "Mod
@@ -38,7 +42,11 @@ import java.nio.charset.StandardCharsets;
 public class ModSettingsActivity extends Activity {
 
     private boolean refreshOnCreate;
+    private static final int SETTINGS = 1;
+    private static final int ARTWORK = 2;
+
     private byte[] pendingExport;
+    private int pendingExportSections;
     private LinearLayout body;
     private ModSettingsView settings;
     private TextView title;
@@ -47,6 +55,9 @@ public class ModSettingsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            pendingExportSections = savedInstanceState.getInt("pendingExportSections");
+        }
 
         final LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -163,13 +174,57 @@ public class ModSettingsActivity extends Activity {
         }
     }
 
+    private void chooseBackupSections(boolean export, int available,
+                                      java.util.function.IntConsumer onConfirm) {
+        List<String> labels = new ArrayList<>(2);
+        List<Integer> sections = new ArrayList<>(2);
+        if ((available & SETTINGS) != 0) {
+            labels.add("Mods settings");
+            sections.add(SETTINGS);
+        }
+        if ((available & ARTWORK) != 0) {
+            labels.add("Custom artwork");
+            sections.add(ARTWORK);
+        }
+        boolean[] checked = new boolean[sections.size()];
+        java.util.Arrays.fill(checked, true);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(export ? "What do you want to export?" : "What do you want to import?")
+                .setMultiChoiceItems(labels.toArray(new String[0]), checked, (d, index, selected) -> {
+                    checked[index] = selected;
+                    boolean any = false;
+                    for (boolean item : checked) any |= item;
+                    ((AlertDialog) d).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(any);
+                })
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton(export ? "Export" : "Import", (d, which) -> {
+                    int selected = 0;
+                    for (int i = 0; i < checked.length; i++) {
+                        if (checked[i]) selected |= sections.get(i);
+                    }
+                    onConfirm.accept(selected);
+                })
+                .create();
+        dialog.show();
+    }
+
     void pickExport() {
+        chooseBackupSections(true, SETTINGS | ARTWORK, this::openExportPicker);
+    }
+
+    private byte[] prepareExport(int sections) throws JSONException, IOException {
+        return backupBytes(ConfigTransfer.export(this,
+                (sections & SETTINGS) != 0, (sections & ARTWORK) != 0));
+    }
+
+    private void openExportPicker(int sections) {
         try {
-            pendingExport = backupBytes(ConfigTransfer.export(this));
+            pendingExport = prepareExport(sections);
         } catch (Exception e) {
             toast("Couldn't create the Mods backup. " + e.getMessage());
             return;
         }
+        pendingExportSections = sections;
         try {
             startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT)
                     .addCategory(Intent.CATEGORY_OPENABLE)
@@ -177,6 +232,7 @@ public class ModSettingsActivity extends Activity {
                     .putExtra(Intent.EXTRA_TITLE, "letterboxd-mods-config.json"), REQ_EXPORT);
         } catch (android.content.ActivityNotFoundException e) {
             pendingExport = null;
+            pendingExportSections = 0;
             toast("No file picker available");
         }
     }
@@ -196,7 +252,11 @@ public class ModSettingsActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         byte[] prepared = requestCode == REQ_EXPORT ? pendingExport : null;
-        if (requestCode == REQ_EXPORT) pendingExport = null;
+        int exportSections = pendingExportSections;
+        if (requestCode == REQ_EXPORT) {
+            pendingExport = null;
+            pendingExportSections = 0;
+        }
         if (resultCode != RESULT_OK || data == null || data.getData() == null) return;
         Uri uri = data.getData();
 
@@ -204,7 +264,11 @@ public class ModSettingsActivity extends Activity {
             transferArtwork(requestCode, uri);
         } else if (requestCode == REQ_EXPORT) {
             try {
-                writeBackup(uri, prepared != null ? prepared : backupBytes(ConfigTransfer.export(this)));
+                if (exportSections == 0) {
+                    toast("Choose which sections to export again");
+                    return;
+                }
+                writeBackup(uri, prepared != null ? prepared : prepareExport(exportSections));
                 toast("Mods backup saved");
             } catch (JSONException e) {
                 toast("Couldn't create backup. " + e.getMessage());
@@ -221,19 +285,34 @@ public class ModSettingsActivity extends Activity {
                 return;
             }
             try {
-                ConfigTransfer.ImportResult result = ConfigTransfer.importJson(this, text);
-                String message = "Imported " + result.settings + " settings and "
-                        + result.artwork.imported + " artwork choices";
-                if (result.skippedSettings > 0) message += ". Skipped " + result.skippedSettings + " invalid settings";
-                if (result.artwork.occupied > 0) message += ". Kept " + result.artwork.occupied + " existing artwork choices";
-                boolean changed = result.settings > 0 || result.artwork.imported > 0;
-                ModDialog.show(this, "Backup imported", message + ".", "OK",
-                        changed ? this::refreshSettings : null, null, null);
+                JSONObject backup = ConfigTransfer.readBackup(text);
+                int available = (backup.has("settings") ? SETTINGS : 0)
+                        | (backup.has("artwork") ? ARTWORK : 0);
+                chooseBackupSections(false, available, sections -> importBackup(backup, sections));
             } catch (JSONException e) {
                 toast("Invalid Mods backup. " + e.getMessage());
-            } catch (RuntimeException e) {
-                toast("Couldn't finish restoring the backup. Some changes may have been applied.");
             }
+        }
+    }
+
+    private void importBackup(JSONObject backup, int sections) {
+        boolean settings = (sections & SETTINGS) != 0;
+        boolean artwork = (sections & ARTWORK) != 0;
+        try {
+            ConfigTransfer.ImportResult result = ConfigTransfer.importJson(this, backup, settings, artwork);
+            String message = "Imported ";
+            if (settings) message += result.settings + " settings";
+            if (settings && artwork) message += " and ";
+            if (artwork) message += result.artwork.imported + " artwork choices";
+            if (result.skippedSettings > 0) message += ". Skipped " + result.skippedSettings + " invalid settings";
+            if (result.artwork.occupied > 0) message += ". Kept " + result.artwork.occupied + " existing artwork choices";
+            boolean changed = result.settings > 0 || result.artwork.imported > 0;
+            ModDialog.show(this, "Backup imported", message + ".", "OK",
+                    changed ? this::refreshSettings : null, null, null);
+        } catch (JSONException e) {
+            toast("Invalid Mods backup. " + e.getMessage());
+        } catch (RuntimeException e) {
+            toast("Couldn't finish restoring the backup. Some changes may have been applied.");
         }
     }
 
@@ -290,6 +369,7 @@ public class ModSettingsActivity extends Activity {
         super.onSaveInstanceState(state);
         state.putBoolean("modsRestartPending", refreshOnCreate);
         state.putBoolean("featureGuideOpen", guideOpen);
+        state.putInt("pendingExportSections", pendingExportSections);
     }
 
     private static String readAll(InputStream in) throws IOException {

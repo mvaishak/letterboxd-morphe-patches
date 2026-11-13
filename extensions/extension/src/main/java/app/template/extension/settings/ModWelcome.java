@@ -27,7 +27,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump every time {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 12;
+    private static final int BUILD = 13;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
@@ -45,8 +45,11 @@ public final class ModWelcome {
           + "The first entries can load while you browse, and loading uses Letterboxd’s spinner.\n"
           + "•  With Custom artwork installed, open a film’s More menu to change its poster or backdrop. "
           + "Use Change backdrop on your own profile.\n\n"
+          + "Lists and app icons\n"
+          + "•  Open a list’s More menu and tap Clone to save your own copy.\n"
+          + "•  Open App icon in Settings to change your launcher icon.\n\n"
           + "Letterboxd Mods\n"
-          + "•  Use Backup & Reset to export or restore settings and artwork, or reset Mods.\n"
+          + "•  Choose Mods settings, custom artwork, or both when you export or restore a backup.\n"
           + "•  Open Help & About → Feature Guide for instructions and common questions.";
 
     /** Permanent closer — every release. New-to-this-version users still need this. */
