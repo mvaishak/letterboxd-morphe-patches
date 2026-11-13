@@ -24,8 +24,34 @@ obfuscated implementation details out of the extension.
 | Dialogs and sheets | `ThemeOverlay.Letterboxd.MaterialAlertDialog` supplies title, body, and action styles. The host bundles Material bottom sheet layouts | Prefer MaterialAlertDialogBuilder with the host theme overlay for new host-context confirmations. Use BottomSheetDialog with a Material context for short action lists. Preserve existing ModDialog flows until their sizing, Back, and focus behavior can be checked together. |
 | Loading | `item_loading_indicator` inflates `com.letterboxd.letterboxd.ui.views.LetterboxdSpinner` with `app:indeterminate="true"` | Use `ui.LoadingIndicator`. The default row keeps the 30 dp spinner and 16 dp vertical padding. Compact loading uses the same view at 20 dp with adjacent status text. |
 | Empty or failed | `view_empty` with `empty_title_view` and `empty_quote_view` | Use the stock empty layout for known empty data. Use an inline explanation and Retry for recoverable failures. Keep existing results on partial failure. |
-| Icons | `drawable/ic_arrow_back` and `drawable/close`, plus icons referenced by the owning layout or menu | Resolve and reuse the host drawable. Use a content description for icon-only actions and keep a 48 dp target around the glyph. Tint through the active theme when the icon is not branded. Artwork dialogs use the stock close vector in a 32 dp image area inside a 48 dp button. |
+| Icons | `drawable/ic_arrow_back` and `drawable/close`, plus icons referenced by the owning layout or menu | Resolve and reuse the host drawable. Use a content description for icon-only actions and keep a 48 dp target around the glyph. Tint through the active theme when the icon is not branded. Artwork dialogs use the stock close vector in a 24 dp image area inside a 48 dp button. |
 | Feedback | `Widget.Letterboxd.Snackbar` and `snackbar_background_neutral`, `snackbar_background_success`, `snackbar_background_error` | Anchor Material Snackbar to the host view for transient feedback. Use the existing Toast fallback in isolated Mods screens. Keep actionable errors on the screen. |
+
+## Artwork picker and related controls
+
+The approved local artwork flow opens in a rounded dialog over the current
+Letterboxd screen. Keep the gallery and its previews in this presentation.
+Use the active elevated surface, Letterboxd typography and icon resources,
+and the active accent for selection and the primary action.
+
+- Put the title and relevant film name in the header. Use Letterboxd’s close
+  icon at about 24 dp inside a 48 dp target. Give the overflow button a
+  separate 48 dp target. Use underline tabs to switch artwork types.
+- Give the gallery the space. Keep language filtering in a compact control
+  above the grid, with a chevron and the active filter visible. Move URL
+  entry, viewing saved artwork, and restoring originals into overflow.
+  Show the saved choice in the grid when it is present. Keep copy that
+  explains an empty state, an error, or a required next step. Keep TMDB
+  attribution in Mods artwork settings.
+- Open small sets of choices in a menu anchored to the control. Give a
+  selector a visible label, current value, and trailing chevron. Make its
+  whole field tappable and mark the selected option. Use a themed elevated
+  surface, host text styles, and rows of at least 48 dp.
+- Carry the same surface, type, icon sizing, and action hierarchy into every
+  child dialog. Make the artwork the focus of a preview and give it one
+  primary action, **Use poster** or **Use backdrop**. Use Close and system
+  Back to return to browsing. Keep the URL form to a labeled input and a
+  **Preview** action, with validation beside the field when needed.
 
 ## Themes and state
 
@@ -71,7 +97,7 @@ Do not expose spoiler text in the accessibility tree until it is revealed.
 | Area | Observed difference and follow-up |
 | --- | --- |
 | Trivia | Stock tab, metadata, dividers, and empty layout already fit the film screen. Replaced the platform spinner and text-only pagination wait with the native animation. Filter chips still need a large-font and contrast pass across themes. |
-| Artwork | The local picker has custom tabs, grid, and buttons because it manages data the native picker does not own. Replaced the small typographic × with Letterboxd’s close icon. Added native loading feedback for TMDB requests and full image previews. Accent labels and actions now fall back to a contrasting color. Typography, spacing, and sheet chrome still differ from the native picker. |
+| Artwork | The approved gallery and previews use rounded dialogs, underline tabs, compact language filtering, and overflow for secondary actions. Native loading feedback remains in place. See Artwork picker and related controls. |
 | Mods and onboarding | ModSettingsView, PillToggle, ModDialog, and ModWelcome use custom rows, switches, fonts, and dialog layout. Switch taps now use the same click path as row, keyboard, and accessibility activation. Switches expose checked state. Choice values wrap up to two lines and leave room for the setting name. The Mods chrome still needs a typography pass against the host, including an isolated activity theme check. |
 | Rating and spoilers | Existing reveal covers and transitions have custom controls. Check disabled animation, hidden text announcements, and large text before altering them. |
 | Navigation | Existing patches reuse native destinations and recolor their chrome. Preserve stock hit targets and selection semantics. Check the selected destination after an overlay restart and check icon contrast for the custom accent. |
@@ -87,6 +113,8 @@ Do not expose spoiler text in the accessibility tree until it is revealed.
   is dark; record if a device setting does not change it.
 - Check narrow width, larger font scale, long labels, touch targets, TalkBack,
   and animator scale zero. Restore device settings after the test.
+- Review the full flow, including previews, selectors, overflow menus, forms,
+  and confirmation dialogs opened from the changed screen.
 - Exercise Back, repeated opening, selected states, cancellation, offline
   error and Retry, empty data, partial data, and cached content where relevant.
 - For backup and reset, verify confirmation text, Cancel, and preserved saved

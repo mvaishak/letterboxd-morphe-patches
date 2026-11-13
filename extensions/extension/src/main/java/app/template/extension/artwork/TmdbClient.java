@@ -105,6 +105,11 @@ public final class TmdbClient {
         return matches(get("/search/movie", query).optJSONArray("results"), false);
     }
 
+    public List<Match> search(String title) throws Failure {
+        String query = "query=" + Uri.encode(title) + "&include_adult=false";
+        return matches(get("/search/movie", query).optJSONArray("results"), true);
+    }
+
     public Images images(String id) throws Failure {
         if (!id.matches("[0-9]{1,10}")) throw new Failure("No matching film on TMDB.");
         JSONObject response = get("/movie/" + id + "/images", null);

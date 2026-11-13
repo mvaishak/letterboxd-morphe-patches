@@ -25,6 +25,10 @@ public final class ConfigTransfer {
     private static final Map<String, Boolean> KEYS = new LinkedHashMap<>();
 
     static {
+        KEYS.put(Prefs.KEY_PROFILE_BADGE_MODE, STR);
+        KEYS.put(Prefs.KEY_PROFILE_BADGE_TEXT, STR);
+        KEYS.put(Prefs.KEY_PROFILE_BADGE_STYLE, STR);
+        KEYS.put(Prefs.KEY_PROFILE_BADGE_COLOR, STR);
         KEYS.put(Prefs.KEY_THEME_SURFACE, STR);
         KEYS.put(Prefs.KEY_THEME_OLED, BOOL);
         KEYS.put(Prefs.KEY_THEME_ACCENT, STR);
@@ -37,6 +41,7 @@ public final class ConfigTransfer {
         KEYS.put(Prefs.KEY_HIDE_VIDEO_STORE, BOOL);
         KEYS.put(Prefs.KEY_HIDE_SPONSORED_SPOTLIGHT, BOOL);
         KEYS.put(Prefs.KEY_ARTWORK_MODE, STR);
+        KEYS.put(Prefs.KEY_SHOW_ADULT_POSTERS, BOOL);
         KEYS.put(Prefs.KEY_IMDB_TRIVIA, BOOL);
         KEYS.put(Prefs.KEY_HIDE_WHERE_TO_WATCH, BOOL);
         KEYS.put(Prefs.KEY_RUNTIME_HHMM, BOOL);
@@ -170,6 +175,13 @@ public final class ConfigTransfer {
                 return oneOf(v, "default", "crumble", "confetti");
             case Prefs.KEY_HIDE_RATINGS_CONFETTI_COLOR:
                 return oneOf(v, "accent", "letterboxd", "red");
+            case Prefs.KEY_PROFILE_BADGE_MODE:
+                return oneOf(v, "original", "pro", "patron", "custom");
+            case Prefs.KEY_PROFILE_BADGE_STYLE:
+                return oneOf(v, "letterboxd", "local");
+            case Prefs.KEY_PROFILE_BADGE_TEXT:
+                return v.length() <= Prefs.MAX_PROFILE_BADGE_LABEL && !v.contains("\n") && !v.contains("\r");
+            case Prefs.KEY_PROFILE_BADGE_COLOR:
             case Prefs.KEY_THEME_ACCENT_HEX:
                 if (v.isEmpty()) return true;
                 try {

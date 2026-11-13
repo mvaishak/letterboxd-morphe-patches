@@ -85,9 +85,27 @@ final class ModSettingsView extends ScrollView {
                 "morphe_my_surface", "color", ctx.getPackageName()) != 0;
 
         header("Appearance");
+        if (ProfileBadge.available()) {
+            LinearLayout row = (LinearLayout) actionRow("Profile badge",
+                    "Choose the badge you see on your profile",
+                    () -> new ProfileBadgeDialog(ctx, accent).show());
+            int icon = ctx.getResources().getIdentifier("chevron_right", "drawable", ctx.getPackageName());
+            if (icon != 0) {
+                android.widget.ImageView arrow = new android.widget.ImageView(ctx);
+                arrow.setImageResource(icon);
+                arrow.setColorFilter(0xFF99AABB);
+                arrow.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+                row.addView(arrow, new LinearLayout.LayoutParams(dp(22), dp(22)));
+            }
+            column.addView(row);
+        }
         if (app.template.extension.artwork.ArtworkHooks.available() && ctx instanceof ModSettingsActivity) {
             column.addView(actionRow("Artwork & appearance", "Posters, backdrops, and TMDB connection",
                     () -> ArtworkUi.settings((ModSettingsActivity) ctx)));
+        }
+        if (Prefs.adultPostersAvailable()) {
+            column.addView(toggleRow("Show adult posters", "Use unblurred posters for adult films when available",
+                    Prefs.KEY_SHOW_ADULT_POSTERS, false, true));
         }
 
         if (!themeAvailable) {

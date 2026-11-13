@@ -13,17 +13,25 @@ import android.graphics.drawable.RippleDrawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ArrayAdapter;
+import android.widget.CheckedTextView;
+import android.widget.ListPopupWindow;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -75,51 +83,103 @@ public final class ArtworkUi {
     private static void openProfile(Context context, String member, Runnable after) {
         if (member == null || !member.equals(ArtworkHooks.account())) return;
         Screen screen = new Screen(context, "Change profile backdrop", null);
+        screen.root.setPaddingRelative(0, screen.dp(8), 0, screen.dp(12));
+        screen.header.setPaddingRelative(screen.dp(16), 0, screen.dp(4), 0);
         LinearLayout body = screen.body();
+        body.setPaddingRelative(screen.dp(16), 0, screen.dp(16), 0);
         ArtworkStore store = new ArtworkStore(context);
-        Runnable redraw = () -> {
-            body.removeAllViews();
-            if (!member.equals(ArtworkHooks.account())) {
-                screen.note(body, "Sign in to change your profile backdrop.");
-                return;
-            }
-            String current = store.profile(member);
-            screen.note(body, artworkStatus(current));
-            screen.row(body, "Enter image URL", null, () -> enterUrl(context, url ->
+        screen.addToolbarButton("More options", "ic_more_vert_white_24dp", anchor -> {
+            if (!member.equals(ArtworkHooks.account())) return;
+            Map<String, Runnable> options = new LinkedHashMap<>();
+            options.put("Use image URL", () -> enterUrl(context, url ->
                     preview(context, Type.BACKDROP, url, member, () -> store.saveProfile(member, url),
-                            null, screen.redraw)));
-            screen.row(body, "Choose a film backdrop", "Browse recently opened or customized films",
-                    () -> profileFilms(context, member, screen.redraw));
+                            null, null)));
+            String current = store.profile(member);
             if (current != null) {
-                screen.row(body, "Preview current backdrop", null, () ->
+                options.put("View saved backdrop", () ->
                         preview(context, Type.BACKDROP, current, member, null, null, null));
-                screen.row(body, "Restore original profile backdrop", null, () -> {
-                    store.saveProfile(member, null);
-                    screen.redraw.run();
-                });
+                options.put("Restore original", () -> store.saveProfile(member, null));
             }
-        };
-        screen.redraw = redraw;
-        if (after != null) screen.onDismiss = after;
-        redraw.run();
-        screen.show(false);
-    }
+            screen.showMenu(anchor, options, null);
+        }, 1);
 
-    private static void profileFilms(Context context, String member, Runnable after) {
-        Screen screen = new Screen(context, "Choose a film", null);
-        LinearLayout body = screen.body();
+        LinearLayout searchBar = screen.horizontal();
+        EditText query = screen.input("Film title", InputType.TYPE_CLASS_TEXT);
+        query.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        query.setMinHeight(screen.dp(48));
+        screen.share(searchBar, query);
+        TextView searchButton = screen.button("Search", false, null);
+        searchBar.addView(searchButton);
+        body.addView(searchBar);
+        screen.root.setFocusableInTouchMode(true);
+        screen.root.requestFocus();
+
+        Job job = new Job(screen, body);
+        LinearLayout results = screen.column();
+        body.addView(results);
         Map<String, Film> films = new LinkedHashMap<>();
         for (Film film : ArtworkHooks.recentFilms()) films.put(film.id, film);
-        for (Film film : new ArtworkStore(context).films()) {
-            if (!films.containsKey(film.id)) films.put(film.id, film);
-        }
-        if (films.isEmpty()) {
-            screen.note(body, "Open a film first, then return here to browse its backdrops.");
-        }
-        for (Film film : films.values()) {
-            screen.row(body, film.label(), null, () -> new Picker(context, film, member, after).show());
-        }
-        screen.show(true);
+        for (Film film : store.films()) films.putIfAbsent(film.id, film);
+        Callback<Film> choose = film -> {
+            if (member.equals(ArtworkHooks.account())) new Picker(context, film, member, null).show();
+        };
+        Runnable showRecent = () -> {
+            results.removeAllViews();
+            screen.section(results, "Recent & customized films");
+            if (films.isEmpty()) screen.note(results, "Search for a film to browse its backdrops.");
+            for (Film film : films.values()) {
+                screen.row(results, film.label(), null, () -> choose.accept(film));
+            }
+        };
+        Runnable search = () -> {
+            String title = query.getText().toString().trim();
+            if (title.isEmpty()) return;
+            InputMethodManager keyboard = context.getSystemService(InputMethodManager.class);
+            if (keyboard != null) keyboard.hideSoftInputFromWindow(query.getWindowToken(), 0);
+            query.clearFocus();
+            String key = TmdbCredential.get(context);
+            if (key == null) {
+                setup(context, false, searchButton::performClick, null);
+                return;
+            }
+            results.removeAllViews();
+            job.run(() -> new TmdbClient(key).search(title), matches -> {
+                if (matches.isEmpty()) {
+                    screen.note(results, "No films found. Try another title.");
+                    return;
+                }
+                screen.section(results, "Search results");
+                for (TmdbClient.Match match : matches) {
+                    Film film = new Film(null, match.label, 0, null, match.id, null, null);
+                    screen.row(results, match.label, null, () -> choose.accept(film));
+                }
+            }, error -> {
+                screen.note(results, error);
+                screen.row(results, "Retry search", null, searchButton::performClick);
+            });
+        };
+        searchButton.setEnabled(false);
+        searchButton.setOnClickListener(view -> search.run());
+        query.setOnEditorActionListener((view, action, event) -> {
+            if (action != EditorInfo.IME_ACTION_SEARCH) return false;
+            search.run();
+            return true;
+        });
+        query.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence value, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence value, int start, int before, int count) {
+                job.cancel();
+                searchButton.setEnabled(!value.toString().trim().isEmpty());
+                showRecent.run();
+            }
+            @Override public void afterTextChanged(Editable value) {}
+        });
+        screen.onDismiss = () -> {
+            job.cancel();
+            if (after != null) after.run();
+        };
+        showRecent.run();
+        screen.show(false);
     }
 
     static void settings(ModSettingsActivity activity) {
@@ -225,13 +285,6 @@ public final class ArtworkUi {
         chooser.show(false);
     }
 
-    private static String artworkStatus(String saved) {
-        if (!ArtworkHooks.localEnabled()) {
-            return saved == null ? "Local artwork is inactive" : "Saved custom artwork is inactive";
-        }
-        return saved == null ? "Original artwork active" : "Custom artwork active";
-    }
-
     private static void clear(Screen screen, String title, String message, Runnable action) {
         Screen confirm = new Screen(screen.context, title, message);
         confirm.root.addView(confirm.button("Clear", true, () -> {
@@ -282,13 +335,9 @@ public final class ArtworkUi {
     private static void setup(Context context, boolean changing, Runnable connected, Runnable manual) {
         Screen screen = new Screen(context, changing ? "Change TMDB API key" : "Set up custom artwork", null);
         LinearLayout body = screen.body();
-        screen.note(body, "Choose custom posters and backdrops using images from TMDB. Your choices stay on this device.");
-        screen.section(body, "1. Get your API key");
-        screen.note(body, "Sign in to TMDB or create an account. Open API settings, complete API registration if required, then copy API Key (v3 auth).");
+        screen.note(body, "Copy your API Key (v3 auth) from TMDB API settings.");
         body.addView(screen.outlineButton("Open TMDB API settings",
                 () -> browser(context, TmdbClient.SETTINGS_URL, body)));
-        screen.section(body, "2. Enter the key");
-        screen.note(body, "Use API Key (v3 auth). The API Read Access Token is a different credential.");
         EditText input = screen.input("API Key (v3 auth)", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         body.addView(input);
         screen.row(body, "Paste", null, () -> {
@@ -298,7 +347,7 @@ public final class ArtworkUi {
         });
         TextView status = screen.note(body, "");
         Job job = new Job(screen, body);
-        TextView connect = screen.button("Connect & continue", true, null);
+        TextView connect = screen.button("Connect TMDB", true, null);
         connect.setOnClickListener(view -> {
             String key = input.getText().toString().trim();
             String problem = TmdbClient.keyProblem(key);
@@ -345,11 +394,11 @@ public final class ArtworkUi {
     }
 
     private static void enterUrl(Context context, Callback<String> after) {
-        Screen screen = new Screen(context, "Enter image URL", "Enter a direct HTTPS link to an image.");
-        EditText field = screen.input("https://", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+        Screen screen = new Screen(context, "Use image URL", null);
+        EditText field = screen.input("HTTPS image URL", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         screen.root.addView(field);
         TextView status = screen.note(screen.root, "");
-        screen.root.addView(screen.button("Preview artwork", true, () -> {
+        screen.root.addView(screen.button("Preview", true, () -> {
             String url = TmdbClient.validateUrl(field.getText().toString());
             if (url == null) {
                 status.setText("Enter a valid HTTPS image URL.");
@@ -365,7 +414,7 @@ public final class ArtworkUi {
                                 Runnable apply, Runnable useOnProfile, Runnable after) {
         String title = member != null ? "Preview profile backdrop"
                 : type == Type.POSTER ? "Preview poster" : "Preview film backdrop";
-        Screen screen = new Screen(context, title, apply == null ? null : "Your choice stays on this device.");
+        Screen screen = new Screen(context, title, null);
         LinearLayout body = screen.body();
         ImageView image = new ImageView(context);
         image.setBackground(screen.shape(screen.surface, 10, 0));
@@ -397,12 +446,13 @@ public final class ArtworkUi {
         }
         LinearLayout.LayoutParams sampleSize = new LinearLayout.LayoutParams(-2, -2);
         sampleSize.gravity = Gravity.CENTER_HORIZONTAL;
+        body.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
         body.addView(sample, sampleSize);
         TextView status = screen.note(body, "Loading image…");
         LoadingIndicator loading = new LoadingIndicator(context, false);
         body.addView(loading, new LinearLayout.LayoutParams(-1, -2));
         loading.setLoading(true);
-        TextView confirm = screen.button("Apply artwork", true, () -> {
+        TextView confirm = screen.button(type == Type.POSTER ? "Use poster" : "Use backdrop", true, () -> {
             if (member != null && !member.equals(ArtworkHooks.account())) {
                 status.setText("The signed-in profile has changed.");
                 return;
@@ -412,20 +462,20 @@ public final class ArtworkUi {
             if (after != null) after.run();
         });
         confirm.setEnabled(false);
-        if (apply != null) {
-            screen.root.addView(confirm);
-            screen.root.addView(screen.outlineButton("Back to choices", screen::dismiss));
-        }
+        LinearLayout actions = screen.column();
+        actions.setPadding(0, screen.dp(8), 0, 0);
+        if (apply != null) actions.addView(confirm, new LinearLayout.LayoutParams(-1, -2));
         TextView shortcut = screen.outlineButton("Set as profile backdrop", () -> {
             screen.dismiss();
             useOnProfile.run();
         });
         shortcut.setEnabled(false);
-        if (useOnProfile != null) screen.root.addView(shortcut);
+        if (useOnProfile != null) actions.addView(shortcut);
         screen.onDismiss = () -> {
             loading.setLoading(false);
             ArtworkImages.clear(image);
         };
+        if (actions.getChildCount() != 0) screen.root.addView(actions);
         screen.show(false);
         ArtworkImages.load(image, url, loaded -> {
             loading.setLoading(false);
@@ -446,14 +496,11 @@ public final class ArtworkUi {
         final Job job;
         final Map<Type, String> selection = new EnumMap<>(Type.class);
         final ListView gallery;
+        final LinearLayout galleryHeader;
         final TextView status;
         final TextView browseAction;
-        final TextView active;
-        final TextView preview;
-        final TextView restore;
-        final TextView current;
-        final TextView restoreBoth;
         final TextView filter;
+        final LinearLayout toolbar;
         final TextView posters;
         final TextView backdrops;
         final GridAdapter adapter;
@@ -469,7 +516,13 @@ public final class ArtworkUi {
             this.member = member;
             this.after = after;
             store = new ArtworkStore(context);
-            screen = new Screen(context, member == null ? "Customize artwork" : "Choose profile backdrop", film.label());
+            screen = new Screen(context, member == null ? "Choose artwork" : "Choose profile backdrop",
+                    film.label());
+            screen.root.removeView(screen.header);
+            toolbar = screen.column();
+            screen.header.setPaddingRelative(screen.dp(16), screen.dp(8), screen.dp(4), 0);
+            toolbar.addView(screen.header);
+            screen.addToolbarButton("More options", "ic_more_vert_white_24dp", this::showOptions, 1);
 
             if (member != null) {
                 type = Type.BACKDROP;
@@ -481,18 +534,7 @@ public final class ArtworkUi {
                 backdrops = screen.button("Backdrops", false, () -> switchTo(Type.BACKDROP));
                 screen.share(tabs, posters);
                 screen.share(tabs, backdrops);
-                screen.root.addView(tabs);
-            }
-            active = screen.note(screen.root, "");
-            if (member != null) {
-                String custom = store.url(film.id, Type.BACKDROP);
-                if (custom != null) {
-                    screen.root.addView(screen.outlineButton("Preview film’s custom backdrop", () -> selectAndPreview(custom)));
-                }
-                if (film.originalBackdrop != null) {
-                    screen.root.addView(screen.outlineButton("Preview film’s original backdrop",
-                            () -> selectAndPreview(film.originalBackdrop)));
-                }
+                toolbar.addView(tabs);
             }
             status = screen.note(screen.root, "");
             job = new Job(screen, screen.root);
@@ -500,41 +542,31 @@ public final class ArtworkUi {
                 if (browseClick != null) browseClick.run();
             });
             screen.root.addView(browseAction);
-            filter = screen.dropdown("Language · All languages", this::chooseLanguage);
-            screen.root.addView(filter);
-
-            preview = screen.button("Preview selection", true, this::previewChoice);
-            screen.root.addView(preview);
-            screen.root.addView(screen.outlineButton("Use image URL", this::manual));
-
-            LinearLayout secondary = screen.horizontal();
-            current = screen.button("View saved artwork", false, () -> {
-                String url = saved();
-                if (url != null) ArtworkUi.preview(context, type, url, member, null, null, null);
-            });
-            restore = screen.button("", false, this::restore);
-            screen.share(secondary, current);
-            screen.share(secondary, restore);
-            screen.root.addView(secondary);
-            restoreBoth = screen.button("Restore both film images", false, () -> {
-                store.restore(film.id, null);
-                selection.clear();
-                render();
-                if (after != null) after.run();
-            });
-            screen.root.addView(restoreBoth);
-            // One scrolling surface keeps both the controls and the recycled artwork reachable.
+            LinearLayout filters = screen.horizontal();
+            filters.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+            filters.setPaddingRelative(screen.dp(16), 0, screen.dp(16), 0);
+            filter = screen.button("Language", false, this::chooseLanguage);
+            android.graphics.drawable.Drawable arrow = Glyphs.chevron(
+                    Screen.SECONDARY, context.getResources().getDisplayMetrics().density, false);
+            arrow.setBounds(0, 0, screen.dp(18), screen.dp(18));
+            filter.setCompoundDrawablesRelative(null, null, arrow, null);
+            filter.setCompoundDrawablePadding(screen.dp(4));
+            filter.setTextColor(Screen.SECONDARY);
+            filter.setBackground(screen.ripple(Color.TRANSPARENT, 8));
+            filters.addView(filter, new LinearLayout.LayoutParams(-2, -2));
+            toolbar.addView(filters);
             adapter = new GridAdapter();
-            gallery = new ListView(context) {
-                @Override protected void onMeasure(int widthSpec, int heightSpec) {
-                    super.onMeasure(widthSpec, screen.capHeight(heightSpec, !adapter.items.isEmpty()));
-                }
-            };
+            gallery = new ListView(context);
+            gallery.setMinimumHeight(screen.dp(180));
+            gallery.setClipToPadding(false);
+            gallery.setPadding(0, screen.dp(8), 0, screen.dp(8));
             gallery.setDivider(null);
             gallery.setDividerHeight(0);
             gallery.setItemsCanFocus(true);
             gallery.setSelector(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-            gallery.addHeaderView(screen.root, null, false);
+            galleryHeader = screen.column();
+            galleryHeader.addView(screen.root);
+            gallery.addHeaderView(galleryHeader, null, false);
             gallery.setAdapter(adapter);
             gallery.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                 if (right - left != oldRight - oldLeft) {
@@ -553,10 +585,47 @@ public final class ArtworkUi {
             if (TmdbCredential.get(screen.context) != null) {
                 browse();
             } else {
-                showBrowseState("Connect TMDB to browse posters and backdrops for this film.",
+                showBrowseState("Connect TMDB to browse artwork.",
                         "Connect TMDB", () -> setup(screen.context, false, this::browse, this::manual));
             }
-            screen.showPanel(gallery);
+            LinearLayout page = new LinearLayout(screen.context) {
+                @Override protected void onMeasure(int widthSpec, int heightSpec) {
+                    super.onMeasure(widthSpec, screen.capHeight(heightSpec, true));
+                }
+            };
+            page.setOrientation(LinearLayout.VERTICAL);
+            page.addView(toolbar, new LinearLayout.LayoutParams(-1, -2));
+            page.addView(gallery, new LinearLayout.LayoutParams(-1, 0, 1));
+            screen.showPanel(page);
+        }
+
+        void showOptions(View anchor) {
+            Map<String, Runnable> options = new LinkedHashMap<>();
+            options.put("Use image URL", this::manual);
+            String url = saved();
+            if (url != null) {
+                options.put("View saved artwork",
+                        () -> ArtworkUi.preview(screen.context, type, url, member, null, null, null));
+                options.put(member != null ? "Restore original profile backdrop" : "Restore original " + type.label,
+                        this::restore);
+            }
+            if (member == null && after != null && store.url(film.id, Type.POSTER) != null
+                    && store.url(film.id, Type.BACKDROP) != null) {
+                options.put("Restore both film images", () -> {
+                    store.restore(film.id, null);
+                    selection.clear();
+                    render();
+                    after.run();
+                });
+            }
+            if (member != null && film.id != null) {
+                String custom = store.url(film.id, Type.BACKDROP);
+                if (custom != null) options.put("Preview film’s custom backdrop", () -> selectAndPreview(custom));
+                if (film.originalBackdrop != null) options.put("Preview film’s original backdrop",
+                        () -> selectAndPreview(film.originalBackdrop));
+            }
+            if (selection.get(type) != null) options.put("Preview last choice", this::previewChoice);
+            screen.showMenu(anchor, options, null);
         }
 
         void switchTo(Type tab) {
@@ -574,7 +643,6 @@ public final class ArtworkUi {
         void selectAndPreview(String url) {
             if (url == null) return;
             selection.put(type, url);
-            updateSelection();
             previewChoice();
         }
 
@@ -613,7 +681,7 @@ public final class ArtworkUi {
             showBrowseState("Looking up film on TMDB…", null, null);
             job.run(() -> client.match(film), matches -> {
                 if (matches.isEmpty()) {
-                    showBrowseState("TMDB has no match for this film. You can still use an image URL.", null, null);
+                    showBrowseState("No matching film on TMDB. Use an image URL from More options.", null, null);
                 } else if (matches.size() == 1 && matches.get(0).exact) {
                     fetch(client, matches.get(0));
                 } else if (screen.isVisible()) {
@@ -662,17 +730,17 @@ public final class ArtworkUi {
         }
 
         void chooseLanguage() {
-            Screen chooser = new Screen(screen.context, "Artwork languages", null);
+            Map<String, Runnable> options = new LinkedHashMap<>();
             for (int i = 0; i < 4; i++) {
                 if (i == 2 && film.language == null) continue;
                 int index = i;
-                chooser.row(chooser.root, languageLabel(index), index == languageFilter ? "Selected" : null, () -> {
+                options.put(languageLabel(index), () -> {
                     languageFilter = index;
-                    chooser.dismiss();
                     render();
+                    gallery.setSelection(0);
                 });
             }
-            chooser.show(false);
+            screen.showMenu(filter, options, languageLabel(languageFilter));
         }
 
         String languageLabel(int index) {
@@ -686,8 +754,8 @@ public final class ArtworkUi {
 
         void render() {
             if (posters != null) {
-                screen.paint(posters, type == Type.POSTER);
-                screen.paint(backdrops, type == Type.BACKDROP);
+                screen.paintTab(posters, type == Type.POSTER);
+                screen.paintTab(backdrops, type == Type.BACKDROP);
                 posters.setSelected(type == Type.POSTER);
                 backdrops.setSelected(type == Type.BACKDROP);
             }
@@ -702,35 +770,29 @@ public final class ArtworkUi {
             }
             adapter.items = filtered;
             adapter.resize(gallery.getWidth() > 0 ? gallery.getWidth() : screen.width());
-            filter.setVisibility(options.isEmpty() ? View.GONE : View.VISIBLE);
-            filter.setText("Language · " + languageLabel(languageFilter));
+            adapter.savedUrl = saved();
+            ((View) filter.getParent()).setVisibility(options.isEmpty() ? View.GONE : View.VISIBLE);
+            filter.setText(languageFilter == 0 ? "Language" : languageLabel(languageFilter));
+            filter.setContentDescription("Language: " + languageLabel(languageFilter));
             browseAction.setText(browseLabel);
             browseAction.setVisibility(browseLabel == null ? View.GONE : View.VISIBLE);
             String text = images == null ? message : options.isEmpty() ? "TMDB has no " + type.label + " artwork for this film."
                     : filtered.isEmpty() ? "No artwork matches this language."
-                    : "Artwork from TMDB. Tap an image to preview it.";
+                    : "";
             status.setText(text);
-            status.setVisibility(text.isEmpty() ? View.GONE : View.VISIBLE);
-            String saved = saved();
-            active.setText(artworkStatus(saved));
-            current.setVisibility(saved == null ? View.GONE : View.VISIBLE);
-            restore.setVisibility(saved == null ? View.GONE : View.VISIBLE);
-            restoreBoth.setVisibility(member == null && after != null
-                    && store.url(film.id, Type.POSTER) != null && store.url(film.id, Type.BACKDROP) != null
-                    ? View.VISIBLE : View.GONE);
-            restore.setText(member != null ? "Restore original profile backdrop" : "Restore original " + type.label);
+            status.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
+            screen.root.setVisibility(TextUtils.isEmpty(text) && browseLabel == null ? View.GONE : View.VISIBLE);
             updateSelection();
         }
 
         void updateSelection() {
-            preview.setVisibility(selection.get(type) == null ? View.GONE : View.VISIBLE);
-            preview.setText(type == Type.POSTER ? "Preview selected poster" : "Preview selected backdrop");
             adapter.notifyDataSetChanged();
             gallery.requestLayout();
         }
 
         final class GridAdapter extends BaseAdapter {
             List<TmdbClient.Image> items = Collections.emptyList();
+            String savedUrl;
             int columns = 3;
             int cellWidth;
             float cellAspect = 1.5f;
@@ -773,7 +835,7 @@ public final class ArtworkUi {
             }
 
             private void bind(ImageView view, TmdbClient.Image item, int index) {
-                boolean selected = item.url.equals(selection.get(type));
+                boolean selected = item.url.equals(savedUrl);
                 view.setVisibility(View.VISIBLE);
                 view.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 view.setBackground(screen.shape(screen.surface, 8, 0));
@@ -781,7 +843,7 @@ public final class ArtworkUi {
                 view.setForeground(selected ? screen.shape(Color.TRANSPARENT, 8, screen.accent) : null);
                 view.setSelected(selected);
                 view.setContentDescription((type == Type.POSTER ? "Preview poster " : "Preview backdrop ") + (index + 1)
-                        + (selected ? ", selected" : ""));
+                        + (selected ? ", current artwork" : ""));
                 view.setOnClickListener(v -> selectAndPreview(item.url));
                 view.setFocusable(true);
                 if (!item.thumbnail.equals(view.getTag())) {
@@ -845,6 +907,8 @@ public final class ArtworkUi {
         final Context context;
         private final Dialog dialog;
         final LinearLayout root;
+        final LinearLayout header;
+        final LinearLayout heading;
         final int accent;
         final int surface;
         Runnable redraw;
@@ -863,22 +927,82 @@ public final class ArtworkUi {
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             root = column();
             root.setPadding(dp(20), dp(14), dp(20), dp(16));
-            LinearLayout heading = horizontal();
+            header = column();
+            heading = horizontal();
+            LinearLayout titles = column();
             TextView titleView = text(title, 20, Color.WHITE);
             titleView.setTypeface(titleView.getTypeface(), Typeface.BOLD);
-            heading.addView(titleView, new LinearLayout.LayoutParams(0, -2, 1));
-            ImageButton close = new ImageButton(context);
-            int icon = context.getResources().getIdentifier("close", "drawable", context.getPackageName());
-            close.setImageResource(icon != 0 ? icon : android.R.drawable.ic_menu_close_clear_cancel);
-            close.setImageTintList(ColorStateList.valueOf(AccentPresets.readableText(Color.WHITE, surface)));
-            close.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            close.setPadding(dp(8), dp(8), dp(8), dp(8));
-            close.setBackground(ripple(Color.TRANSPARENT, 24));
-            close.setContentDescription("Close");
-            close.setOnClickListener(view -> dismiss());
-            heading.addView(close, new LinearLayout.LayoutParams(dp(48), dp(48)));
-            root.addView(heading);
-            if (subtitle != null) note(root, subtitle);
+            titles.addView(titleView);
+            if (subtitle != null) titles.addView(text(subtitle, 13, SECONDARY));
+            heading.addView(titles, new LinearLayout.LayoutParams(0, -2, 1));
+            addToolbarButton("Close", "close", view -> dismiss(), 1);
+            header.addView(heading);
+            root.addView(header);
+        }
+
+        void addToolbarButton(String label, String drawable, View.OnClickListener click, int index) {
+            ImageButton button = new ImageButton(context);
+            int icon = context.getResources().getIdentifier(drawable, "drawable", context.getPackageName());
+            int fallback = "Close".equals(label) ? android.R.drawable.ic_menu_close_clear_cancel
+                    : android.R.drawable.ic_menu_more;
+            button.setImageResource(icon != 0 ? icon : fallback);
+            button.setImageTintList(ColorStateList.valueOf(AccentPresets.readableText(Color.WHITE, surface)));
+            button.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            button.setPadding(dp(12), dp(12), dp(12), dp(12));
+            button.setBackground(ripple(Color.TRANSPARENT, 24));
+            button.setContentDescription(label);
+            button.setOnClickListener(click);
+            heading.addView(button, index, new LinearLayout.LayoutParams(dp(48), dp(48)));
+        }
+
+        void showMenu(View anchor, Map<String, Runnable> options, String selected) {
+            List<String> labels = new ArrayList<>(options.keySet());
+            ListPopupWindow menu = new ListPopupWindow(context);
+            menu.setAnchorView(anchor);
+            menu.setDropDownGravity(Gravity.END);
+            menu.setWidth(Math.min(usableWindow().width() - dp(32), dp(selected == null ? 256 : 208)));
+            menu.setBackgroundDrawable(shape(SurfaceColors.elevated(context), 12, 0));
+            menu.setVerticalOffset(dp(4));
+            menu.setModal(true);
+            menu.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NOT_NEEDED);
+            int rowLayout = selected == null ? android.R.layout.simple_list_item_1
+                    : android.R.layout.simple_list_item_single_choice;
+            menu.setAdapter(new ArrayAdapter<String>(context, rowLayout, labels) {
+                @Override public View getView(int position, View recycled, ViewGroup parent) {
+                    TextView row = (TextView) super.getView(position, recycled, parent);
+                    int appearance = context.getResources().getIdentifier(
+                            "TextAppearance.Letterboxd.BodyMedium", "style", context.getPackageName());
+                    if (appearance != 0) row.setTextAppearance(appearance);
+                    row.setTextColor(Color.WHITE);
+                    row.setMinHeight(dp(48));
+                    row.setPaddingRelative(dp(16), dp(8), dp(16), dp(8));
+                    if (row instanceof CheckedTextView) {
+                        ((CheckedTextView) row).setCheckMarkTintList(ColorStateList.valueOf(
+                                AccentPresets.readableText(accent, SurfaceColors.elevated(context))));
+                    }
+                    return row;
+                }
+            });
+            menu.setOnItemClickListener((parent, view, position, id) -> {
+                menu.dismiss();
+                options.get(labels.get(position)).run();
+            });
+            menu.show();
+            if (selected != null && menu.getListView() != null) {
+                menu.getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                int index = labels.indexOf(selected);
+                if (index >= 0) menu.getListView().setItemChecked(index, true);
+            }
+        }
+
+        void paintTab(TextView tab, boolean selected) {
+            GradientDrawable underline = shape(selected ? accent : 0xFF394653, 0, 0);
+            android.graphics.drawable.LayerDrawable background = new android.graphics.drawable.LayerDrawable(
+                    new android.graphics.drawable.Drawable[]{shape(surface, 0, 0), underline});
+            background.setLayerHeight(1, dp(selected ? 3 : 1));
+            background.setLayerGravity(1, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL);
+            tab.setBackground(new RippleDrawable(ColorStateList.valueOf(0x22FFFFFF), background, null));
+            tab.setTextColor(selected ? AccentPresets.readableText(accent, surface) : SECONDARY);
         }
 
         void show(boolean tall) {

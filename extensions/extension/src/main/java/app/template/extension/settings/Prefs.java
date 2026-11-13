@@ -29,6 +29,20 @@ public final class Prefs {
     public static final String KEY_HIDE_SPONSORED_SPOTLIGHT = "hide_sponsored_spotlight";
     public static final String KEY_IMDB_TRIVIA = "imdb_trivia";
     public static final String KEY_ARTWORK_MODE = "artwork_mode";
+    static final String KEY_SHOW_ADULT_POSTERS = "show_adult_posters";
+    private static boolean adultPostersAvailable;
+
+    public static void enableAdultPostersSetting() {
+        adultPostersAvailable = true;
+    }
+
+    static boolean adultPostersAvailable() {
+        return adultPostersAvailable;
+    }
+
+    public static boolean showAdultPosters() {
+        return getBoolean(KEY_SHOW_ADULT_POSTERS, false);
+    }
 
     // "Home tabs" — CSV of visible home section keys in order (films,reviews,lists,journal).
     public static final String KEY_HOME_TABS = "home_tabs";
@@ -54,6 +68,11 @@ public final class Prefs {
     public static final String KEY_LAUNCH_TAB = "launch_tab"; // last | popular | search | activity | watchlist | profile
 
     // "Mod theme"
+    static final String KEY_PROFILE_BADGE_MODE = "profile_badge_mode";
+    static final String KEY_PROFILE_BADGE_TEXT = "profile_badge_text";
+    static final String KEY_PROFILE_BADGE_STYLE = "profile_badge_style";
+    static final String KEY_PROFILE_BADGE_COLOR = "profile_badge_color";
+    static final int MAX_PROFILE_BADGE_LABEL = 18;
     public static final String KEY_THEME_SURFACE = "theme_surface"; // stock | oled
     public static final String KEY_THEME_OLED = "theme_oled";       // boolean mirror of the above
     public static final String KEY_THEME_ACCENT = "theme_accent";
