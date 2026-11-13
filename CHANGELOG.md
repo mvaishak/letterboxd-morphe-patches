@@ -1,3 +1,10 @@
+## [2.3.0-dev.6](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.5...v2.3.0-dev.6) (2026-11-13)
+
+### 🐛 Bug Fixes
+
+* match backup selection to Mods dialog styling ([2993184](https://github.com/mvaishak/letterboxd-morphe-patches/commit/2993184d93c3efad2eba24924731263786421fd1))
+* preserve the existing update popup ([b429130](https://github.com/mvaishak/letterboxd-morphe-patches/commit/b429130360a7b6987a697991c6a9ec6d0aba5dc4))
+
 ## [2.3.0-dev.5](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.4...v2.3.0-dev.5) (2026-11-13)
 
 ### ✨ New Features
