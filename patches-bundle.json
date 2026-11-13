@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-13T17:49:48",
-  "description": "## [2.3.0-dev.7](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.6...v2.3.0-dev.7) (2026-11-13)\n\n### ✨ New Features\n\n* add profile badges and adult poster settings ([3344267](https://github.com/mvaishak/letterboxd-morphe-patches/commit/33442674d34866c49f35ed0dc9287c461fb93a79))",
-  "download_url": "https://github.com/mvaishak/letterboxd-morphe-patches/releases/download/v2.3.0-dev.7/patches-2.3.0-dev.7.mpp",
+  "created_at": "2026-11-13T21:16:44",
+  "description": "## [3.0.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.7...v3.0.0-dev.1) (2026-11-13)",
+  "download_url": "https://github.com/mvaishak/letterboxd-morphe-patches/releases/download/v3.0.0-dev.1/patches-3.0.0-dev.1.mpp",
   "signature_download_url": "",
-  "version": "2.3.0-dev.7"
+  "version": "3.0.0-dev.1"
 }

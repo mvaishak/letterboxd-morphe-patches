@@ -222,7 +222,7 @@ install the new patched build over your current one.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.3.0-dev.7](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v2.3.0-dev.7)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;15 patches total
+> **[v3.0.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v3.0.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;15 patches total
 <details open>
 <summary>Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;15 patches</summary>
 <br>

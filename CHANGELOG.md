@@ -1,3 +1,5 @@
+## [3.0.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.7...v3.0.0-dev.1) (2026-11-13)
+
 ## [2.3.0-dev.7](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.6...v2.3.0-dev.7) (2026-11-13)
 
 ### ✨ New Features
