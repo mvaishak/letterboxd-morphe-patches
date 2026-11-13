@@ -27,7 +27,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump every time {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 14;
+    private static final int BUILD = 13;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
@@ -49,7 +49,7 @@ public final class ModWelcome {
           + "•  Open a list’s More menu and tap Clone to save your own copy.\n"
           + "•  Open App icon in Settings to change your launcher icon.\n\n"
           + "Letterboxd Mods\n"
-          + "•  Choose Mods settings, custom artwork, or both in the updated backup dialog.\n"
+          + "•  Choose Mods settings, custom artwork, or both when you export or restore a backup.\n"
           + "•  Open Help & About → Feature Guide for instructions and common questions.";
 
     /** Permanent closer — every release. New-to-this-version users still need this. */
