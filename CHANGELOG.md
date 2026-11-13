@@ -1,3 +1,9 @@
+## [2.3.0-dev.5](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.4...v2.3.0-dev.5) (2026-11-13)
+
+### ✨ New Features
+
+* add list copying, app icons, and selective backups ([05ec5d3](https://github.com/mvaishak/letterboxd-morphe-patches/commit/05ec5d3806d103951fc1067628c89cc97ec9ed79))
+
 ## [2.3.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.3...v2.3.0-dev.4) (2026-11-11)
 
 ### 🐛 Bug Fixes

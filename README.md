@@ -222,15 +222,17 @@ install the new patched build over your current one.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.3.0-dev.4](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v2.3.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;10 patches total
+> **[v2.3.0-dev.5](https://github.com/mvaishak/letterboxd-morphe-patches/releases/tag/v2.3.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;12 patches total
 <details open>
-<summary>Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
+<summary>Letterboxd&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
 <br>
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
 | [Appearance](#appearance) | In-app appearance controls, adjustable from the Letterboxd Mods screen without re-patching: a true-black OLED surface, a custom accent colour (presets or any hex), and the bottom-navigation selected style. Applied at runtime via resource overlays on Android 12 and later. Needs the "Mod settings" patch. If the separate "Material You theme" patch is also applied, its OLED and nav-bar-match switches are disabled here automatically — the two theming systems can't run at once. |  |
 | [Brighter Watched-by stars](#brighter-watched-by-stars) | Other people's star ratings in a film's "Watched by" row use a very dark grey (#445566) that is hard to read, especially on a black theme. This switches them to the lighter grey (#99AABB) the rest of the app already uses for other people's ratings. A small legibility fix, on by default. |  |
+| [Change app icon](#change-app-icon) | Choose a built-in Letterboxd launcher icon from the App icon settings. |  |
+| [Copy lists](#copy-lists) | Use Clone in a list's More menu to save an independent copy with the films in order. |  |
 | [Custom artwork](#custom-artwork) | Choose local posters and backdrops from TMDB or an image URL, independently of your Letterboxd subscription. |  |
 | [Denser poster grid](#denser-poster-grid) | Tightens the spacing around posters in grids so they render larger and closer together. Does not change the number of columns. | • Grid density |
 | [Hide ads](#hide-ads) | Stops the Google AdMob banners shown to free accounts from loading anywhere in the app. On by default. |  |
