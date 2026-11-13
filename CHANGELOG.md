@@ -1,3 +1,9 @@
+## [2.3.0-dev.7](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.6...v2.3.0-dev.7) (2026-11-13)
+
+### ✨ New Features
+
+* add profile badges and adult poster settings ([3344267](https://github.com/mvaishak/letterboxd-morphe-patches/commit/33442674d34866c49f35ed0dc9287c461fb93a79))
+
 ## [2.3.0-dev.6](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.3.0-dev.5...v2.3.0-dev.6) (2026-11-13)
 
 ### 🐛 Bug Fixes
