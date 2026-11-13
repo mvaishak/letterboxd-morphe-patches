@@ -1,7 +1,6 @@
 package app.template.extension.settings;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -186,26 +185,14 @@ public class ModSettingsActivity extends Activity {
             labels.add("Custom artwork");
             sections.add(ARTWORK);
         }
-        boolean[] checked = new boolean[sections.size()];
-        java.util.Arrays.fill(checked, true);
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(export ? "What do you want to export?" : "What do you want to import?")
-                .setMultiChoiceItems(labels.toArray(new String[0]), checked, (d, index, selected) -> {
-                    checked[index] = selected;
-                    boolean any = false;
-                    for (boolean item : checked) any |= item;
-                    ((AlertDialog) d).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(any);
-                })
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton(export ? "Export" : "Import", (d, which) -> {
+        ModDialog.choose(this, export ? "Export Mods backup" : "Import Mods backup",
+                labels.toArray(new String[0]), export ? "Export" : "Import", checked -> {
                     int selected = 0;
                     for (int i = 0; i < checked.length; i++) {
                         if (checked[i]) selected |= sections.get(i);
                     }
                     onConfirm.accept(selected);
-                })
-                .create();
-        dialog.show();
+                });
     }
 
     void pickExport() {
