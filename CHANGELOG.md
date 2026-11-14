@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v3.0.0...v3.0.1) (2026-11-14)
+
+### 🐛 Bug Fixes
+
+* request IMDb trivia in English on all system languages ([086e684](https://github.com/mvaishak/letterboxd-morphe-patches/commit/086e6847a4b039fbe0d90d8c6bef6c751076947b))
+
 ## [3.0.0](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v2.2.0...v3.0.0) (2026-11-13)
 
 ### 🐛 Bug Fixes
