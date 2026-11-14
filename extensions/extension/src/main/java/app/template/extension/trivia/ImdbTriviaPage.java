@@ -188,6 +188,7 @@ final class ImdbTriviaPage {
     private JSONObject snapshot = new JSONObject();
     private final AtomicInteger resourceDispatches = new AtomicInteger();
     private final AtomicInteger mainFrameDispatches = new AtomicInteger();
+    private volatile String mainFrameAcceptLanguage;
     private final long webViewMs;
     private long documentMs = -1;
     private long previewMs = -1;
@@ -219,7 +220,10 @@ final class ImdbTriviaPage {
         web.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 resourceDispatches.incrementAndGet();
-                if (request.isForMainFrame()) mainFrameDispatches.incrementAndGet();
+                if (request.isForMainFrame()) {
+                    mainFrameDispatches.incrementAndGet();
+                    mainFrameAcceptLanguage = request.getRequestHeaders().get("Accept-Language");
+                }
                 return null;
             }
 
@@ -261,7 +265,10 @@ final class ImdbTriviaPage {
         });
         handler.postDelayed(deadline, preloadOnly ? PRELOAD_TIMEOUT_MS : TIMEOUT_MS);
         allowPaginationAt = SystemClock.elapsedRealtime() + 1200;
-        web.loadUrl(source);
+        // IMDb localizes the page from this header; keep its section markup predictable.
+        Map<String, String> requestHeaders = new LinkedHashMap<>();
+        requestHeaders.put("Accept-Language", "en-US,en;q=0.9");
+        web.loadUrl(source, requestHeaders);
         handler.postDelayed(poll, 1200);
     }
 
@@ -399,6 +406,7 @@ final class ImdbTriviaPage {
             snapshot.put("webViewInstances", 1);
             snapshot.put("webViewResourceDispatches", resourceDispatches.get());
             snapshot.put("webViewMainFrameDispatches", mainFrameDispatches.get());
+            snapshot.put("mainFrameAcceptLanguage", mainFrameAcceptLanguage);
             snapshot.put("webViewMs", webViewMs);
             snapshot.put("documentCommitMs", documentMs);
             snapshot.put("previewMs", previewMs);
