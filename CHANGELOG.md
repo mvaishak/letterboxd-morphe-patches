@@ -1,3 +1,9 @@
+## [3.1.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v3.0.1...v3.1.0-dev.1) (2026-11-19)
+
+### ✨ New Features
+
+* add streaming offers, alerts, external ratings and artwork options ([02befe7](https://github.com/mvaishak/letterboxd-morphe-patches/commit/02befe752a6a66cb10cfe6a77fbbc0fb2ae50962))
+
 ## [3.0.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v3.0.0...v3.0.1) (2026-11-14)
 
 ### 🐛 Bug Fixes
