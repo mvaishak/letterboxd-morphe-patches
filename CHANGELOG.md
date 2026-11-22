@@ -1,3 +1,9 @@
+## [3.1.0-dev.2](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v3.1.0-dev.1...v3.1.0-dev.2) (2026-11-22)
+
+### 🐛 Bug Fixes
+
+* support Letterboxd 3.6.9 and avoid theme resource ID collisions ([ebfa7ec](https://github.com/mvaishak/letterboxd-morphe-patches/commit/ebfa7ec8a5590fe0c3ed3474f21a1dcf77fb49cf))
+
 ## [3.1.0-dev.1](https://github.com/mvaishak/letterboxd-morphe-patches/compare/v3.0.1...v3.1.0-dev.1) (2026-11-19)
 
 ### ✨ New Features
