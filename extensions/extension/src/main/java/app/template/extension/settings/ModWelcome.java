@@ -27,7 +27,7 @@ public final class ModWelcome {
     private ModWelcome() {}
 
     /** Bump every time {@link #BODY} changes so returning users see it once more. */
-    private static final int BUILD = 15;
+    private static final int BUILD = 16;
     private static final String KEY = "welcome_build";
 
     private static final String TITLE = "What's new";
@@ -37,15 +37,9 @@ public final class ModWelcome {
 
     // Short bullets, section name on its own line, and a blank line between sections.
     private static final String BODY =
-            "Film pages\n"
-          + "•  With Where to Watch installed, choose streaming services and regions, then open offers from a film’s page.\n"
-          + "•  Connect MDBList in Mods → Film Pages → External ratings to choose scores for the new ratings row and page.\n"
-          + "•  With Film release alerts installed, set release reminders. Where to Watch can also notify you when a film reaches your selected services.\n\n"
-          + "Artwork\n"
-          + "•  Rotate your profile backdrops daily or each time you visit your profile.\n"
-          + "•  Turn on TMDB title logos in Mods → Artwork & appearance to use film logos when available.\n\n"
-          + "Alerts and backups\n"
-          + "•  Review alert history in your notifications. Back up reminders and streaming selections alongside your Mods settings and artwork.";
+            "Letterboxd 3.6.9\n"
+          + "•  All patches now support Letterboxd 3.6.9.\n"
+          + "•  Fixed an Appearance resource conflict that prevented patching the new version.";
 
     /** Permanent closer — every release. New-to-this-version users still need this. */
     private static final String FOOTER =
